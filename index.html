@@ -12,4 +12,63 @@ const DATA=[{"mobile": "9302526752", "school": "233510KGH01-KGBV Bijadehi(TYPE-I
 function digits(x){return String(x||'').replace(/\D/g,'')}
 function findRec(){const m=digits(mobile.value);msg.innerHTML='';if(m.length!==10){msg.innerHTML='<div class="msg err">सही 10 अंकों का Mobile Number डालें।</div>';return}rec=DATA.find(x=>digits(x.mobile)===m);if(!rec){msg.innerHTML='<div class="msg err">इस Mobile Number का record नहीं मिला।</div>';return}name.textContent=rec.name||'नाम उपलब्ध नहीं';school.textContent=rec.school||'';av.textContent=(rec.name||rec.school||'S')[0].toUpperCase();search.classList.add('hidden');verify.classList.remove('hidden');a.classList.remove('active');b.classList.add('active')}
 function showDetails(){rname.textContent=rec.name||'नाम उपलब्ध नहीं';rschool.textContent=rec.school||'';rav.textContent=(rec.name||rec.school||'S')[0].toUpperCase();account.textContent=rec.account||'उपलब्ध नहीं';ifsc.textContent=rec.ifsc||'उपलब्ध नहीं';branch.textContent=rec.branch||'उपलब्ध नहीं';rmobile.textContent=rec.mobile||'';verify.classList.add('hidden');result.classList.remove('hidden');b.classList.remove('active');c.classList.add('active')}
+function checkExcelAccess() {
+    const mobile = document.getElementById("mobile").value.trim();
+
+    const allowedNumbers = [
+        "7415912505",
+        "9179624657"
+    ];
+
+    const box = document.getElementById("excelDownloadBox");
+
+    if (allowedNumbers.includes(mobile)) {
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
+
+function downloadExcel() {
+    const mobile = document.getElementById("mobile").value.trim();
+
+    const allowedNumbers = [
+        "7415912505",
+        "9179624657"
+    ];
+
+    if (!allowedNumbers.includes(mobile)) {
+        alert("Excel Download की अनुमति नहीं है।");
+        return;
+    }
+
+    const link = document.createElement("a");
+
+    link.href = "block shahpur.xlsx";
+    link.download = "SNA_SPARSH_Data.xlsx";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+<div id="excelDownloadBox" style="display:none; margin-top:15px;">
+    <button onclick="downloadExcel()"
+        style="padding:12px 20px;
+               background:#198754;
+               color:white;
+               border:none;
+               border-radius:8px;
+               font-size:16px;
+               cursor:pointer;">
+        📥 Excel Download करें
+    </button>
+</div>
+  <input type="tel"
+       id="mobile"
+       maxlength="10"
+       placeholder="Mobile Number डालें"
+       oninput="checkExcelAccess()">
+
+
 </script></body></html>
