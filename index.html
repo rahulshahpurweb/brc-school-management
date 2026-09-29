@@ -101,7 +101,7 @@ function sendVerification(status){
     account:rec.account||'',
     ifsc:rec.ifsc||'',
     branch:rec.branch||'',
-    uniqueIdVerified:status==='Verified',
+    uniqueIdVerified:status=='Verified',
     status:status
   };
   try{
