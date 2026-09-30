@@ -47,7 +47,7 @@ function findRec(){
 
   rec=DATA.find(x=>digits(x.mobile)===m);
   if(!rec){
-    msg.innerHTML='<div class="msg err">आपके द्वारा SNA Sparsh गूगल फॉर्म में बैंक की जानकारी नहीं भरी गयी है। पहले उपरोक्त लिंक में अपने SNA खाते की जानकरी पूर्ण करे।br<"https://forms.gle/zMiuwqM5ZzbPYCUS6"></div>';
+    msg.innerHTML='<div class="msg err">आपके द्वारा SNA Sparsh गूगल फॉर्म में बैंक की जानकारी नहीं भरी गयी है। पहले उपरोक्त लिंक में अपने SNA खाते की जानकरी पूर्ण करे।<br></br><a href="https://forms.gle/zMiuwqM5ZzbPYCUS6"/a></div>';
     return;
   }
 
