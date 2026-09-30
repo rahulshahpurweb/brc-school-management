@@ -5,7 +5,7 @@
 <header><div class="wrap"><div class="top"><div class="brand">SNA SPARSH</div><div class="tag">PERSONAL PROTOTYPE</div></div><h1>🔎 अपना Account विवरण देखें</h1><p>Mobile Number से अपना record खोजें।</p></div></header>
 <main class="wrap"><section class="card"><div class="steps"><div id="a" class="step active">1 · Mobile</div><div id="b" class="step">2 · Verification</div><div id="c" class="step">3 · Details</div></div>
 <div id="search"><label>Mobile Number</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 अंकों का Mobile Number"><button class="primary full" onclick="findRec()">विवरण देखें</button><div class="hint">Registered mobile number दर्ज करें।</div><div id="msg"></div></div>
-<div id="verify" class="hidden"><div class="identity"><div class="avatar" id="av">S</div><div><b id="name">—</b><small id="school">—</small></div></div><div class="note">Unique ID उपलब्ध हो तो verification कर सकते हैं। <b>Unique ID compulsory नहीं है।</b></div><label style="margin-top:15px">Unique ID <span style="font-weight:400;color:#718096">(Optional)</span></label><input id="uid" placeholder="यदि Unique ID है तो दर्ज करें"><button class="primary full" onclick="verifyRec()">Verify & View Details</button><button class="secondary full" onclick="showDetails()">Unique ID नहीं है — सीधे आगे बढ़ें</button><div id="vmsg"></div></div>
+<div id="verify" class="hidden"><div class="identity"><div class="avatar" id="av">S</div><div><b id="name">—</b><small id="school">—</small></div></div><div class="note">Unique ID उपलब्ध हो तो verification कर सकते हैं। <b>Unique ID compulsory नहीं है।</b></div><label style="margin-top:15px">Unique ID <span style="font-weight:400;color:#718096">(Optional)</span></label><input id="uid" maxlength="6" autocomplete="off" placeholder="उदा. AA0000" style="text-transform:uppercase" pattern="[A-Za-z]{2}[0-9]{4}"><button class="primary full" onclick="verifyRec()">Done — आगे बढ़ें</button><button class="secondary full" onclick="showDetails(false)">Unique ID नहीं है — सीधे आगे बढ़ें</button><div id="vmsg"></div></div>
 <div id="result" class="hidden"><div class="msg ok">✓ Account details उपलब्ध हैं</div><div class="identity" style="margin-top:15px"><div class="avatar" id="rav">S</div><div><b id="rname">—</b><small id="rschool">—</small></div></div><div class="grid"><div class="item"><div class="k">Account Number</div><div class="v" id="account">—</div></div><div class="item"><div class="k">IFSC Code</div><div class="v" id="ifsc">—</div></div><div class="item"><div class="k">Branch</div><div class="v" id="branch">—</div></div><div class="item"><div class="k">Mobile Number</div><div class="v" id="rmobile">—</div></div></div><button class="secondary full" onclick="location.reload()">नया Search करें</button></div>
 <div id="admin" class="hidden">
   <div class="msg ok">✓ Report Access</div>
@@ -60,21 +60,21 @@ function findRec(){
 }
 
 function verifyRec(){
-  const u=uid.value.trim();
+  const u=uid.value.trim().toUpperCase();
   vmsg.innerHTML='';
-  if(!u){showDetails(false);return}
-  if(!rec.uniqueId){
-    vmsg.innerHTML='<div class="msg warn">इस record में Unique ID उपलब्ध नहीं है। नीचे वाले विकल्प से बिना Unique ID आगे बढ़ सकते हैं।</div>';
+  if(!u){showDetails(false,'');return}
+  if(!/^[A-Z]{2}[0-9]{4}$/.test(u)){
+    vmsg.innerHTML='<div class="msg err">Unique ID का format सही नहीं है। उदाहरण: AA0000 (2 अक्षर + 4 अंक)</div>';
     return;
   }
-  if(u!==rec.uniqueId){
+  if(rec.uniqueId && String(rec.uniqueId).trim().toUpperCase()!==u){
     vmsg.innerHTML='<div class="msg err">Unique ID सही नहीं है।</div>';
     return;
   }
-  showDetails(true);
+  showDetails(true,u);
 }
 
-function showDetails(uniqueVerified){
+function showDetails(uniqueVerified=false, enteredUniqueId=''){
   rname.textContent=rec.name||'नाम उपलब्ध नहीं';
   rschool.textContent=rec.school||'';
   rav.textContent=(rec.name||rec.school||'S')[0].toUpperCase();
@@ -83,31 +83,39 @@ function showDetails(uniqueVerified){
   branch.textContent=rec.branch||'उपलब्ध नहीं';
   rmobile.textContent=rec.mobile||'';
 
-  // Send the verified/viewed event to your Google Sheet backend.
-  sendVerification(uniqueVerified ? 'Verified' : 'Viewed without Unique ID');
+  // One mobile number = one record.
+  // First check creates the record; later checks update the same record.
+  sendVerification(uniqueVerified ? 'Verified' : 'Viewed without Unique ID', enteredUniqueId);
 
   verify.classList.add('hidden');
   result.classList.remove('hidden');
   b.classList.remove('active'); c.classList.add('active');
 }
 
-function sendVerification(status){
+function sendVerification(status, enteredUniqueId=''){
   if(!REPORT_API_URL || REPORT_API_URL.includes('PASTE_YOUR_')) return;
+
+  const now = new Date();
   const payload={
-    action:'log',
+    action:'upsert',
+    keyField:'mobile',
     mobile:rec.mobile||'',
     name:rec.name||'',
     school:rec.school||'',
     account:rec.account||'',
     ifsc:rec.ifsc||'',
     branch:rec.branch||'',
+    uniqueId: enteredUniqueId || rec.uniqueId || '',
     uniqueIdVerified:status==='Verified',
-    status:status
+    status:status,
+    checkedAt:now.toISOString()
   };
+
   try{
     fetch(REPORT_API_URL,{
       method:'POST',
       mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify(payload)
     });
   }catch(e){}
