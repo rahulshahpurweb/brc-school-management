@@ -62,15 +62,26 @@ function findRec(){
 function verifyRec(){
   const u=uid.value.trim().toUpperCase();
   vmsg.innerHTML='';
-  if(!u){showDetails(false,'');return}
+
+  // 1. यदि Unique ID खाली है, तो आगे बढ़ने से रोकें
+  if(!u){
+    vmsg.innerHTML='<div class="msg err">कृपया अपनी Unique ID दर्ज करें। इसके बिना विवरण नहीं देखा जा सकता।</div>';
+    return;
+  }
+
+  // 2. Unique ID का Format (उदा. AA0000) चेक करें
   if(!/^[A-Z]{2}[0-9]{4}$/.test(u)){
     vmsg.innerHTML='<div class="msg err">Unique ID का format सही नहीं है। उदाहरण: AA0000 (2 अक्षर + 4 अंक)</div>';
     return;
   }
+
+  // 3. यदि डेटाबेस में Unique ID मौजूद है, तो उसका मिलान करें
   if(rec.uniqueId && String(rec.uniqueId).trim().toUpperCase()!==u){
-    vmsg.innerHTML='<div class="msg err">Unique ID सही नहीं है।</div>';
+    vmsg.innerHTML='<div class="msg err">गलत Unique ID! कृपया सही Unique ID दर्ज करें।</div>';
     return;
   }
+
+  // सही Unique ID होने पर ही आगे बढ़ें
   showDetails(true,u);
 }
 
