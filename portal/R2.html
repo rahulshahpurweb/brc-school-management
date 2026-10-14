@@ -3,45 +3,132 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BRC Shahpur - Master Portal</title>
+<title>BRC School Data Management - Shahpur</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;overflow:hidden;height:100vh;display:flex;flex-direction:column}
-.master-header{background:linear-gradient(135deg,#071b38,#0e3d7e);color:white;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #f4b400;flex-shrink:0;flex-wrap:wrap;gap:10px}
-.brand-title{font-size:17px;font-weight:900;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
-.module-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-.mod-tab{background:#ffffff18;color:#e2e8f0;border:1px solid #ffffff33;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:bold;white-space:nowrap;cursor:pointer;transition:all 0.2s ease}
-.mod-tab:hover{background:#ffffff30;color:#fff}
-.mod-tab.active{background:#ffd21c;color:#082a63;border-color:#ffd21c;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-.frame-container{flex:1;width:100%;height:100%;background:#f4f7fb}
-#moduleFrame{width:100%;height:100%;border:0}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+header{background:#1d4ed8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:20px}
+.nav-header-btn{background:#ffd21c;color:#082a63;font-weight:900;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;text-decoration:none;font-size:13px}
+.nav-header-btn:hover{background:#ffde59}
+nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px 20px;position:sticky;top:0;z-index:5;box-shadow:0 1px 5px #ddd}
+button{border:0;border-radius:8px;padding:9px 14px;background:#1d4ed8;color:#fff;cursor:pointer;font-weight:bold}
+button.secondary{background:#64748b}
+main{max-width:1200px;margin:auto;padding:15px}
+section{display:none}
+section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 6px #ddd}
+.num{font-size:28px;font-weight:bold;color:#1d4ed8}
+.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:12px}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}
+th{background:#eef2ff}
+.tag{padding:4px 8px;border-radius:12px;background:#e0e7ff;font-size:12px;font-weight:bold;color:#1d4ed8}
+
+/* LOGIN OVERLAY */
+#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.92);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
+.auth-card{background:#ffffff;border-radius:18px;max-width:380px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
+.auth-card h2{margin-top:0;color:#082a63}
+.auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
+.auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px}
+.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer}
+.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
 </style>
 </head>
 <body>
 
-<header class="master-header">
-  <div class="brand-title">
-    <span>🏛️ जनपद शिक्षा केन्द्र शाहपुर | BRC Portal</span>
+<!-- Login Lock Screen -->
+<div id="authOverlay">
+  <div class="auth-card">
+    <h2>🔐 BRC Staff Login</h2>
+    <p>BRC Dashboard देखने हेतु पासवर्ड दर्ज करें।</p>
+    <div id="authErr" class="auth-err">गलत Password! पुनः प्रयास करें।</div>
+    <input type="password" id="authPass" class="auth-input" placeholder="Password दर्ज करें (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Login करें</button>
   </div>
-
-  <div class="module-tabs">
-    <!-- Path fix kiya gaya hai taaki portal folder ke andar ki file sahi load ho -->
-    <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Shiksha Sanjeevani (R2)</button>
-    <a href="../index.html" class="mod-tab" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Public Portal</a>
-  </div>
-</header>
-
-<div class="frame-container">
-  <iframe id="moduleFrame" src="R2.html"></iframe>
 </div>
 
+<header>
+  <h1>BRC Management Portal - Shahpur</h1>
+  <span style="font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:6px;">Module 1 (R2)</span>
+</header>
+
+<nav>
+  <button onclick="showSection('dash')">📊 Module 1 (Schools / Data)</button>
+  <button onclick="showSection('reports')">📋 Module 2 (Reports / Exam)</button>
+  <button class="secondary" onclick="logout()" style="margin-left:auto">🚪 Logout</button>
+</nav>
+
+<main>
+  <!-- TAB 1 -->
+  <section id="dash" class="active">
+    <h3>Module 1: Shala Dashboard</h3>
+    <div class="grid">
+      <div class="card"><div class="num">162</div><div>Total Schools</div></div>
+      <div class="card"><div class="num">128</div><div>Verified SNA</div></div>
+      <div class="card"><div class="num">34</div><div>Pending</div></div>
+    </div>
+  </section>
+
+  <!-- TAB 2 -->
+  <section id="reports">
+    <h3>Module 2: Sankul & Exam Reports</h3>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sankul</th>
+            <th>Institution Name</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Shahpur</td>
+            <td>KGBV Bijadehi</td>
+            <td><span class="tag">Verified</span></td>
+          </tr>
+          <tr>
+            <td>Bhoura</td>
+            <td>HSS Girls Bhoura</td>
+            <td><span class="tag">Verified</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
 <script>
-function loadModule(fileName, btnElement){
-  document.getElementById('moduleFrame').src = fileName;
-  document.querySelectorAll('.mod-tab').forEach(b => b.classList.remove('active'));
-  if(btnElement) btnElement.classList.add('active');
+const BRC_PASS = "brc@shahpur";
+
+function checkAuth(){
+  const val = document.getElementById("authPass").value.trim();
+  const err = document.getElementById("authErr");
+  if(val === BRC_PASS){
+    document.getElementById("authOverlay").style.display = "none";
+    sessionStorage.setItem("brc_logged_in", "true");
+  } else {
+    err.style.display = "block";
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem("brc_logged_in");
+  document.getElementById("authOverlay").style.display = "flex";
+  document.getElementById("authPass").value = "";
+}
+
+if(sessionStorage.getItem("brc_logged_in") === "true"){
+  document.getElementById("authOverlay").style.display = "none";
+}
+
+function showSection(id){
+  document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
+  const target = document.getElementById(id);
+  if(target) target.classList.add("active");
 }
 </script>
-
 </body>
 </html>
