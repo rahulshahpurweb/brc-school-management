@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRC Portal - Module 2 (R3)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+header{background:#0b2854;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:20px}
+
+/* Top Internal Menu */
+.portal-nav{display:flex;gap:8px;flex-wrap:wrap;background:#ffffff;padding:10px 20px;border-bottom:2px solid #e2e8f0;box-shadow:0 2px 4px rgba(0,0,0,0.04)}
+.nav-tab{padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:13px;color:#1d4ed8;background:#e0e7ff}
+.nav-tab.active{background:#0b2854;color:#ffffff}
+.nav-tab:hover{opacity:0.9}
+.logout-btn{margin-left:auto;background:#fee2e2;color:#dc2626;padding:8px 14px;border-radius:8px;border:0;font-weight:bold;cursor:pointer}
+
+main{max-width:1200px;margin:20px auto;padding:0 15px}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 6px #ddd}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>BRC Management Portal - Shahpur</h1>
+  <span style="font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:12px">Module 2 (R3)</span>
+</header>
+
+<!-- ANDAR KA MENU: R2 aur R3 dono connected hain -->
+<nav class="portal-nav">
+  <a href="R2.html" class="nav-tab">🏫 Module 1 (Schools / Data)</a>
+  <a href="R3.html" class="nav-tab active">📋 Module 2 (Reports / Exam)</a>
+  <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+</nav>
+
+<main>
+  <!-- R3 Module Specific Design & Content -->
+  <div class="card">
+    <h2>Module 2: Naya Section / Report Management</h2>
+    <p>Yeh aapka alag module hai jiska design aur data aap apne hisab se rakh sakte hain.</p>
+    <div style="background:#e0f2fe;border-left:4px solid #0284c7;padding:15px;border-radius:8px">
+      Is module me aap exam verification, nayi tables, ya koi bhi alag forms bana sakte hain.
+    </div>
+  </div>
+</main>
+
+<script>
+// Security Check: Agar user login nahi hai, toh use wapas R2 par login ke liye bhej dega
+if(sessionStorage.getItem("brc_logged_in") !== "true"){
+  window.location.href = "R2.html";
+}
+
+function logout(){
+  sessionStorage.removeItem("brc_logged_in");
+  window.location.href = "index.html";
+}
+</script>
+</body>
+</html>
