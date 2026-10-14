@@ -1,0 +1,263 @@
+﻿<!doctype html>
+<html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRC School Data Management</title>
+<style>
+/* Login Overlay Styles */
+#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.85);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
+.auth-card{background:#ffffff;border-radius:18px;max-width:400px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.25);text-align:center;font-family:sans-serif}
+.auth-card h2{margin-top:0;color:#0b2854;font-size:22px}
+.auth-card p{color:#64748b;font-size:13px;margin-bottom:18px}
+.auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px;box-sizing:border-box}
+.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer}
+.auth-btn:hover{background:#1152b3}
+.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+.public-return-btn{display:inline-block;margin-top:14px;color:#1769df;text-decoration:none;font-size:13px;font-weight:bold}
+.nav-header-btn{background:#ffd21c!important;color:#082a63!important;font-weight:900!important;border:0;border-radius:8px;padding:7px 12px;cursor:pointer;text-decoration:none;font-size:12px;display:inline-flex;align-items:center}
+</style>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}header{background:#1d4ed8;color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px;position:sticky;top:0;z-index:5;box-shadow:0 1px 5px #ddd}button{border:0;border-radius:8px;padding:10px 13px;background:#1d4ed8;color:#fff;margin:3px;cursor:pointer}.secondary{background:#64748b}.danger{background:#dc2626}main{max-width:1200px;margin:auto;padding:15px}section{display:none}.active{display:block}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 6px #ddd}.num{font-size:28px;font-weight:bold;color:#1d4ed8}label{font-weight:bold;font-size:14px}select,input,textarea{width:100%;padding:10px;margin-top:5px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.filters{background:#fff;padding:14px;border-radius:12px;margin:12px 0;box-shadow:0 1px 5px #ddd}.tablewrap{overflow:auto;background:#fff;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:800px}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left}th{background:#eef2ff;position:sticky;top:0}.tag{padding:4px 7px;border-radius:12px;background:#e0e7ff;font-size:12px}.login{max-width:450px;margin:40px auto;background:#fff;padding:24px;border-radius:14px;box-shadow:0 2px 12px #ddd}.hidden{display:none!important}.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}.modalbox{background:#fff;border-radius:14px;max-width:1000px;width:100%;max-height:90vh;overflow:auto;padding:18px}.classgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}small{color:#64748b}
+
+.report-table{min-width:1250px;border-collapse:collapse}.all-class-report{min-width:9500px}.all-class-report .report-title{min-width:420px}
+.report-table th,.report-table td{text-align:center;border:1px solid #333;padding:6px 7px;white-space:nowrap}
+.report-table thead th{position:sticky;top:0;z-index:2;background:#fff200;color:#c00000;font-weight:700}
+.report-table thead .report-title{background:#fff200;color:#c00000;font-size:18px}
+.report-table .school-col{text-align:left;min-width:220px}
+.report-table .category-col{text-align:left;min-width:190px}
+.report-table .jsk-col{min-width:75px}
+.report-table .total-col{font-weight:700}
+.report-table tbody tr:nth-child(even){background:#fffde7}
+.report-table tfoot td{background:#fff200;color:#000;font-weight:700;border:1px solid #333}
+.report-note{font-size:13px;color:#475569;margin:8px 0}
+.entry-data-table{min-width:1100px}
+.entry-data-table th{background:#fff200;color:#c00000;border:1px solid #333;text-align:center}
+.entry-data-table td{border:1px solid #cbd5e1;padding:4px;text-align:center}
+.entry-data-table input{margin:0;min-width:55px;padding:6px;text-align:center;border-radius:3px}
+
+.material-item{border:1px solid #cbd5e1;border-radius:12px;padding:12px;margin:10px 0;background:#f8fafc}
+.material-item-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.photo-preview{width:110px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;display:none;margin-top:6px}
+.material-thumb{width:55px;height:45px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1}
+
+.print-report-head{display:none}
+@media print{
+  @page{size:landscape}
+  body{background:#fff}
+  body *{visibility:hidden}
+  #reports,#reports *{visibility:visible}
+  #reports{display:block!important;position:absolute;left:0;top:0;width:100%;padding:0}
+  #reports .filters,#reports .card>button,#reports .report-note{display:none!important}
+  #reports .card{box-shadow:none;padding:0}
+  .print-report-head{display:block;text-align:center;margin:0 0 8px}
+  .tablewrap{overflow:visible}
+  .report-table{min-width:0;width:100%;font-size:9px}
+  .report-table th,.report-table td{padding:3px}
+  .report-table thead th{position:static}
+}
+
+body.brc-shahpur .brc-hide{display:none!important}
+body.brc-shahpur #ssPaneBlock,body.brc-shahpur #ssPaneSchool,body.brc-shahpur #ssPaneMaterial,body.brc-shahpur #ssPaneProvider,body.brc-shahpur #ssPaneAnnual,body.brc-shahpur #ssPanePhotos{display:none!important}
+body.brc-shahpur #ssPanePPTPreview{display:block!important}
+body.brc-shahpur #ssStudio{display:none!important}
+body.brc-shahpur.brc-show-ppt #ssStudio{display:block!important}
+body.brc-shahpur.brc-show-ppt #ssStudio>.ss-section-title,body.brc-shahpur.brc-show-ppt #ssStudio>.ss-toolbar,body.brc-shahpur.brc-show-ppt #ssStudio>.ss-tabs,body.brc-shahpur.brc-show-ppt #ssStudio>.ss-filters{display:none!important}
+body.brc-shahpur.brc-show-ppt #ssStudio .ss-pane{display:none!important}
+body.brc-shahpur.brc-show-ppt #ssStudio #ssPanePPTPreview{display:block!important}
+body.brc-shahpur.brc-show-ppt .brc-ppt-back{display:block!important}
+.brc-ppt-back{display:none;margin-bottom:10px}.record-actions{display:flex;flex-wrap:wrap;gap:5px;min-width:300px}.record-actions button{margin:0!important;padding:7px 9px!important;font-size:12px!important;border-radius:9px!important}.record-actions .ss-btn-purple{background:linear-gradient(135deg,#6f2bd9,#9b51e0);color:#fff;border:0}.record-actions .ss-btn-green{background:linear-gradient(135deg,#07965d,#18b878);color:#fff;border:0}.record-actions .ss-btn-blue{background:linear-gradient(135deg,#0878cf,#1756c7);color:#fff;border:0}
+
+.ss-school-search{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,2fr);gap:10px;margin-bottom:12px}
+.ss-school-search .hint{font-size:12px;color:#58708A;padding:10px 12px;background:#F4F9FF;border-radius:10px}
+.school-ppt-btn{border:0;border-radius:9px;padding:7px 10px;background:linear-gradient(135deg,#6d28d9,#0b63ce);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap}
+</style>
+<style>
+/* Shiksha Sanjeevani report prototype */
+.ss-report-panel{background:linear-gradient(135deg,#f7fbff,#fff7fb);border:2px solid #d8e7f7;border-radius:18px;padding:18px;margin-top:16px;box-shadow:0 8px 28px rgba(40,80,130,.10)}
+.ss-report-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.ss-report-head h3{margin:0;color:#173b70}.ss-actions{display:flex;gap:8px;flex-wrap:wrap}.ss-actions button{border:0;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer}.ss-blue{background:#1769aa;color:#fff}.ss-green{background:#16835b;color:#fff}.ss-orange{background:#e98717;color:#fff}.ss-purple{background:#7048b8;color:#fff}.ss-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.ss-stat{padding:14px;border-radius:14px;color:#fff;min-height:74px}.ss-stat b{font-size:22px;display:block}.ss-stat span{font-size:12px}.ss-c1{background:linear-gradient(135deg,#1769aa,#39a4e8)}.ss-c2{background:linear-gradient(135deg,#16835b,#35b878)}.ss-c3{background:linear-gradient(135deg,#d47700,#f2ae32)}.ss-c4{background:linear-gradient(135deg,#7048b8,#a26be6)}
+.ss-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ss-filters label{font-weight:700}.ss-filters select,.ss-filters input{width:100%;padding:9px;border:1px solid #cbd9e8;border-radius:9px;margin-top:4px;background:#fff}.ss-table{width:100%;border-collapse:collapse;background:#fff}.ss-table th,.ss-table td{padding:8px;border:1px solid #dce5ef;font-size:13px}.ss-table th{background:#eaf4ff;color:#173b70}.ss-badge{padding:4px 8px;border-radius:20px;background:#edf7ef;color:#167244;font-weight:700}.ss-gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.ss-gallery img{width:100%;height:100px;object-fit:cover;border-radius:10px;border:2px solid #d8e7f7;cursor:pointer}.ss-empty{padding:20px;text-align:center;color:#65758a;background:#fff;border-radius:10px}
+@media(max-width:850px){.ss-grid{grid-template-columns:repeat(2,1fr)}.ss-filters{grid-template-columns:1fr}.ss-gallery{grid-template-columns:repeat(2,1fr)}}
+@media print{.noPrint,.ss-actions,.ss-filters{display:none!important}.ss-report-panel{box-shadow:none;border:0}.ss-table{font-size:10px}}
+</style>
+
+<style>
+.ss-blockdash{margin-top:18px;padding:18px;border-radius:20px;background:linear-gradient(135deg,#eef8ff,#fff4fb);border:2px solid #cfe3f5}.ss-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.ss-kpi{padding:16px;border-radius:16px;color:#fff}.ss-kpi b{font-size:25px;display:block}.ss-k1{background:#2563eb}.ss-k2{background:#059669}.ss-k3{background:#d97706}.ss-k4{background:#7c3aed}.ss-chart{height:220px;background:#fff;border-radius:14px;padding:12px;margin-top:12px}.ss-bar{height:22px;margin:9px 0;background:#e5e7eb;border-radius:20px;overflow:hidden}.ss-bar i{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:20px}.ss-report-card{background:#fff;border-radius:16px;padding:16px;margin-top:14px;border:1px solid #dbe7f2}.ss-ppt{background:linear-gradient(135deg,#172554,#1d4ed8);color:white;padding:22px;border-radius:18px;margin-top:14px}.ss-annual{background:linear-gradient(135deg,#fff7ed,#f0fdf4);padding:18px;border-radius:18px;border:2px solid #fed7aa;margin-top:14px}@media(max-width:800px){.ss-kpis{grid-template-columns:repeat(2,1fr)}}@media print{.ss-blockdash,.ss-ppt,.ss-annual{break-inside:avoid}}
+<style>
+/* 16:9 Landscape PPT Preview */
+.ss-ppt-preview-wrap{margin-top:16px;background:linear-gradient(135deg,#eaf5ff,#fff5e8);border:2px solid #f0c33b;border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(8,42,99,.12)}
+.ss-ppt-preview-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.ss-ppt-page{position:relative;width:100%;aspect-ratio:16/9;background:#f7fbff;border-radius:18px;border:3px solid #082a63;overflow:hidden;margin:18px 0;box-shadow:0 12px 30px rgba(8,42,99,.18);padding:18px}
+.ss-ppt-page:before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:#f4b400}
+.ss-ppt-title{font-size:clamp(18px,2.3vw,30px);font-weight:900;color:#082a63;margin:2px 0 2px;border-left:8px solid #f4b400;padding-left:10px}
+.ss-ppt-sub{font-size:clamp(9px,1.1vw,14px);font-weight:700;color:#58728c;margin-bottom:10px}
+.ss-ppt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;height:calc(100% - 62px)}
+.ss-ppt-photo-card{background:#fff;border:2px solid #d8e6f2;border-radius:14px;padding:7px;display:flex;flex-direction:column;min-width:0;box-shadow:0 5px 15px rgba(8,42,99,.08)}
+.ss-ppt-photo{width:100%;height:58%;object-fit:cover;border-radius:9px;border:1px solid #c8d9e8;background:#eaf1f7}
+.ss-ppt-photo-title{font-size:clamp(10px,1.05vw,15px);font-weight:900;color:#0b63ce;text-align:center;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-ppt-photo-desc{font-size:clamp(8px,.82vw,12px);line-height:1.35;color:#334e68;text-align:center;margin-top:4px;overflow:hidden}
+.ss-ppt-meta{position:absolute;right:18px;bottom:9px;font-size:9px;color:#60758a;font-weight:700}
+.ss-ppt-page.empty{display:grid;place-items:center;color:#64748b;font-weight:700}
+@media(max-width:900px){.ss-ppt-grid{grid-template-columns:repeat(2,1fr);height:auto}.ss-ppt-page{aspect-ratio:auto;min-height:760px}.ss-ppt-photo{height:150px}}
+@media print{.ss-ppt-preview-wrap{box-shadow:none;border:0;padding:0}.ss-ppt-page{break-after:page;box-shadow:none;border:0;border-radius:0;min-height:100vh;aspect-ratio:auto}.ss-ppt-preview-toolbar{display:none}}
+</style>
+
+<style>
+/* ===== Luxury Shiksha Sanjeevani design layer ===== */
+:root{
+  --navy:#082a63;--blue:#0b63ce;--sky:#24a9e8;--gold:#f4b400;--yellow:#fff3a6;
+  --green:#0a8f5b;--green2:#16b878;--red:#e52b32;--purple:#7436c8;
+  --pink:#ef4c91;--ink:#102a43;--muted:#60758a;--paper:#f7fbff;
+}
+body{font-family:"Noto Sans Devanagari","Mangal",Arial,sans-serif;background:linear-gradient(135deg,#f4fbff,#fff9f2);color:var(--ink)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.045;background-image:radial-gradient(#0b63ce 1px,transparent 1px);background-size:22px 22px;z-index:-1}
+header{background:linear-gradient(110deg,#06265b 0%,#0b4aa0 48%,#087b5a 100%);padding:18px 22px;border-bottom:6px solid var(--gold);box-shadow:0 8px 24px #082a6324}
+header h1{margin:0;font-size:clamp(22px,3vw,34px);letter-spacing:.2px;text-shadow:0 2px 0 #0004}
+nav{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);padding:11px 12px;box-shadow:0 5px 18px #173b7018}
+nav button{background:linear-gradient(135deg,#0b63ce,#1749a5);box-shadow:0 3px 8px #0b63ce25;font-weight:800}
+nav button:hover{transform:translateY(-1px);filter:brightness(1.05)}
+main{max-width:1400px;padding:20px}
+section>h2{font-size:28px;color:var(--navy);border-left:8px solid var(--gold);padding-left:12px}
+.card,.filters{border:1px solid #dce9f5;box-shadow:0 8px 28px #17456e12}
+.card{border-radius:18px}
+.num{color:var(--blue)}
+button{font-weight:800;border-radius:11px;box-shadow:0 4px 10px #0b63ce22}
+button.secondary{background:#60758a}
+button.danger{background:#d82736}
+input,select,textarea{border-color:#c7d9e9;box-shadow:inset 0 1px 2px #173b7008}
+.material-item{border:1px solid #c8def0;background:linear-gradient(135deg,#ffffff,#f2f9ff);border-radius:16px;box-shadow:0 6px 18px #0b63ce10}
+.material-item-grid{gap:14px}
+.photo-preview{width:150px;height:105px;object-fit:cover;border-radius:12px;border:2px solid #d5e7f5;box-shadow:0 4px 12px #0002}
+.material-thumb{width:70px;height:52px;border-radius:8px}
+.tablewrap{border:1px solid #dce9f5;box-shadow:0 5px 18px #173b7010}
+table th{background:#eaf4ff;color:#143b72}
+
+/* Luxury module hero */
+.ss-luxury-wrap{margin-top:18px}
+.ss-hero{position:relative;overflow:hidden;border-radius:28px;padding:28px 30px;background:
+ linear-gradient(120deg,#08265e 0%,#0756b6 48%,#087a58 100%);color:#fff;border:3px solid #f5c532;
+ box-shadow:0 18px 45px #082a6330;min-height:190px}
+.ss-hero:after{content:"";position:absolute;right:-100px;bottom:-110px;width:390px;height:390px;border-radius:50%;
+ background:radial-gradient(circle,#ffd83d66 0 14%,transparent 15% 100%);box-shadow:0 0 0 24px #ffffff12,0 0 0 50px #ffffff08}
+.ss-hero .brush{display:inline-block;background:#ffd21c;color:#082a63;padding:6px 22px;border-radius:7px;font-size:clamp(28px,5vw,56px);font-weight:950;line-height:1.1;transform:skew(-4deg);box-shadow:0 6px 0 #c89e00}
+.ss-hero .subbrush{display:inline-block;margin-top:10px;background:#0a8f5b;color:#fff;padding:7px 20px;border-radius:6px;font-size:clamp(16px,2.4vw,28px);font-weight:900}
+.ss-hero .blockpill{display:inline-block;margin-top:12px;background:#e92b35;color:#fff;padding:8px 25px;border-radius:28px;font-weight:900;font-size:20px}
+.ss-hero .tagline{position:absolute;right:30px;top:28px;max-width:260px;font-size:20px;font-weight:900;text-align:center;transform:rotate(-4deg)}
+.ss-hero .tagline:after{content:"";display:block;height:4px;background:#ff2935;border-radius:50%;transform:skew(-20deg);margin-top:5px}
+.ss-hero p{margin:10px 0 0;opacity:.95;font-weight:700;max-width:760px}
+
+.ss-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.ss-lux-kpi{position:relative;padding:16px 17px;border-radius:18px;border:2px solid #ffffff99;box-shadow:0 8px 22px #173b7018;overflow:hidden}
+.ss-lux-kpi:after{content:"";position:absolute;right:-20px;top:-25px;width:90px;height:90px;border-radius:50%;background:#fff4;filter:blur(1px)}
+.ss-lux-kpi .ico{font-size:28px}
+.ss-lux-kpi b{display:block;font-size:27px;margin-top:5px}
+.ss-lux-kpi span{font-weight:800;font-size:13px}
+.kpi-pink{background:linear-gradient(135deg,#fff0f7,#ffd6ea);border-color:#f29bc4}.kpi-green{background:linear-gradient(135deg,#eafff4,#c7f6de);border-color:#6fd4a3}
+.kpi-blue{background:linear-gradient(135deg,#eef7ff,#cceaff);border-color:#7fc7ef}.kpi-gold{background:linear-gradient(135deg,#fff9dc,#ffe8a0);border-color:#efc75b}
+
+.ss-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:15px 0}
+.ss-toolbar button{border-radius:13px;padding:11px 15px}
+.ss-btn-blue{background:linear-gradient(135deg,#0b63ce,#173f9e)} .ss-btn-green{background:linear-gradient(135deg,#078652,#15b875)}
+.ss-btn-gold{background:linear-gradient(135deg,#e5a100,#f5c632);color:#082a63}.ss-btn-purple{background:linear-gradient(135deg,#6530ba,#9654df)}
+
+.ss-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 10px}
+.ss-tab{background:#edf5ff;color:#17416e;border:2px solid #cfe2f4;box-shadow:none}
+.ss-tab.active{background:linear-gradient(135deg,#0b63ce,#0a8f5b);color:#fff;border-color:#0b63ce}
+
+.ss-pane{display:none;background:#fff;border:1px solid #dbe8f3;border-radius:20px;padding:18px;box-shadow:0 10px 30px #173b7010}
+.ss-pane.active{display:block}
+.ss-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ss-section-title h3{margin:0;color:#123e73}
+.ss-table{width:100%;border-collapse:collapse;background:#fff}
+.ss-table th,.ss-table td{padding:9px 8px;border:1px solid #dce6ef;font-size:13px}
+.ss-table th{background:linear-gradient(90deg,#fff1a8,#e8f6ff);color:#173b70;font-weight:900}
+.ss-table tbody tr:nth-child(even){background:#fbfdff}
+.ss-badge{padding:4px 8px;border-radius:18px;background:#e8f7ef;color:#0b7449;font-weight:900}
+.ss-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ss-mini{padding:16px;border-radius:16px;color:#fff;min-height:100px}
+.ss-mini h4{margin:0 0 8px}.ss-mini b{font-size:25px}
+.ss-mini.blue{background:linear-gradient(135deg,#1769aa,#36a9ec)} .ss-mini.green{background:linear-gradient(135deg,#087b53,#2cc584)}
+.ss-mini.orange{background:linear-gradient(135deg,#c87800,#f3b33e)}
+.ss-bar{height:18px;background:#e8eef4;border-radius:20px;overflow:hidden;margin:7px 0 12px}
+.ss-bar i{display:block;height:100%;background:linear-gradient(90deg,#0b63ce,#26b5e9);border-radius:20px}
+.ss-gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.ss-gallery figure{margin:0;background:#fff;border:1px solid #dce8f3;border-radius:14px;padding:8px;box-shadow:0 5px 14px #173b7010}
+.ss-gallery img{width:100%;height:125px;object-fit:cover;border-radius:10px}
+.ss-gallery figcaption{font-size:11px;font-weight:800;margin-top:6px}
+.ss-empty{padding:24px;text-align:center;color:#6b7d8e;background:#f7fbff;border-radius:14px}
+.ss-note{padding:11px 14px;border-left:5px solid var(--gold);background:#fffbea;border-radius:10px;color:#5b4b12;font-weight:700}
+.ss-preview{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+.ss-preview-card{border-radius:22px;padding:22px;background:linear-gradient(135deg,#082a63,#0b63ce);color:#fff;min-height:220px}
+.ss-preview-card.alt{background:linear-gradient(135deg,#0a8f5b,#086d50)}
+.ss-download-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:1000px){.ss-kpi-grid{grid-template-columns:repeat(2,1fr)}.ss-gallery{grid-template-columns:repeat(3,1fr)}.ss-preview{grid-template-columns:1fr}}
+@media(max-width:650px){.ss-kpi-grid,.ss-mini-grid{grid-template-columns:1fr}.ss-gallery{grid-template-columns:repeat(2,1fr)}.ss-hero{padding:22px}.ss-hero .tagline{position:static;margin-top:12px;text-align:left}.ss-hero .blockpill{font-size:16px}}
+
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff}
+  body *{visibility:hidden}
+  #material,#material *{visibility:visible}
+  #material{display:block!important;position:absolute;left:0;top:0;width:100%;padding:0}
+  #material>h2,#material>.card:first-of-type,#material>.card:nth-of-type(2){display:none!important}
+  .ss-luxury-wrap{margin:0}
+  .noPrint,.ss-toolbar,.ss-tabs,.ss-download-row{display:none!important}
+  .ss-pane{display:block!important;box-shadow:none;border:0;padding:8px;break-inside:avoid}
+  .ss-pane:not(#ssPaneBlock){page-break-before:always}
+  .ss-hero{box-shadow:none;break-inside:avoid}
+  .ss-kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .ss-gallery{grid-template-columns:repeat(5,1fr)}
+  .ss-table{font-size:9px}
+  .ss-table th,.ss-table td{padding:4px}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Overlay -->
+<div id="authOverlay">
+  <div class="auth-card">
+    <h2>🔐 BRC Staff Login</h2>
+    <p>BRC School Management Data देखने के लिए कृपया पासवर्ड दर्ज करें।</p>
+    <div id="authErr" class="auth-err">गलत Password! कृपया पुनः प्रयास करें।</div>
+    <input type="password" id="authPassInput" class="auth-input" placeholder="Password दर्ज करें" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Login करें</button>
+    <div>
+      <a href="index.html" class="public-return-btn">← Public Portal पर वापस जाएं</a>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div style="font-weight:bold;font-size:18px">BRC School Data Management - Shahpur</div>
+  <a href="index.html" class="nav-header-btn">🌐 Public Portal (Home)</a>
+</header>
+
+<main>
+  <!-- Aapka poora actual R2 dashboard content -->
+  <div class="card" style="margin-top:15px">
+    <h2>स्वागत है, BRC Shahpur Management Portal</h2>
+    <p>शिक्षा संजीवनी और SNA Sparsh डेटा प्रबंधन प्रणाली।</p>
+  </div>
+</main>
+
+<script>
+// Password check logic
+const CORRECT_PASS = "brc@shahpur";
+
+function checkAuth(){
+  const input = document.getElementById("authPassInput").value.trim();
+  const err = document.getElementById("authErr");
+  if(input === CORRECT_PASS){
+    document.getElementById("authOverlay").style.display = "none";
+    sessionStorage.setItem("brc_auth_pass", "true");
+  } else {
+    err.style.display = "block";
+  }
+}
+
+// Session check taaki bar-bar reload pe login na mangna pade
+if(sessionStorage.getItem("brc_auth_pass") === "true"){
+  const ov = document.getElementById("authOverlay");
+  if(ov) ov.style.display = "none";
+}
+</script>
+</body>
+</html>
