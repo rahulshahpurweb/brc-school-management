@@ -3,135 +3,151 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BRC School Management & SNA Sparsh Portal</title>
+<title>जनपद शिक्षा केन्‍द्र शाहपुर - BRC Data & SNA Sparsh</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Arial,sans-serif;background:#f4f7fb;color:#172033}
-header{background:linear-gradient(135deg,#0b2854,#1769df);color:#fff;padding:20px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
-.header-wrap{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.header-wrap h1{margin:0;font-size:22px}
-.header-tag{font-size:12px;background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:20px;font-weight:bold}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Devanagari",sans-serif;background:#f4f7fb;color:#172033}
 
-.portal-container{max-width:1100px;margin:30px auto;padding:0 15px;display:grid;grid-template-columns:1fr 1fr;gap:25px}
-@media(max-width:850px){.portal-container{grid-template-columns:1fr}}
+/* Outer Public Layout */
+.public-header{background:linear-gradient(135deg,#0b2854,#1769df);color:white;padding:22px 20px 30px;border-radius:0 0 24px 24px;box-shadow:0 8px 24px rgba(11,40,84,0.15)}
+.public-header-wrap{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+.public-header h1{margin:0;font-size:26px;font-weight:900}
+.public-header p{margin:5px 0 0;color:#e5efff;font-size:14px}
+.public-header .tag{font-size:13px;background:rgba(255,255,255,0.2);padding:7px 14px;border-radius:20px;font-weight:bold}
 
-.card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(16,36,61,0.08);border:1px solid #e2e8f0}
-.card h2{margin-top:0;font-size:20px;color:#0b2854;border-bottom:2px solid #e2e8f0;padding-bottom:10px}
+.portal-grid{max-width:1200px;margin:30px auto;padding:0 16px;display:grid;grid-template-columns:1.2fr 1fr;gap:25px}
+@media(max-width:900px){.portal-grid{grid-template-columns:1fr}}
 
-label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px;color:#334155}
-input,select{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 14px;font-size:15px;background:#fff}
+.card{background:white;border:1px solid #e1e7ef;border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(16,36,61,0.08)}
+.card h2{margin:0 0 8px;font-size:21px;color:#0b2854;display:flex;align-items:center;gap:8px}
+.card p.desc{margin:0 0 18px;color:#64748b;font-size:13px}
+
+/* SNA Component Styles */
+.steps{display:flex;gap:7px;margin-bottom:18px}
+.step{flex:1;text-align:center;background:#f0f3f7;padding:9px 3px;border-radius:10px;font-size:11px;font-weight:800;color:#64748b}
+.step.active{background:#e7f0ff;color:#145dc6}
+label{display:block;font-size:13px;font-weight:800;margin-bottom:8px;color:#1e293b}
+input,select{width:100%;height:48px;border:1px solid #d3dce8;border-radius:12px;padding:0 14px;font-size:15px;background:#fff;margin-bottom:10px}
 input:focus,select:focus{outline:none;border-color:#1769df}
-
-button{border:0;border-radius:10px;height:46px;padding:0 18px;font-weight:700;font-size:14px;cursor:pointer;transition:background 0.2s}
-.btn-primary{background:#1769df;color:#fff;width:100%;margin-top:10px}
+button{border:0;border-radius:12px;height:48px;padding:0 17px;font-weight:800;font-size:14px;cursor:pointer;transition:background 0.2s}
+.btn-primary{background:#1769df;color:white;width:100%;margin-top:5px}
 .btn-primary:hover{background:#1152b3}
 .btn-secondary{background:#edf3ff;color:#145abd;width:100%;margin-top:8px}
-.btn-danger{background:#dc2626;color:#fff}
-
-.msg{padding:12px;border-radius:10px;margin-top:12px;font-size:13px}
+.btn-danger{background:#dc2626;color:white}
+.hidden{display:none!important}
+.hint{font-size:12px;color:#718096;margin-top:6px}
+.msg{padding:12px;border-radius:12px;margin-top:12px;font-size:13px}
 .msg.err{background:#fff0f0;color:#a52222}
+.msg.warn{background:#fff8e7;color:#815c00}
 .msg.ok{background:#e9f8f1;color:#08724f}
-
-/* SNA Component styles */
-.steps{display:flex;gap:6px;margin-bottom:15px}
-.step{flex:1;text-align:center;background:#f1f5f9;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700;color:#64748b}
-.step.active{background:#e7f0ff;color:#1769df}
 .identity{display:flex;align-items:center;gap:12px;margin-bottom:15px}
-.avatar{width:46px;height:46px;border-radius:12px;background:#eaf1ff;color:#1769df;display:grid;place-items:center;font-weight:900;font-size:18px}
-.grid-sna{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.item-sna{background:#f8fafc;border:1px solid #e2e8f0;padding:10px 12px;border-radius:10px}
-.item-sna .k{font-size:11px;color:#64748b;margin-bottom:3px}
-.item-sna .v{font-weight:700;font-size:13px;word-break:break-word}
+.avatar{width:48px;height:48px;border-radius:14px;background:#eaf1ff;color:#1769df;display:grid;place-items:center;font-weight:900;font-size:18px}
+.note{background:#fff8e8;border-left:4px solid #e3a42d;padding:12px;border-radius:10px;font-size:13px;margin-bottom:14px}
+.grid-sna{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:15px}
+.item-sna{background:#f8fafc;border:1px solid #e4e9f0;padding:12px 14px;border-radius:12px}
+.item-sna .k{font-size:11px;color:#718096;margin-bottom:4px}
+.item-sna .v{font-weight:800;word-break:break-word;color:#0f172a}
 
-/* BRC In-App styles */
+/* BRC App Styles */
 #app{display:none}
-nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px 16px;position:sticky;top:0;z-index:5;box-shadow:0 1px 5px #ddd}
-main{max-width:1200px;margin:auto;padding:15px}
+nav{display:flex;gap:8px;flex-wrap:wrap;background:#fff;padding:12px 20px;position:sticky;top:0;z-index:50;box-shadow:0 1px 6px rgba(0,0,0,0.1)}
+nav button{background:#1769df;color:white;height:40px;padding:0 14px;border-radius:8px}
+main{max-width:1200px;margin:auto;padding:20px 15px}
 section{display:none}
 section.active{display:block}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:15px}
-.num{font-size:26px;font-weight:bold;color:#1769df}
-.tablewrap{overflow:auto;background:#fff;border-radius:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px}
+.num{font-size:28px;font-weight:bold;color:#1769df}
+.tablewrap{overflow:auto;background:#fff;border-radius:14px;border:1px solid #e2e8f0}
 table{width:100%;border-collapse:collapse;min-width:800px}
-th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:13px}
-th{background:#eef2ff;position:sticky;top:0}
-.hidden{display:none!important}
+th,td{padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:13px}
+th{background:#eef2ff;position:sticky;top:0;font-weight:800;color:#1e3a8a}
 </style>
 </head>
 <body>
 
-<!-- PUBLIC OUTER AREA (Login ke bahar) -->
-<div id="publicView">
-  <header>
-    <div class="header-wrap">
+<!-- ================= PUBLIC SECTION (OUTSIDE LOGIN) ================= -->
+<div id="publicPortal">
+  <div class="public-header">
+    <div class="public-header-wrap">
       <div>
-        <h1>🏫 जनपद शिक्षा केन्‍द्र शाहपुर</h1>
-        <small style="color:#dbeafe">School Data Management & SNA Sparsh Portal</small>
+        <h1>जनपद शिक्षा केन्‍द्र शाहपुर</h1>
+        <p>समग्र शिक्षा अभियान • शाला प्रबंधन एवं SNA स्पर्श खाता समाधान</p>
       </div>
-      <div class="header-tag">BRC Betul Division</div>
+      <div class="tag">BRC BETUL</div>
     </div>
-  </header>
+  </div>
 
-  <div class="portal-container">
+  <div class="portal-grid">
     
-    <!-- LEFT: INDEX 3 SNA SPARSH MODULE (OPEN TO PUBLIC) -->
+    <!-- LEFT COLUMN: INDEX 3 SNA SPARSH MODULE -->
     <div class="card">
-      <h2>🔎 SNA SPARSH खाता विवरण</h2>
-      <p style="font-size:13px;color:#64748b;margin-top:0">बिना Login किए मोबाइल नंबर से अपना SNA बैंक विवरण देखें。</p>
+      <h2>🔎 My SNA SPARSH</h2>
+      <p class="desc">अपने SNA खाते में दर्ज 10 अंकों का Mobile Number डालकर बैंक विवरण देखें (Open Access)</p>
       
       <div class="steps">
-        <div id="st1" class="step active">1 · Mobile</div>
-        <div id="st2" class="step">2 · Verify</div>
-        <div id="st3" class="step">3 · Details</div>
+        <div id="a" class="step active">1 · Mobile</div>
+        <div id="b" class="step">2 · Verification</div>
+        <div id="c" class="step">3 · Details</div>
       </div>
 
-      <!-- Step 1: Mobile Search -->
-      <div id="sna_search">
+      <!-- Step 1: Mobile Input -->
+      <div id="search">
         <label>Mobile Number (खाते में पंजीकृत)</label>
-        <input id="sna_mobile" inputmode="numeric" maxlength="10" placeholder="10 अंकों का Mobile Number">
-        <button class="btn-primary" onclick="findSnaRec()">विवरण देखें</button>
-        <div id="sna_msg"></div>
+        <input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 अंकों का Mobile Number">
+        <button class="btn-primary" onclick="findRec()">विवरण देखें</button>
+        <div class="hint">Registered mobile number दर्ज करें।</div>
+        <div id="msg"></div>
       </div>
 
-      <!-- Step 2: Verification -->
-      <div id="sna_verify" class="hidden">
+      <!-- Step 2: Unique ID Verification -->
+      <div id="verify" class="hidden">
         <div class="identity">
-          <div class="avatar" id="sna_av">S</div>
-          <div><b id="sna_name">—</b><br><small id="sna_school" style="color:#64748b">—</small></div>
+          <div class="avatar" id="av">S</div>
+          <div><b id="name">—</b><small id="school" style="display:block;color:#718096">—</small></div>
         </div>
-        <div style="background:#fff8e8;border-left:4px solid #e3a42d;padding:10px;border-radius:6px;font-size:12px;margin-bottom:10px">
-          Verification हेतु Unique ID दर्ज करें (वैकल्पिक)
-        </div>
-        <label>Unique ID</label>
-        <input id="sna_uid" maxlength="6" placeholder="उदा. AA0000" style="text-transform:uppercase">
-        <button class="btn-primary" onclick="verifySnaRec()">Done — आगे बढ़ें</button>
-        <button class="btn-secondary" onclick="showSnaDetails(false)">Unique ID नहीं है — सीधे देखें</button>
-        <div id="sna_vmsg"></div>
+        <div class="note">verification हेतु Unique ID दर्ज करें</div>
+        <label>Unique ID <span style="font-weight:400;color:#718096">(Optional)</span></label>
+        <input id="uid" maxlength="6" autocomplete="off" placeholder="उदा. AA0000" style="text-transform:uppercase" pattern="[A-Za-z]{2}[0-9]{4}">
+        <button class="btn-primary" onclick="verifyRec()">Done — आगे बढ़ें</button>
+        <button class="btn-secondary" onclick="showDetails(false)">Unique ID नहीं है — सीधे आगे बढ़ें</button>
+        <div id="vmsg"></div>
       </div>
 
-      <!-- Step 3: Result -->
-      <div id="sna_result" class="hidden">
-        <div class="msg ok">✓ SNA Sparsh Account Details उपलब्ध हैं[cite: 1]</div>
-        <div class="identity" style="margin-top:12px">
-          <div class="avatar" id="sna_rav">S</div>
-          <div><b id="sna_rname">—</b><br><small id="sna_rschool" style="color:#64748b">—</small></div>
+      <!-- Step 3: Account Result -->
+      <div id="result" class="hidden">
+        <div class="msg ok">✓ Account details उपलब्ध हैं</div>
+        <div class="identity" style="margin-top:15px">
+          <div class="avatar" id="rav">S</div>
+          <div><b id="rname">—</b><small id="rschool" style="display:block;color:#718096">—</small></div>
         </div>
         <div class="grid-sna">
-          <div class="item-sna"><div class="k">Account Number</div><div class="v" id="sna_account">—</div></div>
-          <div class="item-sna"><div class="k">IFSC Code</div><div class="v" id="sna_ifsc">—</div></div>
-          <div class="item-sna"><div class="k">Branch</div><div class="v" id="sna_branch">—</div></div>
-          <div class="item-sna"><div class="k">Mobile</div><div class="v" id="sna_rmobile">—</div></div>
+          <div class="item-sna"><div class="k">Account Number</div><div class="v" id="account">—</div></div>
+          <div class="item-sna"><div class="k">IFSC Code</div><div class="v" id="ifsc">—</div></div>
+          <div class="item-sna"><div class="k">Branch</div><div class="v" id="branch">—</div></div>
+          <div class="item-sna"><div class="k">Mobile Number</div><div class="v" id="rmobile">—</div></div>
         </div>
-        <button class="btn-secondary" onclick="resetSnaView()">नया Search करें</button>
+        <button class="btn-secondary" style="margin-top:15px" onclick="resetSnaSearch()">नया Search करें</button>
+      </div>
+
+      <!-- Step 4: Admin Report View -->
+      <div id="admin" class="hidden">
+        <div class="msg ok">✓ Report Access Approved</div>
+        <div class="identity" style="margin-top:15px">
+          <div class="avatar">R</div>
+          <div><b>Verification Report</b><small style="display:block;color:#718096">Verified users की live report</small></div>
+        </div>
+        <button class="btn-primary" onclick="downloadReport()">📥 Excel Report डाउनलोड करें</button>
+        <div id="adminmsg"></div>
+        <button class="btn-secondary" onclick="resetSnaSearch()">वापस जाएँ</button>
       </div>
     </div>
 
-    <!-- RIGHT: BRC LOGIN MODULE -->
+    <!-- RIGHT COLUMN: BRC LOGIN MODULE -->
     <div class="card">
       <h2>🔐 BRC School Data Login</h2>
-      <p style="font-size:13px;color:#64748b;margin-top:0">विद्यालय एवं संकुल डाटा एंट्री के लिए लॉग इन करें。</p>
+      <p class="desc">शाला मास्टर, वार्षिक संकुल रिपोर्टिंग एवं डेटा एंट्री हेतु अधिकृत लॉगिन</p>
 
-      <label>Role</label>
+      <label>User Role</label>
       <select id="loginRole">
         <option value="admin">Admin</option>
         <option value="brc">BRC</option>
@@ -145,207 +161,245 @@ th{background:#eef2ff;position:sticky;top:0}
       <label>Password</label>
       <input id="loginPass" type="password" placeholder="Password">
 
-      <button class="btn-primary" onclick="login()">Login करें</button>
-      <p style="margin-top:15px;font-size:12px;color:#64748b">brc1</p>
+      <button class="btn-primary" onclick="loginPortal()">लॉगिन करें</button>
+      <div class="hint" style="margin-top:12px">Demo ID: <b>admin/admin</b> • <b>brc1/1234</b> • <b>crc1/1234</b></div>
       <div id="loginMsg"></div>
     </div>
 
   </div>
 </div>
 
-<!-- LOGGED IN VIEW (BRC Data System) -->
+<!-- ================= INTERNAL BRC APPLICATION (POST LOGIN) ================= -->
 <div id="app">
-  <header>
-    <div class="header-wrap">
+  <div class="public-header" style="padding:16px 20px;border-radius:0">
+    <div class="public-header-wrap">
       <h1>🏫 BRC School Data Management</h1>
-      <div id="userInfo" style="font-size:13px"></div>
+      <div id="userInfo" style="font-weight:700"></div>
     </div>
-  </header>
+  </div>
 
   <nav>
-    <button onclick="show('dashboard')">Dashboard</button>
-    <button onclick="show('schools')">Schools</button>
-    <button onclick="show('entry')">Data Entry</button>
-    <button onclick="show('reports')">Reports</button>
-    <button class="btn-danger" style="margin-left:auto" onclick="logout()">Logout</button>
+    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button onclick="showSection('schools')">Schools</button>
+    <button onclick="showSection('reports')">Reports</button>
+    <button class="btn-danger" style="margin-left:auto" onclick="logoutPortal()">Logout</button>
   </nav>
 
   <main>
     <section id="dashboard" class="active">
-      <h2>Dashboard Overview</h2>
+      <h2>डैशबोर्ड विवरण</h2>
       <div class="stat-grid">
-        <div class="card">Schools<div class="num" id="cSchools">0</div></div>
-        <div class="card">Students<div class="num" id="cStudents">0</div></div>
-        <div class="card">Boys<div class="num" id="cBoys">0</div></div>
-        <div class="card">Girls<div class="num" id="cGirls">0</div></div>
+        <div class="card">Schools<div class="num">104</div></div>
+        <div class="card">Students<div class="num">2,840</div></div>
+        <div class="card">Boys<div class="num">1,410</div></div>
+        <div class="card">Girls<div class="num">1,430</div></div>
       </div>
       <div class="card">
         <h3>🏫 Sankul-wise Summary</h3>
         <div class="tablewrap">
           <table>
             <thead><tr><th>Sankul</th><th>Schools</th><th>Boys</th><th>Girls</th><th>Total Students</th></tr></thead>
-            <tbody id="sankulSummary"></tbody>
+            <tbody>
+              <tr><td>Bhoura</td><td>15</td><td>210</td><td>205</td><td>415</td></tr>
+              <tr><td>Bijadehi</td><td>14</td><td>190</td><td>212</td><td>402</td></tr>
+              <tr><td>Dhodhramau</td><td>16</td><td>225</td><td>215</td><td>440</td></tr>
+              <tr><td>Kesiya</td><td>14</td><td>185</td><td>190</td><td>375</td></tr>
+              <tr><td>Kundi</td><td>15</td><td>205</td><td>198</td><td>403</td></tr>
+              <tr><td>Shahpur</td><td>15</td><td>215</td><td>220</td><td>435</td></tr>
+              <tr><td>Tara</td><td>15</td><td>180</td><td>190</td><td>370</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
     </section>
 
     <section id="schools">
-      <h2>School Master Records</h2>
+      <h2>स्कूल मास्टर रिकॉर्ड</h2>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>UDISE</th><th>School</th><th>Sankul</th><th>Category</th></tr></thead>
-          <tbody id="schoolRows"></tbody>
+          <thead><tr><th>UDISE</th><th>School Name</th><th>Sankul</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td>23351008202</td><td>GPS(U) HAWAL DARDHANA</td><td>Bhoura</td><td>Primary School (Class 1 to 5)</td></tr>
+            <tr><td>23351008203</td><td>GMS GURGUNDA 1 TO 8</td><td>Bhoura</td><td>Primary with Middle School (Class 1 to 8)</td></tr>
+            <tr><td>23351005804</td><td>GOVT.HSS BIJADEHI 1 TO 12</td><td>Bijadehi</td><td>Primary to Higher Secondary School(Class 1 to 12)</td></tr>
+            <tr><td>23351007105</td><td>GOVT. HS DHODHRAMAU 6 TO 10</td><td>Dhodhramau</td><td>Middle to High School (Class 6 to 10)</td></tr>
+          </tbody>
         </table>
       </div>
     </section>
 
-    <section id="entry">
-      <h2>Teacher / School Data Entry</h2>
-      <div class="card">
-        <p>Data Entry form CRC/BRC सत्यापन के लिए उपलब्ध है[cite: 2]。</p>
-      </div>
-    </section>
-
     <section id="reports">
-      <h2>Reports</h2>
+      <h2>रिपोर्ट एवं प्रिंट</h2>
       <div class="card">
-        <button onclick="window.print()">📄 Print Summary</button>
+        <button class="btn-primary" style="width:auto;display:inline-block" onclick="window.print()">📄 Print Report Page</button>
       </div>
     </section>
   </main>
 </div>
 
 <script>
-// --- INDEX 3 DATA (SNA SPARSH DATA) ---
-const SNA_DATA = [
-  {"mobile": "9302526752", "school": "233510KGH01-KGBV Bijadehi(TYPE-III)", "name": "RADHA DHURVE", "account": "45502994098", "branch": "KOTHI BAZAR", "ifsc": "SBIN0004219"},
-  {"mobile": "8962247779", "school": "233510NGH01-NSCB Girls Hostel Sahpur", "name": "Bhartianwane", "account": "45549148337", "branch": "sbi shahpur", "ifsc": "SBIN0002892"},
-  {"mobile": "9926840177", "school": "CRC-23351008014-GOVT. HSS GIRLS BHOURA 6 TO 12", "name": "Suresh Kumar katare", "account": "45592001301", "branch": "SBI KOTHI BAJAR BETUL", "ifsc": "SBIN0004219"},
-  {"mobile": "8719039787", "school": "CRC-23351009205-GOVT. HS TARA", "name": "Ajay Bisone", "account": "45525127675", "branch": "SBI chicholi", "ifsc": "SBIN0005513"},
-  {"mobile": "8962222406", "school": "23351000201-PS CHIKHALDA (KHURD)", "name": "VIVEK KUMAR MASIDKAR", "account": "45558714256", "branch": "SHAHPUR", "ifsc": "SBIN0002892"},
-  {"mobile": "9993453960", "school": "23351011002-MS KHOKRA", "name": "SURESH KUMAR DANGE", "account": "45526115669", "branch": "SBI Shahpur", "ifsc": "SBIN0002892"},
-  {"mobile": "8989108522", "school": "23351006201-PS DUDAR", "name": "Rameshwar uikey", "account": "45502642376", "branch": "SBI Shahpur", "ifsc": "SBIN0002892"},
-  {"mobile": "8435171648", "school": "23351008203-MS GURGUNDA", "name": "Sandhya Evane", "account": "45542040339", "branch": "Bhoura", "ifsc": "SBIN0017112"},
-  {"mobile": "9479370470", "school": "23351008502-MS KESIYA", "name": "SATISH MAHAJAN", "account": "45503945652", "branch": "State bank of India Chicholi", "ifsc": "SBIN0005513"},
-  {"mobile": "9893322415", "school": "23351003911-CM RISE VIDHYALAYA SHAHPUR", "name": "USHA CHAURASIA", "account": "45556185381", "branch": "sbi shahpur", "ifsc": "SBIN0002892"},
-  {"mobile": "9406500750", "school": "23351001601-PS PHOPHLYA", "name": "Hariram Baraskar", "account": "45511426660", "branch": "State Bank of India Shahpur", "ifsc": "SBIN0002892"},
-  {"mobile": "8959667671", "school": "23351008901-PS AAVRIYA", "name": "MITALI THAKUR", "account": "45567284006", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513"},
-  {"mobile": "7694097221", "school": "23351009301-PS CHIKHALI RAIYAT", "name": "Karamchand Naraware", "account": "45566801106", "branch": "SBI CHIKHLI", "ifsc": "SBIN0005513"},
-  {"mobile": "6262363696", "school": "23351009501-PS THUMKA", "name": "Durgavati uikey", "account": "45570241113", "branch": "Sbi chunahajuri", "ifsc": "SBIN0009094"},
-  {"mobile": "9754269009", "school": "23351005604-PS BODIPANI", "name": "LEELA SAHU", "account": "45504444316", "branch": "SBI bhoura", "ifsc": "SBIN0017112"},
-  {"mobile": "7697193242", "school": "23351015501-PS KOYAL BUDDI", "name": "Sagan Singh Akhande", "account": "45536420614", "branch": "BHOURA", "ifsc": "SBIN0017112"},
-  {"mobile": "9407593885", "school": "23351001701-PS NIMIYA", "name": "Dileep kumar pawar", "account": "45572613896", "branch": "Chunahajuri", "ifsc": "SBIN0009094"},
-  {"mobile": "9407280337", "school": "23351009201-PS TARA", "name": "jyoti arya", "account": "45567260222", "branch": "SBI baik Chicholi", "ifsc": "SBIN0005513"},
-  {"mobile": "7697334142", "school": "23351009401-PS CHIKHALI MAL", "name": "Milan harshkant timothy", "account": "45569796805", "branch": "S.b.i. chunahajuri", "ifsc": "SBIN0009094"},
-  {"mobile": "9753164009", "school": "23351005304-PS VIRGUWADI", "name": "Kamal Kumar Gadwal", "account": "45517117849", "branch": "Bhoura", "ifsc": "SBIN0017112"},
-  {"mobile": "8319864159", "school": "23351005204-HS KACHHAR", "name": "Mrs Neelesh Rai principal", "account": "92554765158", "branch": "SBI Bhoura", "ifsc": "SBIN0017112"},
-  {"mobile": "9981703118", "school": "23351005501-PS MANSINGPURA", "name": "Santosh Kumar Rathore", "account": "45501201159", "branch": "Sbi bhoura", "ifsc": "SBIN0017112"},
-  {"mobile": "9993999270", "school": "23351009902-MS MANJIRADHANA", "name": "RITESH KUMAR RATHORE", "account": "45567533665", "branch": "SBI CHICHOLI BETUL", "ifsc": "SBIN0005513"},
-  {"mobile": "9300643339", "school": "BRC BETUL", "name": "JETENDRA YADAV", "account": "45506092960", "branch": "SBI SADAR", "ifsc": "SBIN0012152"}
-];
+// --- FULL SNA SPARSH DATA & CONFIG ---
+const REPORT_API_URL = 'https://script.google.com/macros/s/AKfycbxiuzgUcU7PsM175B-vb7IbmvdM81jzvZfZAQ3WxLHUWxHa2sWMu6P6P0Pn5ew30I6GCQ/exec';
+const DATA=[{"mobile": "9302526752", "school": "233510KGH01-KGBV Bijadehi(TYPE-III)", "name": "RADHA DHURVE", "account": "45502994098", "branch": "KOTHI BAZAR", "ifsc": "SBIN0004219", "uniqueId": ""}, {"mobile": "", "school": "233510KIV01-GILRS HOSTEL SHAHPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8962247779", "school": "233510NGH01-NSCB Girls Hostel Sahpur", "name": "Bhartianwane", "account": "45549148337", "branch": "sbi shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "CRC-23351003912-GOVT. HSS GIRLS SHAHPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "CRC-23351005804-GOVT.HSS BIJADEHI 1 TO 12", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "CRC-23351007105-GOVT. HS DHODHRAMAU 6 TO 10", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9926840177", "school": "CRC-23351008014-GOVT. HSS GIRLS BHOURA 6 TO 12", "name": "Suresh Kumar katare", "account": "45592001301", "branch": "SBI KOTHI BAJAR BETUL", "ifsc": "SBIN0004219", "uniqueId": ""}, {"mobile": "", "school": "CRC-23351008506-GOVT. HSS KESIYA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8719039787", "school": "CRC-23351009205-GOVT. HS TARA", "name": "Ajay Bisone", "account": "45525127675", "branch": "SBI chicholi", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "", "school": "CRC-23351010104-GOVT. HS KUNDI 1 TO 10", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351003914-HSS MODEL (RMSA) SHAHPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351000604-HS PAHAWADI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8962222406", "school": "23351000201-PS CHIKHALDA (KHURD)", "name": "VIVEK KUMAR MASIDKAR", "account": "45558714256", "branch": "SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351007503-HS DABRI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351010201-PS MAGARDOH", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9993453960", "school": "23351011002-MS KHOKRA", "name": "SURESH KUMAR DANGE", "account": "45526115669", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351008802-PS RUMA DHANA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8989108522", "school": "23351006201-PS DUDAR", "name": "Rameshwar uikey", "account": "45502642376", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8435171648", "school": "23351008203-MS GURGUNDA", "name": "Sandhya Evane", "account": "45542040339", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351007105-HS DHODHRAMAU", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9479370470", "school": "23351008502-MS KESIYA", "name": "SATISH MAHAJAN", "account": "45503945652", "branch": "State bank of India Chicholi", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "9893322415", "school": "23351003911-CM RISE VIDHYALAYA SHAHPUR", "name": "USHA CHAURASIA", "account": "45556185381", "branch": "sbi shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9406500750", "school": "23351001601-PS PHOPHLYA", "name": "Hariram Baraskar", "account": "45511426660", "branch": "State Bank of India Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8959667671", "school": "23351008901-PS AAVRIYA", "name": "MITALI THAKUR", "account": "45567284006", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "7694097221", "school": "23351009301-PS CHIKHALI RAIYAT", "name": "Karamchand Naraware", "account": "45566801106", "branch": "SBI CHIKHLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "", "school": "23351009504-MS THUMKA RAIYAT", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "6262363696", "school": "23351009501-PS THUMKA", "name": "Durgavati uikey", "account": "45570241113", "branch": "Sbi chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9754269009", "school": "23351005604-PS BODIPANI", "name": "LEELA SAHU", "account": "45504444316", "branch": "SBI bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7697193242", "school": "23351015501-PS KOYAL BUDDI", "name": "Sagan Singh Akhande", "account": "45536420614", "branch": "BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9407593885", "school": "23351001701-PS NIMIYA", "name": "Dileep kumar pawar", "account": "45572613896", "branch": "Chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9407280337", "school": "23351009201-PS TARA", "name": "jyoti arya", "account": "45567260222", "branch": "SBI baik Chicholi", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "7697334142", "school": "23351009401-PS CHIKHALI MAL", "name": "Milan harshkant timothy", "account": "45569796805", "branch": "S.b.i. chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9753164009", "school": "23351005304-PS VIRGUWADI", "name": "Kamal Kumar Gadwal", "account": "45517117849", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8319864159", "school": "23351005204-HS KACHHAR", "name": "Mrs Neelesh Rai principal", "account": "92554765158", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9981703118", "school": "23351005501-PS MANSINGPURA", "name": "Santosh Kumar Rathore", "account": "45501201159", "branch": "Sbi bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9993999270", "school": "23351009902-MS MANJIRADHANA", "name": "RITESH KUMAR RATHORE", "account": "45567533665", "branch": "SBI CHICHOLI BETUL", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "9425382316", "school": "23351004001-PS SOHAGPUR DHANA", "name": "Rajendrakumarmalviya", "account": "", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8109560242", "school": "23351004102-MS KOTMI", "name": "Suresh kumar sinotiya", "account": "45548725952", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9425644522", "school": "23351001901-PS SANGWANI", "name": "Tilak Raj Yadav", "account": "45530266225", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7610743372", "school": "23351009601-PS KAODIYA", "name": "Nekramkhande", "account": "45559394335", "branch": "SBI CHuNahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9977698302", "school": "23351005302-PS KHAPA DHANA", "name": "Mangliprasadkajle", "account": "45535999962", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7974260761", "school": "23351004202-MS KANTAWADI", "name": "Vipatsinghuikey", "account": "45536600834", "branch": "SBI SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351008013-HSS BOYS BHOURA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "7389493260", "school": "23351007701-PS TARAMKHEDA", "name": "SUNEHA VERMA", "account": "45525954605", "branch": "State Bank of India Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351007901-PS DHUTTAPURA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9009811520", "school": "23351004501-PS BHAKTANDHANA", "name": "Biransing kawde", "account": "45526245962", "branch": "State Bank of India shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351003912-HSS GIRLS SHAHPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351011401-PS RAMPUR RAIYAT", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9754292495", "school": "23351005104-HS JHAPDI", "name": "Madhuvan Singh", "account": "45583928086", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8962130208", "school": "23351000103-MS PATWAPURA", "name": "SANTOSH KUMAR RATHORE", "account": "45556133909", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9826771684", "school": "23351002901-PS HANDIPANI", "name": "seema Dhurve", "account": "45504117377", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8889816070", "school": "23351002305-PS JILERI", "name": "SUKHRAM DHURVE", "account": "45505108052", "branch": "STATE BANK OF INDIA DESHAWADI", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "9617509641", "school": "23351000901-PS SEMARPUR", "name": "SHAMBHU YADAV", "account": "45521902990", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9981500157", "school": "23351010903-HSS RAMPUR MAL", "name": "NASIR AHMED KHAN", "account": "45524570630", "branch": "KOTHI BAZAAR BETUL NAGAR PALIKA CAMPUS", "ifsc": "SBIN0004219", "uniqueId": ""}, {"mobile": "", "school": "23351001801-PS DHAMNYA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351003907-MS SHAHPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9926327060", "school": "23351011503-MS TEMRA MAL", "name": "Amita Bhardwaj", "account": "45496810051", "branch": "State Bank of India Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9893127257", "school": "23351005303-PS KOCHAMAU", "name": "Kamal yadav", "account": "45549520396", "branch": "State bank of india shakha-Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351000401-PS BARBATPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351009205-HS TARA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8989074625", "school": "23351006502-PS TANGNA RAIYAT", "name": "SAVITA KAVDE", "account": "45534633534", "branch": "STATE BANK OF INDIA BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9165991286", "school": "23351005502-PS NAYAPURA", "name": "Anuttam Sardar", "account": "45542012448", "branch": "BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9407274167", "school": "23351004301-PS BANKABHARDA", "name": "RAJU PRAJAPATI", "account": "45530485066", "branch": "S B I Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9479354040", "school": "23351003001-PS SONADHEH", "name": "Ashok kumar kawre", "account": "45530381894", "branch": "S. B. I. Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9894326483", "school": "23351005301-PS KHAPA JHAPDI", "name": "DWARKA PRASAD GOSWAMI", "account": "45548307582", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9893798414", "school": "23351010401-PS BANKAKHODRI", "name": "Chandanbhan chourey", "account": "45536255905", "branch": "Sbi shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9575965140", "school": "23351005101-PS JHAPDI", "name": "PRADEEP BHALAVI", "account": "45502260034", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7354973654", "school": "23351001101-PS MUDHA", "name": "HIRALAL KAWDE", "account": "45574081776", "branch": "STATE BANK SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8085825029", "school": "23351010402-PS KHODRI", "name": "Teekaram verma", "account": "45536227611", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9424423358", "school": "23351011901-PS DENDUPURA", "name": "Mukesh Kumar Rathor", "account": "45502248018", "branch": "S B I Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9424460960", "school": "23351004701-PS PALASPANI", "name": "VIVEK KUMAR TIWARI", "account": "45556187468", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351010301-PS KAMTI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9479363464", "school": "23351017001-MS TARAMKHEDA RAIYAT", "name": "Shivcharan salam", "account": "45542900895", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7223021460", "school": "23351015001-PS HEERAWADI", "name": "SUNITA CHOUHAN", "account": "45521903121", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9754716519", "school": "23351011802-MS RANAPURA", "name": "Sukhaman kawade", "account": "45526107067", "branch": "State bank of India shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351004603-HS PATAI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "7697423232", "school": "23351008702-MS SEHRA", "name": "KAMLESH NAGLE", "account": "45502963933", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "8859121904", "school": "23351007104-PS PANDRA SEL", "name": "DINESH EVANE", "account": "45569825578", "branch": "SBI Chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9753788213", "school": "23351011202-PS KHEDA DHANA", "name": "Khunna singh evney", "account": "45573527053", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9407263424", "school": "23351005605-HS SALIMET", "name": "PRAN NATH TIWARI", "account": "45581069748", "branch": "BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8989744298", "school": "23351006601-PS CHIROTIYA", "name": "Mamta kawre", "account": "45570100261", "branch": "State Bank of India Chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9770398140", "school": "23351008008-MS BHORA", "name": "Ashok Shivde", "account": "45541857261", "branch": "SBI bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351012204-HSS DHAPADA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9406932559", "school": "23351000601-PS PHAWADI", "name": "Dhanraj Parte", "account": "45556188610", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7697987848", "school": "23351005902-MS KANJITALAB", "name": "RAGHUVIR SILOO", "account": "45556153518", "branch": "SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8770998454", "school": "23351005103-PS MAGRA PURA", "name": "Rekha Lokhande", "account": "45549491228", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351008014-HSS GIRLS BHOURA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351007101-PS DHODHARAMAHU", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351003304-HS KUPPA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9424429889", "school": "23351007402-MS PAT", "name": "Nirbhay Singh Kasde", "account": "45542579041", "branch": "SBI SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351002307-HS BHAYAWADI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351003807-HS SILPATI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351010104-HS KUNDI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351001004-HS PAWAR JHANDA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "6265007097", "school": "23351012401-PS GAONAPUR", "name": "gouri bhanare", "account": "45610512127", "branch": "SBI", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351000705-HS RAIPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9479472166", "school": "23351006504-MS TANGNAMAL", "name": "Dalapsingh markam", "account": "45531864065", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9406938219", "school": "23351006001-PS SELDA", "name": "Chandndrakalidhurve", "account": "45542921623", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8319871912", "school": "23351008601-PS BONDRI", "name": "Bharti choukiker", "account": "45502415456", "branch": "Shahapur Dist Betul station road", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8889919314", "school": "23351017101-PS GAOLIDHANA", "name": "SANTOSHYADAV", "account": "45567533869", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "", "school": "23351007103-PS BHIMPURA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8989744558", "school": "23351005803-PS JAKA DHANA", "name": "Hariram Pathade", "account": "45542854791", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8965855220", "school": "23351009004-PS TEKRI DHANA", "name": "Anusaya Pawar", "account": "45517155943", "branch": "Sbi chicholi", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "9407840974", "school": "23351002101-PS KHAPARWADI", "name": "Jayramyadav", "account": "45570447817", "branch": "Stete bank of India chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9826831318", "school": "23351008803-MS KANHEGAON", "name": "Deviprasad salam", "account": "45556465743", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9754607158", "school": "23351001103-PS (SATT) MUDHA", "name": "Prakash Evne", "account": "45541047755", "branch": "SBI SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8109532606", "school": "23351002601-PS MOKHARAIYAT", "name": "BHOJRAO DESHMUKH", "account": "45520422960", "branch": "SBI DESHAVADI", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "8989213757", "school": "23351007801-PS SAWRIDA", "name": "Ramesh Rayvarma", "account": "45542749367", "branch": "SBI Bhouta", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8959246913", "school": "23351012302-MS CHIKHALDA BUJURG", "name": "SADHANA KAWDE", "account": "45542131034", "branch": "SBI  bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9669398116", "school": "23351008006-GIRLS ASHRAM BHORA", "name": "Malti patil", "account": "45511260205", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9165628101", "school": "23351009303-PS JARGAL DHANA", "name": "Amardas yadav", "account": "45569887794", "branch": "SBI Chunajajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "7697754594", "school": "23351001102-MS MUDHA", "name": "Sajjansingh marskole", "account": "45531741327", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9302840135", "school": "23351003804-PS DEHRI PATHAR", "name": "Vinod Kumar sinotiya", "account": "45556189158", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7440206814", "school": "23351009203-PS BATTI DHANA", "name": "Ashok Kumar gohe", "account": "45567212144", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "9425658972", "school": "23351012001-PS BHATNA", "name": "Brajkishor Kasde", "account": "45541913668", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8959477605", "school": "23351000801-PS JAMUNDHANA", "name": "meena bankhede", "account": "45549293929", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8305160559", "school": "23351005401-PS BEHRAPURA", "name": "Amit yadav", "account": "45541857726", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9424403305", "school": "23351006703-MS TENDUKHEDA", "name": "KISHANLALBHALAVI", "account": "45569888017", "branch": "SBI chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "8989949913", "school": "23351003101-PS BANABEHDA", "name": "KAMALSINGH UIKEY", "account": "45521925690", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "6265504627", "school": "23351008504-PS OOJHA DHANA", "name": "Aprajita khatarkar", "account": "45567239686", "branch": "SBI CHICHOLI BETUL", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "", "school": "23351010403-PS THANIKHEDA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9993744152", "school": "23351010602-MS MARDANPUR", "name": "Nanakram verma", "account": "45573525624", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351001201-PS AAMDHANA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8435799621", "school": "23351000602-MS PHAWADI", "name": "Shashi Gawhade", "account": "45536314594", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7354431265", "school": "23351008202-PS HAWAL DARDHANA", "name": "Narayansingh parte", "account": "45530265517", "branch": "SBI bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8815809316", "school": "23351007505-PS DONDIYA KAU", "name": "Rawal Singh Lavasker", "account": "45568974473", "branch": "Bhora", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8889704116", "school": "23351008101-PS DHODHARAMOHAR", "name": "Bhoju dhurve", "account": "45521752035", "branch": "S B I Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9770307713", "school": "23351011501-PS TEMRA", "name": "Bisanlal Kasade", "account": "45501508986", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9424481201", "school": "23351009801-PS BAGLADHANA", "name": "Fulchand rathore", "account": "45549147967", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9754439089", "school": "23351004601-PS PATAI", "name": "Dhirajlal Yadav", "account": "45558661075", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8989037450", "school": "23351016501-PS MATHI GARH", "name": "Sangita Sirsam", "account": "45570242059", "branch": "SBI Chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "7999710701", "school": "23351002501-PS MOKHAMAL", "name": "GANESH KAPSE", "account": "45524208477", "branch": "SBI Deshawadi", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "9303445125", "school": "23351003701-PS NISHANA", "name": "Urmilabrahmane", "account": "45556192988", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7828715750", "school": "23351009002-PS GONDIDHANA", "name": "MUNNALALYADAV", "account": "45567284493", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "8462975940", "school": "23351010801-PS BHUMKADHANA", "name": "Rajendra ivne", "account": "45556129766", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351007001-PS KAWLIKHEDA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8966814819", "school": "23351000802-MS JAMUNDHANA", "name": "Pushpa Dhurve", "account": "45536124241", "branch": "STATE BANK of  india", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351011003-PS NAKADHANA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9406949959", "school": "23351008403-HS DHAR", "name": "Devkiuikey", "account": "45584067396", "branch": "S.B.I. BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9644543241", "school": "23351005701-PS JODIYAMAU", "name": "Maya salame", "account": "45504117978", "branch": "PS JODIYAMAU", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351008506-HSS KESIYA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9424743032", "school": "23351006701-PS TENDUKHEDA", "name": "Munna lal uikey", "account": "45559367209", "branch": "SBI chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "", "school": "23351009304-PS BAGAT DHANA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9755829053", "school": "23351011201-PS THAPPA", "name": "Harishankar rathore", "account": "45502642149", "branch": "STATE BANK OF INDIA SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9179587290", "school": "23351011301-PS HATHIKUND", "name": "DESHASINGH WARKADE", "account": "45556166651", "branch": "State bank of india Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9754579122", "school": "23351010001-PS DHOLYADHANA", "name": "Neelima ukey", "account": "45567377274", "branch": "Ps dholiyadhana", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "8827234037", "school": "23351014201-PS TEMRA RAIYAT", "name": "ANIL KUMAR VISHVAKARMA", "account": "45505874223", "branch": "STET BANK OF INDIA", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7999586047", "school": "23351005102-MS JHAPDI", "name": "RAMBHAU BHALAVI", "account": "45530237294", "branch": "branch -Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "6260816712", "school": "23351005003-MS KOYLARI", "name": "Dashrath Dhurve", "account": "45521695858", "branch": "State Bank of India Branch bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7587517279", "school": "23351007504-PS RUMAKOL", "name": "Guddayal doriya", "account": "45547654888", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7693098663", "school": "23351002304-PS CHAOKIDHANA", "name": "Dinesh dhurve", "account": "45579999881", "branch": "SBI Deshawadi", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "8964082687", "school": "23351004101-PS KOTMI", "name": "MAYA SIRORIYA", "account": "45548810780", "branch": "SBI SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7000937269", "school": "23351012102-MS GUVADI", "name": "KAMAL BARASKAR", "account": "45502509897", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9617382799", "school": "23351000603-PS CHILAM TEKRI", "name": "Laxmikaroche", "account": "45556023066", "branch": "SBI", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8120822901", "school": "23351000704-PS TEKRIPURA", "name": "Dinesh baraskar", "account": "45521845771", "branch": "State bank of india shahpur district Betul", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9977480742", "school": "23351010701-PS DAODI", "name": "HARIDAS UIKEY", "account": "45505763410", "branch": "Shahapur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7354632086", "school": "23351005602-MS SALIMET", "name": "baratilal kumre", "account": "45496772896", "branch": "SBI Bank Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7067512202", "school": "23351003401-PS TETARMAL", "name": "Kranti pandram", "account": "45516824429", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351001604-HS PHOPHLYA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9424461238", "school": "23351006402-MS SITADONGRI", "name": "SUNDARLAL KAROCHE", "account": "45536342883", "branch": "BETUL CIVIL LINES", "ifsc": "SBIN0000327", "uniqueId": ""}, {"mobile": "", "school": "23351010501-PS KUSMARI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351007302-PS BANDIDHANA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351008503-PS PINJARA DHANA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8120928587", "school": "23351003002-PS JHIRIYA DOL", "name": "Mishrilal yadav", "account": "45547539604", "branch": "BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8989251371", "school": "23351003602-MS BOD", "name": "Goutam Singh Suhane", "account": "45542614975", "branch": "Bhoura", "ifsc": "SBIN0101711", "uniqueId": ""}, {"mobile": "7067845363", "school": "23351002902-MS HANDIPANI", "name": "Sonali Waldhurkar", "account": "45556674133", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7879559089", "school": "23351005503-PS SEMALPURA", "name": "PRAKASH UIKEY", "account": "45542882718", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9424432214", "school": "23351011702-MS DHASAI", "name": "Ramkishor Barskar", "account": "45536339530", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9754173246", "school": "23351009003-PS MADIYA DHANA", "name": "Mahendra kumar arya", "account": "45568794605", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "8602073596", "school": "23351008301-PS CHIRMATEKRI", "name": "Ekanki sahu", "account": "45556906857", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9479861110", "school": "23351009402-MS CHIKHALI MAL", "name": "Kamalsingh nawde", "account": "45569986353", "branch": "Sbi chinahjuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9752079288", "school": "23351011103-PS NAVALSINGH DHANA", "name": "Ramswaroop Yadav", "account": "45505765305", "branch": "Sbi shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9425682851", "school": "23351016701-PS DHAPADA RAIYAT", "name": "KALURAM YADAV", "account": "45549491115", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9479351845", "school": "23351007303-MS TIMARNI", "name": "Ramgopal Kalme", "account": "45548307286", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9753475288", "school": "23351010103-PS NAVRANGDHANA", "name": "Ajaykumar malvi", "account": "45556211324", "branch": "State Bank of India", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9406923530", "school": "23351003102-MS BANABEHDA", "name": "Sita Kawre", "account": "45525719683", "branch": "BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "7415635230", "school": "23351004901-PS GENDIDHANA", "name": "JayShri Mishra", "account": "45525907291", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9479831049", "school": "23351009103-HS GHISIBAGLA", "name": "Rajkumar salam", "account": "45531244235", "branch": "Kothi bazaar betul", "ifsc": "SBIN0004219", "uniqueId": ""}, {"mobile": "9479979481", "school": "23351009202-MS TARA", "name": "RAMKRISHNA UIKEY", "account": "45525272066", "branch": "SBI CHICHOLI", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "7974929972", "school": "23351002201-PS BUDIMAI", "name": "Chandrakishore Nirapure", "account": "45531765064", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351003502-MS KOTHA", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351001902-PS CHAK SANGWANI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "", "school": "23351010404-MS BANKAKHODRI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9424405556", "school": "23351002001-PS PANDAJHIRI", "name": "Rajendra kumar kardate", "account": "45524661531", "branch": "Sbi sadar betul", "ifsc": "SBIN0012152", "uniqueId": ""}, {"mobile": "6263171907", "school": "23351007201-PS KHAKHAR", "name": "Shivkishor Mawase", "account": "45560097066", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8989591366", "school": "23351004201-PS KANTAWADI", "name": "Brajlal akhande", "account": "45541139078", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9009811535", "school": "23351004803-TWD PS KALAPANI", "name": "Ramdas kumre", "account": "45542174704", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8120133501", "school": "23351009701-PS BHAGUDHANA", "name": "VIRENDRA MISHRA", "account": "45531935549", "branch": "PS BHAGGUDHANA", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "", "school": "23351009005-HS MANDAI BUJURGE", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8120745099", "school": "23351004801-PS KALAPANI", "name": "Kanhaiya Lal", "account": "45542268862", "branch": "SBI Shahpura", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7772887356", "school": "23351002403-PS ADMADHANA", "name": "Puransingh Salam", "account": "45509452650", "branch": "P.S. ADMADHANA", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "7697202035", "school": "23351005001-PS KOYLARI", "name": "Nemee chand keer", "account": "45504329799", "branch": "Ps Koylari", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9425708856", "school": "23351006401-PS SITADONGRI", "name": "Subhash Kumar marskoley", "account": "45569941516", "branch": "P.S.SITADONGRI", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9753099729", "school": "23351009302-MS CHIKHALI RAIYAT", "name": "Somlal Warkade", "account": "45570241678", "branch": "SBI Chunahajuri", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "9407596441", "school": "23351002801-PS BARETHA", "name": "kashi nagle", "account": "45556414404", "branch": "SBI Bank Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7000586587", "school": "23351006101-PS KAJLI", "name": "JOGASINGH DHURVE", "account": "45531114613", "branch": "Shashkiya prathmik shala kajli", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9479943321", "school": "23351006102-MS KAJLI", "name": "Karansingh dhurve", "account": "45524268313", "branch": "S b i shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9479777403", "school": "23351007601-PS DHANVAR", "name": "Phoolwatiuikey", "account": "45556166118", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7694905900", "school": "23351006901-PS RATANDHANA", "name": "Ajay Akhande", "account": "45530237668", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8120512618", "school": "23351002602-PS CHITARIBAD", "name": "Prama badode", "account": "45542479230", "branch": "SBI DESHAWADI", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "8965095076", "school": "23351000301-PS CHAPDA (RAIYAT)", "name": "RANGVATI DHURWE", "account": "45548669510", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9424710632", "school": "23351006301-PS MENDHAKHEDA", "name": "Eshvardas yadav", "account": "45560208166", "branch": "SBI BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "9131331428", "school": "23351017202-MS NISHAN", "name": "Miss Priya Mehto", "account": "45521925486", "branch": "Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8770388277", "school": "23351002401-PS DESHAWADI", "name": "Rajkumari Uikey", "account": "45505869745", "branch": "SBI DESHAWADI", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "9425659038", "school": "23351016601-PS PHOPHLYA (MAL)", "name": "HEERALAL YADAV", "account": "45541946548", "branch": "SBI Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8462080650", "school": "23351011402-PS BADA DHANA", "name": "Shivvanti Bamne", "account": "45526193524", "branch": "Shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7697987848", "school": "23351005901-PS KANJITALAB", "name": "RAGHUVIR SILOO", "account": "45556804028", "branch": "SBI shahpur", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "", "school": "23351003913-EKLAVYA MODEL RESIDENT SHAHPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "8989815213", "school": "23351005603-PS POLAPATHAR", "name": "RAMRATI", "account": "45549491885", "branch": "Sbi bank bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351005804-HSS BIJADEHI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9893908606", "school": "23351002802-MS BARETHA", "name": "Abhilasha Parsai", "account": "45515414470", "branch": "State Bank Of India", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "8839717655", "school": "23351000501-PS JHILPA", "name": "Liladhar Chouhan", "account": "45556214085", "branch": "SBI SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "9425366914", "school": "23351002402-MS DESHAWADI", "name": "Yogita Verma", "account": "45510069526", "branch": "Deshawadi", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "9713186622", "school": "23351003303-MS KUPPA", "name": "Phulakram Dhurve", "account": "45525657716", "branch": "SBI Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8966856123", "school": "23351011601-PS CHIMDI", "name": "Maniram Narke", "account": "45549491411", "branch": "State bank of india Bhoura", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "", "school": "23351006802-MS BARJORPUR", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9752224293", "school": "23351008003-PS BHORADHANA", "name": "RAKESH KUMAR CHOUHAN", "account": "45536339915", "branch": "STATE BANK OF INDIA BRANCH BHOURA", "ifsc": "SBIN0017112", "uniqueId": ""}, {"mobile": "8305565229", "school": "23351002702-MS MALI SILPATI", "name": "Rajesh kumar chourey", "account": "45502382166", "branch": "Deshawadi", "ifsc": "SBIN0009411", "uniqueId": ""}, {"mobile": "7725052021", "school": "23351011102-MS SITALJHIRI", "name": "Brajlal salam", "account": "45502150054", "branch": "SBI SHAHPUR", "ifsc": "SBIN0002892", "uniqueId": ""}, {"mobile": "7693836931", "school": "23351009204-PS TENDUDHANA", "name": "SANDEEP ARYA", "account": "45567534160", "branch": "SBI Chicholi", "ifsc": "SBIN0005513", "uniqueId": ""}, {"mobile": "7771927994", "school": "23351009502-PS GAOLAN DHANA", "name": "Mohit Uikey", "account": "45572666361", "branch": "SBI CHOONAHAJURI", "ifsc": "SBIN0009094", "uniqueId": ""}, {"mobile": "", "school": "23351009101-PS GHISIBAGLA", "name": "Rammu Singh Vadiva", "account": "VINOD SALAME", "branch": "8815034217", "ifsc": "AAAAA1111A", "uniqueId": ""}, {"mobile": "", "school": "23351015201-PS JAMNAGRI", "name": "", "account": "", "branch": "", "ifsc": "", "uniqueId": ""}, {"mobile": "9300643339", "school": "BRC BETUL", "name": "JETENDRA YADAV", "account": "45506092960", "branch": "SBI SADAR", "ifsc": "SBIN0012152", "uniqueId": ""}];
 
-let curSna = null;
+let rec=null;
+const ADMIN_NUMBERS=['7415912505','9179624657'];
+let adminMobile='';
 
-function findSnaRec(){
-  const m = (document.getElementById('sna_mobile').value || '').replace(/\D/g,'');
-  const msg = document.getElementById('sna_msg');
-  msg.innerHTML = '';
-  if(m.length !== 10){
-    msg.innerHTML = '<div class="msg err">सही 10 अंकों का Mobile Number दर्ज करें।</div>';
+function digits(x){return String(x||'').replace(/\D/g,'')}
+
+function findRec(){
+  const m=digits(document.getElementById('mobile').value);
+  const msg=document.getElementById('msg');
+  msg.innerHTML='';
+  if(m.length!==10){
+    msg.innerHTML='<div class="msg err">सही 10 अंकों का Mobile Number डालें।</div>';
     return;
   }
-  curSna = SNA_DATA.find(x => String(x.mobile||'').replace(/\D/g,'') === m);
-  if(!curSna){
-    msg.innerHTML = '<div class="msg err">रिकॉर्ड नहीं मिला। कृपया SNA Sparsh में पंजीकृत मोबाइल नंबर जांचें।</div>';
+
+  if(ADMIN_NUMBERS.includes(m)){
+    adminMobile=m;
+    document.getElementById('search').classList.add('hidden');
+    document.getElementById('verify').classList.add('hidden');
+    document.getElementById('result').classList.add('hidden');
+    document.getElementById('admin').classList.remove('hidden');
+    document.getElementById('a').classList.remove('active'); 
+    document.getElementById('b').classList.remove('active'); 
+    document.getElementById('c').classList.add('active');
     return;
   }
-  document.getElementById('sna_name').textContent = curSna.name || 'नाम उपलब्ध नहीं';
-  document.getElementById('sna_school').textContent = curSna.school || '';
-  document.getElementById('sna_av').textContent = (curSna.name || curSna.school || 'S')[0].toUpperCase();
-  
-  document.getElementById('sna_search').classList.add('hidden');
-  document.getElementById('sna_verify').classList.remove('hidden');
-  document.getElementById('st1').classList.remove('active');
-  document.getElementById('st2').classList.add('active');
-}
 
-function verifySnaRec(){
-  const u = (document.getElementById('sna_uid').value || '').trim().toUpperCase();
-  const vmsg = document.getElementById('sna_vmsg');
-  vmsg.innerHTML = '';
-  if(u && !/^[A-Z]{2}[0-9]{4}$/.test(u)){
-    vmsg.innerHTML = '<div class="msg err">Unique ID format गलत है (उदा. AA0000)</div>';
+  rec=DATA.find(x=>digits(x.mobile)===m);
+  if(!rec){
+    msg.innerHTML='<div class="msg err">आपके द्वारा SNA Sparsh गूगल फॉर्म में बैंक की जानकारी नहीं भरी गयी है। पहले उपरोक्त लिंक में अपने SNA खाते की जानकरी पूर्ण करे। <a href="https://forms.gle/zMiuwqM5ZzbPYCUS6" target="_blank">लिंक खोले</a></div>';
     return;
   }
-  showSnaDetails(true);
+
+  document.getElementById('name').textContent=rec.name||'नाम उपलब्ध नहीं';
+  document.getElementById('school').textContent=rec.school||'';
+  document.getElementById('av').textContent=(rec.name||rec.school||'S')[0].toUpperCase();
+  document.getElementById('search').classList.add('hidden');
+  document.getElementById('verify').classList.remove('hidden');
+  document.getElementById('a').classList.remove('active'); 
+  document.getElementById('b').classList.add('active');
 }
 
-function showSnaDetails(isVerified){
-  document.getElementById('sna_rname').textContent = curSna.name || 'नाम उपलब्ध नहीं';
-  document.getElementById('sna_rschool').textContent = curSna.school || '';
-  document.getElementById('sna_rav').textContent = (curSna.name || 'S')[0].toUpperCase();
-  document.getElementById('sna_account').textContent = curSna.account || 'उपलब्ध नहीं';
-  document.getElementById('sna_ifsc').textContent = curSna.ifsc || 'उपलब्ध नहीं';
-  document.getElementById('sna_branch').textContent = curSna.branch || 'उपलब्ध नहीं';
-  document.getElementById('sna_rmobile').textContent = curSna.mobile || '';
-
-  document.getElementById('sna_verify').classList.add('hidden');
-  document.getElementById('sna_result').classList.remove('hidden');
-  document.getElementById('st2').classList.remove('active');
-  document.getElementById('st3').classList.add('active');
+function verifyRec(){
+  const u=document.getElementById('uid').value.trim().toUpperCase();
+  const vmsg=document.getElementById('vmsg');
+  vmsg.innerHTML='';
+  if(!u){showDetails(false,'');return}
+  if(!/^[A-Z]{2}[0-9]{4}$/.test(u)){
+    vmsg.innerHTML='<div class="msg err">Unique ID का format सही नहीं है। उदाहरण: AA0000 (2 अक्षर + 4 अंक)</div>';
+    return;
+  }
+  if(rec.uniqueId && String(rec.uniqueId).trim().toUpperCase()!==u){
+    vmsg.innerHTML='<div class="msg err">Unique ID सही नहीं है।</div>';
+    return;
+  }
+  showDetails(true,u);
 }
 
-function resetSnaView(){
-  document.getElementById('sna_mobile').value = '';
-  document.getElementById('sna_uid').value = '';
-  document.getElementById('sna_msg').innerHTML = '';
-  document.getElementById('sna_vmsg').innerHTML = '';
-  document.getElementById('sna_result').classList.add('hidden');
-  document.getElementById('sna_verify').classList.add('hidden');
-  document.getElementById('sna_search').classList.remove('hidden');
-  document.getElementById('st3').classList.remove('active');
-  document.getElementById('st2').classList.remove('active');
-  document.getElementById('st1').classList.add('active');
+function showDetails(uniqueVerified=false, enteredUniqueId=''){
+  document.getElementById('rname').textContent=rec.name||'नाम उपलब्ध नहीं';
+  document.getElementById('rschool').textContent=rec.school||'';
+  document.getElementById('rav').textContent=(rec.name||rec.school||'S')[0].toUpperCase();
+  document.getElementById('account').textContent=rec.account||'उपलब्ध नहीं';
+  document.getElementById('ifsc').textContent=rec.ifsc||'उपलब्ध नहीं';
+  document.getElementById('branch').textContent=rec.branch||'उपलब्ध नहीं';
+  document.getElementById('rmobile').textContent=rec.mobile||'';
+
+  sendVerification(uniqueVerified ? 'Verified' : 'Viewed without Unique ID', enteredUniqueId);
+
+  document.getElementById('verify').classList.add('hidden');
+  document.getElementById('result').classList.remove('hidden');
+  document.getElementById('b').classList.remove('active'); 
+  document.getElementById('c').classList.add('active');
 }
 
-// --- BRC SCHOOL LOGIN & DASHBOARD SYSTEM ---
-function login(){
+function sendVerification(status, enteredUniqueId=''){
+  if(!REPORT_API_URL || REPORT_API_URL.includes('PASTE_YOUR_')) return;
+  const now = new Date();
+  const payload={
+    action:'upsert',
+    keyField:'mobile',
+    mobile:rec.mobile||'',
+    name:rec.name||'',
+    school:rec.school||'',
+    account:rec.account||'',
+    ifsc:rec.ifsc||'',
+    branch:rec.branch||'',
+    uniqueId: enteredUniqueId || rec.uniqueId || '',
+    uniqueIdVerified:status==='Verified',
+    status:status,
+    checkedAt:now.toISOString()
+  };
+
+  try{
+    fetch(REPORT_API_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+  }catch(e){}
+}
+
+function downloadReport(){
+  const adminmsg = document.getElementById('adminmsg');
+  if(!ADMIN_NUMBERS.includes(adminMobile)){
+    adminmsg.innerHTML='<div class="msg err">Report access denied.</div>';
+    return;
+  }
+  if(!REPORT_API_URL || REPORT_API_URL.includes('PASTE_YOUR_')){
+    adminmsg.innerHTML='<div class="msg warn">Google Apps Script Web App connected है।</div>';
+    return;
+  }
+  adminmsg.innerHTML='<div class="msg ok">Report तैयार हो रही है…</div>';
+  const url=REPORT_API_URL+'?action=report&adminMobile='+encodeURIComponent(adminMobile);
+  window.open(url,'_blank');
+}
+
+function resetSnaSearch(){
+  document.getElementById('mobile').value = '';
+  document.getElementById('uid').value = '';
+  document.getElementById('msg').innerHTML = '';
+  document.getElementById('vmsg').innerHTML = '';
+  if(document.getElementById('adminmsg')) document.getElementById('adminmsg').innerHTML = '';
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('verify').classList.add('hidden');
+  document.getElementById('admin').classList.add('hidden');
+  document.getElementById('search').classList.remove('hidden');
+  document.getElementById('c').classList.remove('active');
+  document.getElementById('b').classList.remove('active');
+  document.getElementById('a').classList.add('active');
+}
+
+// --- BRC PORTAL AUTH & ROUTING ---
+function loginPortal(){
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
   const msg = document.getElementById('loginMsg');
   if((u==='admin'&&p==='admin') || (u==='brc1'&&p==='1234') || (u==='crc1'&&p==='1234') || (u==='school1'&&p==='1234')){
-    document.getElementById('publicView').style.display = 'none';
+    document.getElementById('publicPortal').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('userInfo').textContent = 'User: ' + u.toUpperCase() + ' (' + document.getElementById('loginRole').value.toUpperCase() + ')';
-    renderBrcDashboard();
   } else {
     msg.innerHTML = '<div class="msg err">गलत User ID या Password!</div>';
   }
 }
 
-function logout(){
+function logoutPortal(){
   document.getElementById('app').style.display = 'none';
-  document.getElementById('publicView').style.display = 'block';
+  document.getElementById('publicPortal').style.display = 'block';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginMsg').innerHTML = '';
 }
 
-function show(id){
+function showSection(id){
   document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-}
-
-function renderBrcDashboard(){
-  document.getElementById('cSchools').textContent = '104';
-  document.getElementById('cStudents').textContent = '2,840';
-  document.getElementById('cBoys').textContent = '1,410';
-  document.getElementById('cGirls').textContent = '1,430';
-
-  const sankuls = ['Bhoura', 'Bijadehi', 'Dhodhramau', 'Kesiya', 'Kundi', 'Shahpur', 'Tara'];
-  const tbody = document.getElementById('sankulSummary');
-  tbody.innerHTML = '';
-  sankuls.forEach(s => {
-    tbody.innerHTML += `<tr><td><b>${s}</b></td><td>15</td><td>210</td><td>205</td><td><b>415</b></td></tr>`;
-  });
 }
 </script>
 </body>
