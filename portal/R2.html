@@ -3,28 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BRC School Data Management - Shahpur</title>
+<title>Enrollment Portal - BRC Shahpur</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
 header{background:#1d4ed8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
 header h1{margin:0;font-size:20px}
-.nav-header-btn{background:#ffd21c;color:#082a63;font-weight:900;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;text-decoration:none;font-size:13px}
-.nav-header-btn:hover{background:#ffde59}
 nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px 20px;position:sticky;top:0;z-index:5;box-shadow:0 1px 5px #ddd}
 button{border:0;border-radius:8px;padding:9px 14px;background:#1d4ed8;color:#fff;cursor:pointer;font-weight:bold}
 button.secondary{background:#64748b}
+button.danger{background:#dc2626}
 main{max-width:1200px;margin:auto;padding:15px}
 section{display:none}
 section.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
-.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 6px #ddd}
-.num{font-size:28px;font-weight:bold;color:#1d4ed8}
-.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:12px}
-table{width:100%;border-collapse:collapse;min-width:600px}
-th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}
-th{background:#eef2ff}
-.tag{padding:4px 8px;border-radius:12px;background:#e0e7ff;font-size:12px;font-weight:bold;color:#1d4ed8}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px #ddd}
+.num{font-size:26px;font-weight:bold;color:#1d4ed8}
+.subtext{font-size:12px;color:#64748b;margin-top:4px}
+.filter-bar{background:#fff;padding:14px;border-radius:12px;margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 6px #ddd}
+select, input{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
+.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 6px #ddd}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{padding:12px 15px;border-bottom:1px solid #e5e7eb;text-align:left}
+th{background:#eef2ff;color:#1e3a8a}
+.form-card{background:#fff;border-radius:12px;padding:20px;margin-top:14px;box-shadow:0 1px 6px #ddd}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-weight:bold;font-size:13px;margin-bottom:5px}
+.form-group input, .form-group select{width:100%}
+.alert-err{background:#fee2e2;color:#dc2626;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
 
 /* LOGIN OVERLAY */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.92);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
@@ -42,61 +48,114 @@ th{background:#eef2ff}
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC Staff Login</h2>
-    <p>BRC Dashboard देखने हेतु पासवर्ड दर्ज करें।</p>
-    <div id="authErr" class="auth-err">गलत Password! पुनः प्रयास करें।</div>
-    <input type="password" id="authPass" class="auth-input" placeholder="Password दर्ज करें (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Login करें</button>
+    <p>Enrollment Dashboard dekhne हेतु password darj karein.</p>
+    <div id="authErr" class="auth-err">Galat Password! Punah prayas karein.</div>
+    <input type="password" id="authPass" class="auth-input" placeholder="Password (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Login karein</button>
   </div>
 </div>
 
 <header>
   <h1>BRC Management Portal - Shahpur</h1>
-  <span style="font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:6px;">Enrollment</span>
+  <span style="font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:6px;">Enrollment (Dynamic)</span>
 </header>
 
 <nav>
-  <button onclick="showSection('dash')">📊 Enrollment Dashboard</button>
-  <button onclick="showSection('reports')">📋 Reports</button>
+  <button onclick="showSection('dash')">📊 Summary</button>
+  <button onclick="showSection('records')">📋 School Records & Filter</button>
+  <button onclick="showSection('addform')">➕ Add / Feed School</button>
   <button class="secondary" onclick="logout()" style="margin-left:auto">🚪 Logout</button>
 </nav>
-  
 
 <main>
-  <!-- TAB 1 -->
+  <!-- TAB 1: SUMMARY -->
   <section id="dash" class="active">
-    <h3>Module 1: Shala Dashboard</h3>
+    <h3>📊 BRC Shahpur Enrollment Overview</h3>
     <div class="grid">
-      <div class="card"><div class="num">162</div><div>Total Schools</div></div>
-      <div class="card"><div class="num">128</div><div>Verified SNA</div></div>
-      <div class="card"><div class="num">34</div><div>Pending</div></div>
+      <div class="card"><div class="num" id="statSchools">0</div><div>Total Schools</div></div>
+      <div class="card"><div class="num" id="statEnroll">0</div><div>Total Enrollment</div><div class="subtext" id="statBoysGirls">Boys: 0 | Girls: 0</div></div>
     </div>
   </section>
 
-  <!-- TAB 2 -->
-  <section id="reports">
-    <h3>Module 2: Sankul & Exam Reports</h3>
+  <!-- TAB 2: RECORDS & FILTER -->
+  <section id="records">
+    <h3>📋 School-wise Enrollment Data & JSK Filter</h3>
+    <div class="filter-bar">
+      <label><b>Select JSK (Sankul):</b></label>
+      <select id="jskFilter" onchange="renderTable()">
+        <option value="ALL">-- All Sankul (JSK) --</option>
+        <option value="Bhoura">Bhoura</option>
+        <option value="Bijadehi">Bijadehi</option>
+        <option value="Dhodhramau">Dhodhramau</option>
+        <option value="Kesiya">Kesiya</option>
+        <option value="Kundi">Kundi</option>
+        <option value="Shahpur">Shahpur</option>
+        <option value="Tara">Tara</option>
+      </select>
+      <input type="text" id="searchBox" placeholder="School name ya UDISE khojein..." onkeyup="renderTable()" style="flex:1;min-width:200px;">
+    </div>
+
     <div class="tablewrap">
       <table>
         <thead>
           <tr>
-            <th>Sankul</th>
-            <th>Institution Name</th>
-            <th>Status</th>
+            <th>S.No.</th>
+            <th>School Name</th>
+            <th>UDISE Code</th>
+            <th>JSK</th>
+            <th>Boys</th>
+            <th>Girls</th>
+            <th>Total</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>Shahpur</td>
-            <td>KGBV Bijadehi</td>
-            <td><span class="tag">Verified</span></td>
-          </tr>
-          <tr>
-            <td>Bhoura</td>
-            <td>HSS Girls Bhoura</td>
-            <td><span class="tag">Verified</span></td>
-          </tr>
+        <tbody id="schoolTableBody">
+          <!-- JS dynamic load -->
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <!-- TAB 3: ADD / EDIT FORM -->
+  <section id="addform">
+    <h3 id="formTitle">➕ Naya School / Data Feed Karein</h3>
+    <div class="form-card">
+      <div id="formAlert" class="alert-err"></div>
+      <input type="hidden" id="editIndex" value="-1">
+      <div class="form-group">
+        <label>School Name:</label>
+        <input type="text" id="inName" placeholder="School ka naam darj karein">
+      </div>
+      <div class="form-group">
+        <label>UDISE Code (Unique):</label>
+        <input type="text" id="inUdise" placeholder="233510...">
+      </div>
+      <div class="form-group">
+        <label>JSK (Sankul):</label>
+        <select id="inJsk">
+          <option value="Bhoura">Bhoura</option>
+          <option value="Bijadehi">Bijadehi</option>
+          <option value="Dhodhramau">Dhodhramau</option>
+          <option value="Kesiya">Kesiya</option>
+          <option value="Kundi">Kundi</option>
+          <option value="Shahpur">Shahpur</option>
+          <option value="Tara">Tara</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Boys Enrollment:</label>
+        <input type="number" id="inBoys" placeholder="0" oninput="calcTotal()">
+      </div>
+      <div class="form-group">
+        <label>Girls Enrollment:</label>
+        <input type="number" id="inGirls" placeholder="0" oninput="calcTotal()">
+      </div>
+      <div class="form-group">
+        <label>Total Enrollment (Auto):</label>
+        <input type="number" id="inTotal" readonly style="background:#f1f5f9">
+      </div>
+      <button onclick="saveSchoolData()">💾 Data Save / Update Karein</button>
+      <button class="secondary" onclick="resetForm()">Cancel</button>
     </div>
   </section>
 </main>
@@ -104,12 +163,30 @@ th{background:#eef2ff}
 <script>
 const BRC_PASS = "brc@shahpur";
 
+// Default Initial Data (Excel ka sample data)
+const defaultSchools = [
+  {name: "GPS DHODHARAMOHAR", udise: "23351008101", jsk: "Bhoura", boys: 29, girls: 19},
+  {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", jsk: "Bhoura", boys: 9, girls: 5},
+  {name: "GMS GURGUNDA 1 TO 8", udise: "23351008203", jsk: "Bhoura", boys: 48, girls: 55},
+  {name: "GPS CHIRMATEKRI", udise: "23351008301", jsk: "Bhoura", boys: 28, girls: 30},
+  {name: "GOVT. HS DHAR 1 TO 10", udise: "23351008403", jsk: "Bhoura", boys: 101, girls: 30},
+  {name: "GPS CHIMDI", udise: "23351011601", jsk: "Bhoura", boys: 12, girls: 20},
+  {name: "GPS DENDUPURA", udise: "23351011901", jsk: "Bhoura", boys: 11, girls: 19}
+];
+
+let schools = JSON.parse(localStorage.getItem("brc_schools")) || defaultSchools;
+
+function saveToStorage(){
+  localStorage.setItem("brc_schools", JSON.stringify(schools));
+}
+
 function checkAuth(){
   const val = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
   if(val === BRC_PASS){
     document.getElementById("authOverlay").style.display = "none";
     sessionStorage.setItem("brc_logged_in", "true");
+    initPortal();
   } else {
     err.style.display = "block";
   }
@@ -123,12 +200,146 @@ function logout(){
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   document.getElementById("authOverlay").style.display = "none";
+  window.onload = initPortal;
+}
+
+function initPortal(){
+  renderTable();
+  updateStats();
 }
 
 function showSection(id){
   document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
-  const target = document.getElementById(id);
-  if(target) target.classList.add("active");
+  document.getElementById(id).classList.add("active");
+  if(id === 'records') renderTable();
+}
+
+function calcTotal(){
+  let b = parseInt(document.getElementById("inBoys").value) || 0;
+  let g = parseInt(document.getElementById("inGirls").value) || 0;
+  document.getElementById("inTotal").value = b + g;
+}
+
+function saveSchoolData(){
+  let name = document.getElementById("inName").value.trim();
+  let udise = document.getElementById("inUdise").value.trim();
+  let jsk = document.getElementById("inJsk").value;
+  let boys = parseInt(document.getElementById("inBoys").value) || 0;
+  let girls = parseInt(document.getElementById("inGirls").value) || 0;
+  let editIdx = parseInt(document.getElementById("editIndex").value);
+  let alertBox = document.getElementById("formAlert");
+
+  if(!name || !udise){
+    alertBox.style.display = "block";
+    alertBox.innerText = "Kripya School Name aur UDISE Code darj karein!";
+    return;
+  }
+
+  // Duplicate UDISE check
+  let existingIndex = schools.findIndex(s => s.udise === udise);
+  if(existingIndex !== -1 && existingIndex !== editIdx){
+    alertBox.style.display = "block";
+    alertBox.innerText = "Error: Yeh UDISE Code pehle se darj hai (Duplicate UDISE not allowed)!";
+    return;
+  }
+
+  alertBox.style.display = "none";
+
+  if(editIdx === -1){
+    schools.push({name, udise, jsk, boys, girls});
+  } else {
+    schools[editIdx] = {name, udise, jsk, boys, girls};
+    document.getElementById("editIndex").value = -1;
+    document.getElementById("formTitle").innerText = "➕ Naya School / Data Feed Karein";
+  }
+
+  saveToStorage();
+  resetForm();
+  showSection('records');
+  updateStats();
+}
+
+function resetForm(){
+  document.getElementById("inName").value = "";
+  document.getElementById("inUdise").value = "";
+  document.getElementById("inBoys").value = "";
+  document.getElementById("inGirls").value = "";
+  document.getElementById("inTotal").value = "";
+  document.getElementById("editIndex").value = -1;
+  document.getElementById("formTitle").innerText = "➕ Naya School / Data Feed Karein";
+  document.getElementById("formAlert").style.display = "none";
+}
+
+function editSchool(index){
+  let s = schools[index];
+  document.getElementById("inName").value = s.name;
+  document.getElementById("inUdise").value = s.udise;
+  document.getElementById("inJsk").value = s.jsk;
+  document.getElementById("inBoys").value = s.boys;
+  document.getElementById("inGirls").value = s.girls;
+  calcTotal();
+  document.getElementById("editIndex").value = index;
+  document.getElementById("formTitle").innerText = "✏️ School Data Edit Karein";
+  showSection('addform');
+}
+
+function deleteSchool(index){
+kya_delete = confirm("Kya aap is school ko delete karna chahte hain?");
+  if(kya_delete){
+    schools.splice(index, 1);
+    saveToStorage();
+    renderTable();
+    updateStats();
+  }
+}
+
+function renderTable(){
+  let jskVal = document.getElementById("jskFilter").value;
+  let query = document.getElementById("searchBox").value.toLowerCase();
+  let tbody = document.getElementById("schoolTableBody");
+  tbody.innerHTML = "";
+
+  let filtered = schools.filter(s => {
+    let matchJsk = (jskVal === "ALL" || s.jsk === jskVal);
+    let matchQuery = s.name.toLowerCase().includes(query) || s.udise.includes(query);
+    return matchJsk && matchQuery;
+  });
+
+  if(filtered.length === 0){
+कोई_data = `<tr><td colspan="8" style="text-align:center;color:#64748b;">Koi data uplabdh nahi hai.</td></tr>`;
+    tbody.innerHTML = कोई_data;
+    return;
+  }
+
+  filtered.forEach((s, idx) => {
+    let realIdx = schools.indexOf(s);
+    let total = s.boys + s.girls;
+    let row = `<tr>
+      <td>${idx + 1}</td>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.udise}</td>
+      <td>${s.jsk}</td>
+      <td>${s.boys}</td>
+      <td>${s.girls}</td>
+      <td><strong>${total}</strong></td>
+      <td>
+        <button style="padding:5px 10px;font-size:12px;" onclick="editSchool(${realIdx})">Edit</button>
+        <button style="padding:5px 10px;font-size:12px;" class="danger" onclick="deleteSchool(${realIdx})">Delete</button>
+      </td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+}
+
+function updateStats(){
+  let totalSchools = schools.length;
+  let totalBoys = schools.reduce((sum, s) => sum + s.boys, 0);
+  let totalGirls = schools.reduce((sum, s) => sum + s.girls, 0);
+  let totalEnroll = totalBoys + totalGirls;
+
+  document.getElementById("statSchools").innerText = totalSchools;
+  document.getElementById("statEnroll").innerText = totalEnroll.toLocaleString();
+  document.getElementById("statBoysGirls").innerText = `Boys: ${totalBoys.toLocaleString()} | Girls: ${totalGirls.toLocaleString()}`;
 }
 </script>
 </body>
