@@ -3,34 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Enrollment Portal - BRC Shahpur</title>
+<title>Caste & Category Wise Enrollment Portal - BRC Shahpur</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
-header{background:#1d4ed8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+header{background:#1d4ed8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 header h1{margin:0;font-size:20px}
 nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px 20px;position:sticky;top:0;z-index:5;box-shadow:0 1px 5px #ddd}
 button{border:0;border-radius:8px;padding:9px 14px;background:#1d4ed8;color:#fff;cursor:pointer;font-weight:bold}
 button.secondary{background:#64748b}
-button.danger{background:#dc2626}
-main{max-width:1200px;margin:auto;padding:15px}
+main{max-width:1400px;margin:auto;padding:15px}
 section{display:none}
 section.active{display:block}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
 .card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px #ddd}
-.num{font-size:26px;font-weight:bold;color:#1d4ed8}
+.num{font-size:24px;font-weight:bold;color:#1d4ed8}
 .subtext{font-size:12px;color:#64748b;margin-top:4px}
 .filter-bar{background:#fff;padding:14px;border-radius:12px;margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 6px #ddd}
 select, input{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
 .tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 6px #ddd}
-table{width:100%;border-collapse:collapse;min-width:700px}
-th,td{padding:12px 15px;border-bottom:1px solid #e5e7eb;text-align:left}
+table{width:100%;border-collapse:collapse;min-width:1000px}
+th,td{padding:10px 12px;border:1px solid #e5e7eb;text-align:center;font-size:13px}
 th{background:#eef2ff;color:#1e3a8a}
-.form-card{background:#fff;border-radius:12px;padding:20px;margin-top:14px;box-shadow:0 1px 6px #ddd}
-.form-group{margin-bottom:12px}
-.form-group label{display:block;font-weight:bold;font-size:13px;margin-bottom:5px}
-.form-group input, .form-group select{width:100%}
-.alert-err{background:#fee2e2;color:#dc2626;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+td:nth-child(2), td:nth-child(1){text-align:left}
+.tag-red{background:#fee2e2;color:#dc2626;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px}
+.tag-green{background:#dcfce7;color:#15803d;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px}
+
+/* EDIT MODAL */
+#editModal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:15px}
+.modal-card{background:#fff;border-radius:16px;max-width:550px;width:100%;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto}
+.modal-card h3{margin-top:0;color:#1e3a8a}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-weight:bold;font-size:12px;margin-bottom:4px}
+.form-group input{width:100%}
 
 /* LOGIN OVERLAY */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.92);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
@@ -48,42 +54,84 @@ th{background:#eef2ff;color:#1e3a8a}
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC Staff Login</h2>
-    <p>Enrollment Dashboard dekhne हेतु password darj karein.</p>
+    <p>Enrollment Portal dekhne hetu password darj karein.</p>
     <div id="authErr" class="auth-err">Galat Password! Punah prayas karein.</div>
     <input type="password" id="authPass" class="auth-input" placeholder="Password (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login karein</button>
   </div>
 </div>
 
+<!-- EDIT MODAL -->
+<div id="editModal">
+  <div class="modal-card">
+    <h3 id="modalSchoolName">Edit Enrollment</h3>
+    <p id="modalUdise" style="font-size:12px;color:#64748b;margin-bottom:15px;"></p>
+    
+    <h4>Boys Enrollment</h4>
+    <div class="form-grid">
+      <div class="form-group"><label>SC Boys:</label><input type="number" id="scB" value="0" oninput="calcModalTotal()"></div>
+      <div class="form-group"><label>ST Boys:</label><input type="number" id="stB" value="0" oninput="calcModalTotal()"></div>
+      <div class="form-group"><label>OBC Boys:</label><input type="number" id="obcB" value="0" oninput="calcModalTotal()"></div>
+      <div class="form-group"><label>GEN Boys:</label><input type="number" id="genB" value="0" oninput="calcModalTotal()"></div>
+    </div>
+
+    <h4>Girls Enrollment</h4>
+    <div class="form-grid">
+      <div class="form-group"><label>SC Girls:</label><input type="number" id="scG" value="0" oninput="calcModalTotal()"></div>
+      <div class="form-group"><label>ST Girls:</label><input type="number" id="stG" value="0" oninput="calcModalTotal()"></div>
+      <div class="form-group"><label>OBC Girls:</label><input type="number" id="obcG" value="0" oninput="calcModalTotal()"></div>
+      <div class="form-group"><label>GEN Girls:</label><input type="number" id="genG" value="0" oninput="calcModalTotal()"></div>
+    </div>
+
+    <div style="background:#f1f5f9;padding:10px;border-radius:8px;margin-bottom:15px;font-weight:bold;text-align:center;">
+      Calculated Total: <span id="modalTotalSum" style="color:#1d4ed8">0</span>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="secondary" onclick="closeModal()">Cancel</button>
+      <button onclick="saveModalData()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <h1>BRC Management Portal - Shahpur</h1>
-  <span style="font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:6px;">Enrollment (Dynamic)</span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <label style="font-size:13px;font-weight:bold;">Academic Session:</label>
+    <select id="sessionSelect" onchange="changeSession()" style="font-weight:bold;color:#1d4ed8;">
+      <option value="2026-27">2026-27</option>
+      <option value="2027-28">2027-28</option>
+      <option value="2028-29">2028-29</option>
+      <option value="2029-30">2029-30</option>
+    </select>
+  </div>
 </header>
 
 <nav>
-  <button onclick="showSection('dash')">📊 Summary</button>
-  <button onclick="showSection('records')">📋 School Records & Filter</button>
-  <button onclick="showSection('addform')">➕ Add / Feed School</button>
+  <button onclick="showSection('dash')">📊 Summary & Status</button>
+  <button onclick="showSection('records')">📋 School Records & Filters</button>
   <button class="secondary" onclick="logout()" style="margin-left:auto">🚪 Logout</button>
 </nav>
 
 <main>
   <!-- TAB 1: SUMMARY -->
   <section id="dash" class="active">
-    <h3>📊 BRC Shahpur Enrollment Overview</h3>
+    <h3 id="dashTitle">📊 BRC Shahpur Overview (Session: 2026-27)</h3>
     <div class="grid">
-      <div class="card"><div class="num" id="statSchools">0</div><div>Total Schools</div></div>
-      <div class="card"><div class="num" id="statEnroll">0</div><div>Total Enrollment</div><div class="subtext" id="statBoysGirls">Boys: 0 | Girls: 0</div></div>
+      <div class="card"><div class="num" id="statSchools">203</div><div>Total Schools</div></div>
+      <div class="card"><div class="num" id="statTotal">0</div><div>Total Enrollment</div><div class="subtext" id="statBoysGirls">Boys: 0 | Girls: 0</div></div>
+      <div class="card"><div class="num" id="statFilled" style="color:#15803d">0</div><div>Entry Completed</div></div>
+      <div class="card"><div class="num" id="statPending" style="color:#dc2626">0</div><div>Pending (Red Mark)</div></div>
     </div>
   </section>
 
-  <!-- TAB 2: RECORDS & FILTER -->
+  <!-- TAB 2: RECORDS & FILTERS -->
   <section id="records">
-    <h3>📋 School-wise Enrollment Data & JSK Filter</h3>
+    <h3 id="recordsTitle">📋 Caste & Category Wise School Records</h3>
     <div class="filter-bar">
-      <label><b>Select JSK (Sankul):</b></label>
+      <label><b>JSK (Sankul):</b></label>
       <select id="jskFilter" onchange="renderTable()">
-        <option value="ALL">-- All Sankul (JSK) --</option>
+        <option value="ALL">-- All Sankul --</option>
         <option value="Bhoura">Bhoura</option>
         <option value="Bijadehi">Bijadehi</option>
         <option value="Dhodhramau">Dhodhramau</option>
@@ -92,21 +140,48 @@ th{background:#eef2ff;color:#1e3a8a}
         <option value="Shahpur">Shahpur</option>
         <option value="Tara">Tara</option>
       </select>
-      <input type="text" id="searchBox" placeholder="School name ya UDISE khojein..." onkeyup="renderTable()" style="flex:1;min-width:200px;">
+
+      <label><b>Category:</b></label>
+      <select id="catFilter" onchange="renderTable()">
+        <option value="ALL">-- All Categories --</option>
+        <option value="Primary">Primary School</option>
+        <option value="Middle">Middle School</option>
+        <option value="High">High School</option>
+        <option value="Higher Secondary">Higher Secondary</option>
+      </select>
+
+      <label><b>Status:</b></label>
+      <select id="statusFilter" onchange="renderTable()">
+        <option value="ALL">-- All Status --</option>
+        <option value="FILLED">Filled (Green)</option>
+        <option value="PENDING">Pending (Red Mark)</option>
+      </select>
+
+      <input type="text" id="searchBox" placeholder="School name ya UDISE khojein..." onkeyup="renderTable()" style="flex:1;min-width:180px;">
     </div>
 
     <div class="tablewrap">
       <table>
         <thead>
           <tr>
-            <th>S.No.</th>
-            <th>School Name</th>
-            <th>UDISE Code</th>
-            <th>JSK</th>
-            <th>Boys</th>
-            <th>Girls</th>
-            <th>Total</th>
-            <th>Actions</th>
+            <th rowspan="2">S.No.</th>
+            <th rowspan="2">School Name</th>
+            <th rowspan="2">UDISE</th>
+            <th rowspan="2">Category</th>
+            <th rowspan="2">JSK</th>
+            <th colspan="2">SC</th>
+            <th colspan="2">ST</th>
+            <th colspan="2">OBC</th>
+            <th colspan="2">GEN</th>
+            <th rowspan="2">Total</th>
+            <th rowspan="2">Status</th>
+            <th rowspan="2">Action</th>
+          </tr>
+          <tr>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
           </tr>
         </thead>
         <tbody id="schoolTableBody">
@@ -115,69 +190,235 @@ th{background:#eef2ff;color:#1e3a8a}
       </table>
     </div>
   </section>
-
-  <!-- TAB 3: ADD / EDIT FORM -->
-  <section id="addform">
-    <h3 id="formTitle">➕ Naya School / Data Feed Karein</h3>
-    <div class="form-card">
-      <div id="formAlert" class="alert-err"></div>
-      <input type="hidden" id="editIndex" value="-1">
-      <div class="form-group">
-        <label>School Name:</label>
-        <input type="text" id="inName" placeholder="School ka naam darj karein">
-      </div>
-      <div class="form-group">
-        <label>UDISE Code (Unique):</label>
-        <input type="text" id="inUdise" placeholder="233510...">
-      </div>
-      <div class="form-group">
-        <label>JSK (Sankul):</label>
-        <select id="inJsk">
-          <option value="Bhoura">Bhoura</option>
-          <option value="Bijadehi">Bijadehi</option>
-          <option value="Dhodhramau">Dhodhramau</option>
-          <option value="Kesiya">Kesiya</option>
-          <option value="Kundi">Kundi</option>
-          <option value="Shahpur">Shahpur</option>
-          <option value="Tara">Tara</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Boys Enrollment:</label>
-        <input type="number" id="inBoys" placeholder="0" oninput="calcTotal()">
-      </div>
-      <div class="form-group">
-        <label>Girls Enrollment:</label>
-        <input type="number" id="inGirls" placeholder="0" oninput="calcTotal()">
-      </div>
-      <div class="form-group">
-        <label>Total Enrollment (Auto):</label>
-        <input type="number" id="inTotal" readonly style="background:#f1f5f9">
-      </div>
-      <button onclick="saveSchoolData()">💾 Data Save / Update Karein</button>
-      <button class="secondary" onclick="resetForm()">Cancel</button>
-    </div>
-  </section>
 </main>
 
 <script>
 const BRC_PASS = "brc@shahpur";
 
-// Default Initial Data (Excel ka sample data)
-const defaultSchools = [
-  {name: "GPS DHODHARAMOHAR", udise: "23351008101", jsk: "Bhoura", boys: 29, girls: 19},
-  {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", jsk: "Bhoura", boys: 9, girls: 5},
-  {name: "GMS GURGUNDA 1 TO 8", udise: "23351008203", jsk: "Bhoura", boys: 48, girls: 55},
-  {name: "GPS CHIRMATEKRI", udise: "23351008301", jsk: "Bhoura", boys: 28, girls: 30},
-  {name: "GOVT. HS DHAR 1 TO 10", udise: "23351008403", jsk: "Bhoura", boys: 101, girls: 30},
-  {name: "GPS CHIMDI", udise: "23351011601", jsk: "Bhoura", boys: 12, girls: 20},
-  {name: "GPS DENDUPURA", udise: "23351011901", jsk: "Bhoura", boys: 11, girls: 19}
+// Exact 203 official schools list provided by user with excel values
+const initialSchools = [
+  {name: "GPS DHODHARAMOHAR", udise: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 29, stG: 19, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 3, scG: 0, stB: 6, stG: 4, obcB: 0, obcG: 1, genB: 0, genG: 0},
+  {name: "GMS GURGUNDA 1 TO 8", udise: "23351008203", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 1, scG: 2, stB: 46, stG: 50, obcB: 1, obcG: 3, genB: 0, genG: 0},
+  {name: "GPS CHIRMATEKRI", udise: "23351008301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 2, scG: 0, stB: 26, stG: 30, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS DHAR 1 TO 10", udise: "23351008403", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura", scB: 0, scG: 0, stB: 101, stG: 30, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS CHIMDI", udise: "23351011601", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 12, stG: 20, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DENDUPURA", udise: "23351011901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 11, stG: 19, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS GUVADI 1 TO 8", udise: "23351012102", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 3, scG: 1, stB: 44, stG: 51, obcB: 23, obcG: 22, genB: 0, genG: 0},
+  {name: "GOVT. HSS DHAPADA 1 TO 12", udise: "23351012204", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bhoura", scB: 0, scG: 1, stB: 44, stG: 39, obcB: 27, obcG: 24, genB: 0, genG: 0},
+  {name: "GMS NEW CHIKHALDA BUJURG 1 TO 8", udise: "23351012302", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 0, scG: 0, stB: 30, stG: 31, obcB: 12, obcG: 9, genB: 0, genG: 0},
+  {name: "GPS(U) KOYAL BUDDI", udise: "23351015501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 1, scG: 0, stB: 8, stG: 10, obcB: 8, obcG: 5, genB: 0, genG: 0},
+  {name: "GPS(U) DHAPADA RAIYAT", udise: "23351016701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 25, stG: 17, obcB: 15, obcG: 17, genB: 0, genG: 0},
+  {name: "GMS NAYA NISHAN 1 TO 8", udise: "23351017202", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 0, scG: 0, stB: 30, stG: 28, obcB: 23, obcG: 12, genB: 0, genG: 0},
+  {name: "GPS HANDIPANI", udise: "23351002901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 1, scG: 0, stB: 20, stG: 20, obcB: 13, obcG: 10, genB: 0, genG: 0},
+  {name: "GMS NEW HANDIPANI", udise: "23351002902", category: "Middle School (Class 6 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 34, stG: 19, obcB: 10, obcG: 14, genB: 0, genG: 0},
+  {name: "GPS SONADHEH", udise: "23351003001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 11, scG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) JHIRIYA DOL", udise: "23351003002", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BANABEHDA", udise: "23351003101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS BANABEHDA", udise: "23351003102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS TWD KALAPANI", udise: "23351004803", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KOYLARI", udise: "23351005001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KOYLARI", udise: "23351005003", category: "Middle School (Class 6 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS JHAPDI", udise: "23351005101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS JHAPDI", udise: "23351005102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) MAGRA PURA", udise: "23351005103", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS KACHHAR 1 TO 10", udise: "23351005204", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KHAPA JHAPDI", udise: "23351005301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) KHAPA DHANA", udise: "23351005302", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) KOCHAMAU", udise: "23351005303", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS (U) VIRGUWADI", udise: "23351005304", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BEHRAPURA", udise: "23351005401", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS MANSINGPURA", udise: "23351005501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) NAYAPURA", udise: "23351005502", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) SEMALPURA", udise: "23351005503", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS SALIMET 1 TO 8", udise: "23351005602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) POLAPATHAR", udise: "23351005603", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) BODIPANI", udise: "23351005604", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS JODIYAMAU", udise: "23351005701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BHORADHANA", udise: "23351008003", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS GIRLS ASHRAM BHORA", udise: "23351008006", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS GIRLS BHORA 1 TO 8", udise: "23351008008", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HSS GIRL'S BHOURA 6 TO 12", udise: "23351008014", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KOTHA 1 TO 8", udise: "23351003502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) JAKA DHANA", udise: "23351005803", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT.HSS BIJADEHI 1 TO 12", udise: "23351005804", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KANJITALAB", udise: "23351005901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "MS KANJITALAB", udise: "23351005902", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS SELDA", udise: "23351006001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KAJLI", udise: "23351006101", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KAJLI", udise: "23351006102", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DUDAR", udise: "23351006201", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS MENDHAKHEDA", udise: "23351006301", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS SITADONGRI", udise: "23351006401", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS SITADONGRI", udise: "23351006402", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) TANGNA RAIYAT", udise: "23351006502", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GNMS TANGNAMAL 1 TO 8", udise: "23351006504", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS TENDUKHEDA", udise: "23351006701", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS TENDUKHEDA", udise: "23351006703", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS BARJORPUR 1 TO 8", udise: "23351006802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS RATAMDHANA", udise: "23351006901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KAWLIKHEDA", udise: "23351007001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DHAMNYA", udise: "23351001801", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) CHAK SANGWANI", udise: "23351001902", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS PANDAJHIRI", udise: "23351002001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS PHOPHLYA (MAL)", udise: "23351016601", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS TARAMKHEDA RAIYAT 1 TO 8", udise: "23351017001", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS BOD 1 TO 8", udise: "23351003602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DHODHARAMAHU", udise: "23351007101", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) BHIMPURA", udise: "23351007103", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) PANDRA SEL", udise: "23351007104", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS DHODHRAMAU 6 TO 10", udise: "23351007105", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KHARWAR", udise: "23351007201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) BANDIDHANA", udise: "23351007302", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS TIMARNI 1 TO 8", udise: "23351007303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS PAT 1 TO 8", udise: "23351007402", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS DABRI 1 to 10", udise: "23351007503", category: "Primary to High School (Class 1 to 10)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) RUMAKOL", udise: "23351007504", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) DONDIYA KAU", udise: "23351007505", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DHANVAR", udise: "23351007601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS TARAMKHEDA", udise: "23351007701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS SAWRIDA", udise: "23351007801", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DHUTTAPURA", udise: "23351007901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS PHOPHLYA", udise: "23351001601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS PHOPHLYA 6 TO 10", udise: "23351001604", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS NIMIYA", udise: "23351001701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "PS SANGWANI", udise: "23351001901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BUDIMAI", udise: "23351002201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KESIYA 1 TO 8", udise: "23351008502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) PINJARA DHANA", udise: "23351008503", category: "Primary School (Class 1 to 5)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) OOJHA DHANA", udise: "23351008504", category: "Primary School (Class 1 to 5)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BONDRI", udise: "23351008601", category: "Primary School (Class 1 to 5)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS SEHRA 1 TO 8", udise: "23351008702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KANHEGAON 1 TO 8", udise: "23351008803", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) GONDIDHANA", udise: "23351009002", category: "Primary School (Class 1 to 5)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) TEKRI DHANA", udise: "23351009004", category: "Primary School (Class 1 to 5)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS MANDAI BUJURGE 1 to 10", udise: "23351009005", category: "Primary to High School (Class 1 to 10)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BHAGUDHANA", udise: "23351009701", category: "Primary School (Class 1 to 5)", jsk: "Kesiya", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DHOLYADHANA", udise: "23351010001", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HSS RAMPUR MAL 1 TO 12", udise: "23351010903", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KHOKRA 1 TO 8", udise: "23351011002", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) NAKADHANA", udise: "23351011003", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS SITALJHIRI 1 TO 8", udise: "23351011102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) NAVALSINGH DHANA", udise: "23351011103", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS THAPPA", udise: "23351011201", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) KHEDA DHANA", udise: "23351011202", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS HATHIKUND", udise: "23351011301", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS RAMPUR RAIYAT", udise: "23351011401", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) BADA DHANA", udise: "23351011402", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS TEMRA", udise: "23351011501", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS NEW TEMRA MAL", udise: "23351011503", category: "Middle School (Class 6 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) TEMRA RAIYAT", udise: "23351014201", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) GAOLIDHANA", udise: "23351017101", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS (S) NAVRANGDHANA", udise: "23351010103", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS KUNDI 1 TO 10", udise: "23351010104", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS MAGARDOH", udise: "23351010201", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KAMTI", udise: "23351010301", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BANKAKHODRI", udise: "23351010401", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) KHODRI", udise: "23351010402", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS (U) THANIKHEDA", udise: "23351010403", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS NEW BANKAKHODRI", udise: "23351010404", category: "Middle School (Class 6 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KUSMARI", udise: "23351010501", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS MARDANPUR 1 TO 8", udise: "23351010602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DAODI", udise: "23351010701", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BHUMKADHANA", udise: "23351010801", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS NEW DHASAI 1 TO 8", udise: "23351011702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS RANAPURA 1 TO 8", udise: "23351011802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BHATNA", udise: "23351012001", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) HEERAWADI", udise: "23351015001", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) JAMNAGRI", udise: "23351015201", category: "Primary School (Class 1 to 5)", jsk: "Kundi", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KUPPA 1 TO 8", udise: "23351003303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS TETARMAL", udise: "23351003401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BANKABHARDA", udise: "23351004301", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS PATWAPURA", udise: "23351000103", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS CHIKHALDA (KHURD)", udise: "23351000201", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "PS CHAPDA (RAIYAT)", udise: "23351000301", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS JHILPA", udise: "23351000501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS PHAWADI", udise: "23351000601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS PHAWADI", udise: "23351000602", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "PS(U) CHILAM TEKRI", udise: "23351000603", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) TEKRIPURA", udise: "23351000704", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS RAIPUR 1 TO 10", udise: "23351000705", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS JAMUNDHANA", udise: "23351000801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS JAMUNDHANA", udise: "23351000802", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS SEMARPUR", udise: "23351000901", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS PAWAR JHANDA 1 TO 10", udise: "23351001004", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS MUDHA", udise: "23351001101", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS MUDHA", udise: "23351001102", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(SATT) MUDHA", udise: "23351001103", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS AAMDHANA", udise: "23351001201", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) GAONAPUR", udise: "23351012401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) CHAOKIDHANA", udise: "23351002304", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) JILERI", udise: "23351002305", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT HS BHAYAWADI 1 TO 10", udise: "23351002307", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS DESHAWADI", udise: "23351002401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS DESHAWADI", udise: "23351002402", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) ADMADHANA", udise: "23351002403", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS MOKHAMAL", udise: "23351002501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS MOKHARAIYAT", udise: "23351002601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) CHITARIBAD", udise: "23351002602", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS MALI SILPATI 1 TO 8", udise: "23351002702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BARETHA", udise: "23351002801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS BARETHA", udise: "23351002802", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS NISHANA", udise: "23351003701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) DEHRI PATHAR", udise: "23351003804", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS SILPATI 1 TO 10", udise: "23351003807", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS BOYS SHAHPUR 1 TO 8", udise: "23351003907", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS SOHAGPUR DHANA", udise: "23351004001", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KOTMI", udise: "23351004101", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KOTMI 1 TO 8", udise: "23351004102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KANTAWADI", udise: "23351004201", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS KANTAWADI", udise: "23351004202", category: "Middle School (Class 6 to 8)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BHAKTANDHANA", udise: "23351004501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS PATAI", udise: "23351004601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS PATAI 6 TO 10", udise: "23351004603", category: "Middle to High School (Class 6 to 10)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS PALASPANI", udise: "23351004701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KALAPANI", udise: "23351004801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS GENDIDHANA", udise: "23351004901", category: "Primary School (Class 1 to 5)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT.HSS MODEL (RMSA) SHAHPUR (Hindi)", udise: "23351003914", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Shahpur", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BARBATPUR", udise: "23351000401", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GOVT. HS GHISIBAGLA 6 TO 10", udise: "23351009103", category: "Middle to High School (Class 6 to 10)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) RUMA DHANA", udise: "23351008802", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS AAVRIYA", udise: "23351008901", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) MADIYA DHANA", udise: "23351009003", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS GHISIBAGLA", udise: "23351009101", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS TARA", udise: "23351009201", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS TARA", udise: "23351009202", category: "Middle School (Class 6 to 8)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) BATTI DHANA", udise: "23351009203", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) TENDUDHANA", udise: "23351009204", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS CHIKHALI RAIYAT", udise: "23351009301", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS CHIKHALI RAIYAT", udise: "23351009302", category: "Middle School (Class 6 to 8)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) JARGAL DHANA", udise: "23351009303", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) BAGAT DHANA", udise: "23351009304", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS CHIKHALI MAL", udise: "23351009401", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS CHIKHALI MAL", udise: "23351009402", category: "Middle School (Class 6 to 8)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS THUMKA", udise: "23351009501", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) GAOLAN DHANA", udise: "23351009502", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS THUMKA RAIYAT", udise: "23351009504", category: "Middle School (Class 6 to 8)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KAODIYA", udise: "23351009601", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS BAGLADHANA", udise: "23351009801", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GMS MANJIRADHANA 1 TO 8", udise: "23351009902", category: "Primary with Middle School (Class 1 to 8)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS(U) MATHI GARH", udise: "23351016501", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS CHIROTIYA", udise: "23351006601", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
+  {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara", scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0}
 ];
 
-let schools = JSON.parse(localStorage.getItem("brc_schools")) || defaultSchools;
+let currentSession = "2026-27";
+let currentEditingIndex = -1;
 
-function saveToStorage(){
-  localStorage.setItem("brc_schools", JSON.stringify(schools));
+function getStorageKey(){
+  return "brc_caste_schools_v6_" + currentSession;
+}
+
+function getSessionData(){
+  let data = localStorage.getItem(getStorageKey());
+  if(!data){
+    return JSON.parse(JSON.stringify(initialSchools));
+  }
+  return JSON.parse(data);
+}
+
+function saveSessionData(data){
+  localStorage.setItem(getStorageKey(), JSON.stringify(data));
 }
 
 function checkAuth(){
@@ -204,8 +445,16 @@ if(sessionStorage.getItem("brc_logged_in") === "true"){
 }
 
 function initPortal(){
+  currentSession = document.getElementById("sessionSelect").value;
+  document.getElementById("dashTitle").innerText = `📊 BRC Shahpur Overview (Session: ${currentSession})`;
+  document.getElementById("recordsTitle").innerText = `📋 Caste & Category Wise School Records (${currentSession})`;
   renderTable();
   updateStats();
+}
+
+function changeSession(){
+  currentSession = document.getElementById("sessionSelect").value;
+  initPortal();
 }
 
 function showSection(id){
@@ -214,132 +463,130 @@ function showSection(id){
   if(id === 'records') renderTable();
 }
 
-function calcTotal(){
-  let b = parseInt(document.getElementById("inBoys").value) || 0;
-  let g = parseInt(document.getElementById("inGirls").value) || 0;
-  document.getElementById("inTotal").value = b + g;
-}
-
-function saveSchoolData(){
-  let name = document.getElementById("inName").value.trim();
-  let udise = document.getElementById("inUdise").value.trim();
-  let jsk = document.getElementById("inJsk").value;
-  let boys = parseInt(document.getElementById("inBoys").value) || 0;
-  let girls = parseInt(document.getElementById("inGirls").value) || 0;
-  let editIdx = parseInt(document.getElementById("editIndex").value);
-  let alertBox = document.getElementById("formAlert");
-
-  if(!name || !udise){
-    alertBox.style.display = "block";
-    alertBox.innerText = "Kripya School Name aur UDISE Code darj karein!";
-    return;
-  }
-
-  // Duplicate UDISE check
-  let existingIndex = schools.findIndex(s => s.udise === udise);
-  if(existingIndex !== -1 && existingIndex !== editIdx){
-    alertBox.style.display = "block";
-    alertBox.innerText = "Error: Yeh UDISE Code pehle se darj hai (Duplicate UDISE not allowed)!";
-    return;
-  }
-
-  alertBox.style.display = "none";
-
-  if(editIdx === -1){
-    schools.push({name, udise, jsk, boys, girls});
-  } else {
-    schools[editIdx] = {name, udise, jsk, boys, girls};
-    document.getElementById("editIndex").value = -1;
-    document.getElementById("formTitle").innerText = "➕ Naya School / Data Feed Karein";
-  }
-
-  saveToStorage();
-  resetForm();
-  showSection('records');
-  updateStats();
-}
-
-function resetForm(){
-  document.getElementById("inName").value = "";
-  document.getElementById("inUdise").value = "";
-  document.getElementById("inBoys").value = "";
-  document.getElementById("inGirls").value = "";
-  document.getElementById("inTotal").value = "";
-  document.getElementById("editIndex").value = -1;
-  document.getElementById("formTitle").innerText = "➕ Naya School / Data Feed Karein";
-  document.getElementById("formAlert").style.display = "none";
-}
-
-function editSchool(index){
+function openEditModal(index){
+  currentEditingIndex = index;
+  let schools = getSessionData();
   let s = schools[index];
-  document.getElementById("inName").value = s.name;
-  document.getElementById("inUdise").value = s.udise;
-  document.getElementById("inJsk").value = s.jsk;
-  document.getElementById("inBoys").value = s.boys;
-  document.getElementById("inGirls").value = s.girls;
-  calcTotal();
-  document.getElementById("editIndex").value = index;
-  document.getElementById("formTitle").innerText = "✏️ School Data Edit Karein";
-  showSection('addform');
+  
+  document.getElementById("modalSchoolName").innerText = s.name;
+  document.getElementById("modalUdise").innerText = "UDISE: " + s.udise + " | JSK: " + s.jsk;
+  
+  document.getElementById("scB").value = s.scB || 0;
+  document.getElementById("scG").value = s.scG || 0;
+  document.getElementById("stB").value = s.stB || 0;
+  document.getElementById("stG").value = s.stG || 0;
+  document.getElementById("obcB").value = s.obcB || 0;
+  document.getElementById("obcG").value = s.obcG || 0;
+  document.getElementById("genB").value = s.genB || 0;
+  document.getElementById("genG").value = s.genG || 0;
+  
+  calcModalTotal();
+  document.getElementById("editModal").style.display = "flex";
 }
 
-function deleteSchool(index){
-kya_delete = confirm("Kya aap is school ko delete karna chahte hain?");
-  if(kya_delete){
-    schools.splice(index, 1);
-    saveToStorage();
-    renderTable();
-    updateStats();
-  }
+function closeModal(){
+  document.getElementById("editModal").style.display = "none";
+}
+
+function calcModalTotal(){
+  let sum = parseInt(document.getElementById("scB").value||0) + parseInt(document.getElementById("scG").value||0) +
+            parseInt(document.getElementById("stB").value||0) + parseInt(document.getElementById("stG").value||0) +
+            parseInt(document.getElementById("obcB").value||0) + parseInt(document.getElementById("obcG").value||0) +
+            parseInt(document.getElementById("genB").value||0) + parseInt(document.getElementById("genG").value||0);
+  document.getElementById("modalTotalSum").innerText = sum;
+}
+
+function saveModalData(){
+  let schools = getSessionData();
+  let s = schools[currentEditingIndex];
+  
+  s.scB = parseInt(document.getElementById("scB").value) || 0;
+  s.scG = parseInt(document.getElementById("scG").value) || 0;
+  s.stB = parseInt(document.getElementById("stB").value) || 0;
+  s.stG = parseInt(document.getElementById("stG").value) || 0;
+  s.obcB = parseInt(document.getElementById("obcB").value) || 0;
+  s.obcG = parseInt(document.getElementById("obcG").value) || 0;
+  s.genB = parseInt(document.getElementById("genB").value) || 0;
+  s.genG = parseInt(document.getElementById("genG").value) || 0;
+  
+  saveSessionData(schools);
+  closeModal();
+  renderTable();
+  updateStats();
 }
 
 function renderTable(){
   let jskVal = document.getElementById("jskFilter").value;
+  let catVal = document.getElementById("catFilter").value;
+  let statusVal = document.getElementById("statusFilter").value;
   let query = document.getElementById("searchBox").value.toLowerCase();
+  
+  let schools = getSessionData();
   let tbody = document.getElementById("schoolTableBody");
   tbody.innerHTML = "";
 
   let filtered = schools.filter(s => {
-    let matchJsk = (jskVal === "ALL" || s.jsk === jskVal);
+    let total = (s.scB||0) + (s.scG||0) + (s.stB||0) + (s.stG||0) + (s.obcB||0) + (s.obcG||0) + (s.genB||0) + (s.genG||0);
+    let isFilled = total > 0;
+
+    let matchJsk = (jskVal === "ALL" || s.jsk.toLowerCase() === jskVal.toLowerCase());
+    let matchCat = (catVal === "ALL" || s.category.toLowerCase().includes(catVal.toLowerCase()));
+    let matchStatus = (statusVal === "ALL" || (statusVal === "FILLED" && isFilled) || (statusVal === "PENDING" && !isFilled));
     let matchQuery = s.name.toLowerCase().includes(query) || s.udise.includes(query);
-    return matchJsk && matchQuery;
+
+    return matchJsk && matchCat && matchStatus && matchQuery;
   });
 
   if(filtered.length === 0){
-कोई_data = `<tr><td colspan="8" style="text-align:center;color:#64748b;">Koi data uplabdh nahi hai.</td></tr>`;
-    tbody.innerHTML = कोई_data;
+    tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;color:#64748b;padding:20px;">Koi data uplabdh nahi hai.</td></tr>`;
     return;
   }
 
   filtered.forEach((s, idx) => {
     let realIdx = schools.indexOf(s);
-    let total = s.boys + s.girls;
+    let total = (s.scB||0) + (s.scG||0) + (s.stB||0) + (s.stG||0) + (s.obcB||0) + (s.obcG||0) + (s.genB||0) + (s.genG||0);
+    let isFilled = total > 0;
+    let statusBadge = isFilled ? `<span class="tag-green">Filled</span>` : `<span class="tag-red">Pending</span>`;
+
     let row = `<tr>
       <td>${idx + 1}</td>
-      <td><strong>${s.name}</strong></td>
+      <td style="text-align:left"><strong>${s.name}</strong></td>
       <td>${s.udise}</td>
+      <td style="text-align:left;font-size:12px;">${s.category}</td>
       <td>${s.jsk}</td>
-      <td>${s.boys}</td>
-      <td>${s.girls}</td>
+      <td>${s.scB}</td><td>${s.scG}</td>
+      <td>${s.stB}</td><td>${s.stG}</td>
+      <td>${s.obcB}</td><td>${s.obcG}</td>
+      <td>${s.genB}</td><td>${s.genG}</td>
       <td><strong>${total}</strong></td>
-      <td>
-        <button style="padding:5px 10px;font-size:12px;" onclick="editSchool(${realIdx})">Edit</button>
-        <button style="padding:5px 10px;font-size:12px;" class="danger" onclick="deleteSchool(${realIdx})">Delete</button>
-      </td>
+      <td>${statusBadge}</td>
+      <td><button style="padding:5px 10px;font-size:12px;" onclick="openEditModal(${realIdx})">Edit</button></td>
     </tr>`;
     tbody.innerHTML += row;
   });
 }
 
 function updateStats(){
+  let schools = getSessionData();
   let totalSchools = schools.length;
-  let totalBoys = schools.reduce((sum, s) => sum + s.boys, 0);
-  let totalGirls = schools.reduce((sum, s) => sum + s.girls, 0);
+  let totalBoys = 0, totalGirls = 0, filledCount = 0, pendingCount = 0;
+
+  schools.forEach(s => {
+    let boys = (s.scB||0) + (s.stB||0) + (s.obcB||0) + (s.genB||0);
+    let girls = (s.scG||0) + (s.stG||0) + (s.obcG||0) + (s.genG||0);
+    totalBoys += boys;
+    totalGirls += girls;
+    if((boys + girls) > 0) filledCount++;
+    else pendingCount++;
+  });
+
   let totalEnroll = totalBoys + totalGirls;
 
   document.getElementById("statSchools").innerText = totalSchools;
-  document.getElementById("statEnroll").innerText = totalEnroll.toLocaleString();
+  document.getElementById("statTotal").innerText = totalEnroll.toLocaleString();
   document.getElementById("statBoysGirls").innerText = `Boys: ${totalBoys.toLocaleString()} | Girls: ${totalGirls.toLocaleString()}`;
+  document.getElementById("statFilled").innerText = filledCount;
+  document.getElementById("statPending").innerText = pendingCount;
 }
 </script>
 </body>
