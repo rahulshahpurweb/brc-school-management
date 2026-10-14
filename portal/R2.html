@@ -3,96 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BRC Portal - Module 1 (R2)</title>
+<title>BRC Shahpur - Master Portal</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
-header{background:#1d4ed8;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
-header h1{margin:0;font-size:20px}
-
-/* Top Internal Menu for all Modules */
-.portal-nav{display:flex;gap:8px;flex-wrap:wrap;background:#ffffff;padding:10px 20px;border-bottom:2px solid #e2e8f0;box-shadow:0 2px 4px rgba(0,0,0,0.04)}
-.nav-tab{padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:13px;color:#1d4ed8;background:#e0e7ff}
-.nav-tab.active{background:#1d4ed8;color:#ffffff}
-.nav-tab:hover{opacity:0.9}
-.logout-btn{margin-left:auto;background:#fee2e2;color:#dc2626;padding:8px 14px;border-radius:8px;border:0;font-weight:bold;cursor:pointer}
-
-main{max-width:1200px;margin:20px auto;padding:0 15px}
-.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 6px #ddd;margin-bottom:15px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.num{font-size:28px;font-weight:bold;color:#1d4ed8}
-
-/* Login Overlay */
-#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.92);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
-.auth-card{background:#ffffff;border-radius:18px;max-width:380px;width:100%;padding:28px;text-align:center;box-shadow:0 12px 35px rgba(0,0,0,0.3)}
-.auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px}
-.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer}
-.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+.master-header{background:linear-gradient(135deg,#071b38,#0e3d7e);color:white;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #f4b400;flex-shrink:0;flex-wrap:wrap;gap:10px}
+.brand-title{font-size:17px;font-weight:900;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.module-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
+.mod-tab{background:#ffffff18;color:#e2e8f0;border:1px solid #ffffff33;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:bold;white-space:nowrap;cursor:pointer;transition:all 0.2s ease}
+.mod-tab:hover{background:#ffffff30;color:#fff}
+.mod-tab.active{background:#ffd21c;color:#082a63;border-color:#ffd21c;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.frame-container{flex:1;width:100%;height:100%;background:#f4f7fb}
+#moduleFrame{width:100%;height:100%;border:0}
 </style>
 </head>
 <body>
 
-<!-- Login Check -->
-<div id="authOverlay">
-  <div class="auth-card">
-    <h2>🔐 BRC Portal Login</h2>
-    <p>Portal access karne ke liye password dalein</p>
-    <div id="authErr" class="auth-err">Galat Password!</div>
-    <input type="password" id="authPass" class="auth-input" placeholder="Password daalein" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Login</button>
-    <div style="margin-top:12px">
-      <a href="index.html" style="color:#1769df;text-decoration:none;font-size:13px">← Public Page par jayein</a>
-    </div>
+<header class="master-header">
+  <div class="brand-title">
+    <span>🏛️ जनपद शिक्षा केन्द्र शाहपुर | BRC Portal</span>
   </div>
-</div>
 
-<header>
-  <h1>BRC Management Portal - Shahpur</h1>
-  <span style="font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:12px">Module 1 (R2)</span>
+  <div class="module-tabs">
+    <!-- Path fix kiya gaya hai taaki portal folder ke andar ki file sahi load ho -->
+    <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Shiksha Sanjeevani (R2)</button>
+    <a href="../index.html" class="mod-tab" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Public Portal</a>
+  </div>
 </header>
 
-<!-- ANDAR KA MENU: Yahan se bina bahar gaye dusre modules par ja sakte hain -->
-<nav class="portal-nav">
-  <a href="R2.html" class="nav-tab active">🏫 Module 1 (Schools / Data)</a>
-  <a href="R3.html" class="nav-tab">📋 Module 2 (Reports / Exam)</a>
-  <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-</nav>
-
-<main>
-  <!-- R2 Module Content -->
-  <div class="card">
-    <h2>Module 1: Shala Dashboard</h2>
-    <div class="grid">
-      <div class="card"><div class="num">162</div><div>Total Schools</div></div>
-      <div class="card"><div class="num">128</div><div>Verified SNA</div></div>
-      <div class="card"><div class="num">34</div><div>Pending</div></div>
-    </div>
-  </div>
-</main>
+<div class="frame-container">
+  <iframe id="moduleFrame" src="R2.html"></iframe>
+</div>
 
 <script>
-const BRC_PASS = "brc@shahpur";
-
-function checkAuth(){
-  const val = document.getElementById("authPass").value.trim();
-  const err = document.getElementById("authErr");
-  if(val === BRC_PASS){
-    document.getElementById("authOverlay").style.display = "none";
-    sessionStorage.setItem("brc_logged_in", "true");
-  } else {
-    err.style.display = "block";
-  }
-}
-
-function logout(){
-  sessionStorage.removeItem("brc_logged_in");
-  window.location.href = "index.html";
-}
-
-// Session check: Agar pehle se login hai toh password dobara nahi mangega
-if(sessionStorage.getItem("brc_logged_in") === "true"){
-  document.getElementById("authOverlay").style.display = "none";
+function loadModule(fileName, btnElement){
+  document.getElementById('moduleFrame').src = fileName;
+  document.querySelectorAll('.mod-tab').forEach(b => b.classList.remove('active'));
+  if(btnElement) btnElement.classList.add('active');
 }
 </script>
+
 </body>
 </html>
