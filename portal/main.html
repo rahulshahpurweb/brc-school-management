@@ -22,7 +22,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .frame-container{flex:1;width:100%;height:100%;background:#f4f7fb}
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* LOGIN OVERLAY FOR MASTER PORTAL */
+/* LOGIN OVERLAY */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
 .auth-card{background:#ffffff;border-radius:18px;max-width:380px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
@@ -34,16 +34,16 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 </head>
 <body>
 
-<!-- Login Lock Screen on Master Portal -->
-<!--<div id="authOverlay">
+<!-- Login Lock Screen (Secured Access) -->
+<div id="authOverlay">
   <div class="auth-card">
-    <h2>🔐 BRC_Login</h2>
-
-    <div id="authErr" class="auth-err">Wrong Password</div>
-    <input type="password" id="authPass" class="auth-input" placeholder="Password (Enter Password)" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Login</button>
+    <h2>🔐 BRC Staff Login</h2>
+    <p>Portal access karne ke liye password darj karein.</p>
+    <div id="authErr" class="auth-err">Galat Password! Punah prayas karein.</div>
+    <input type="password" id="authPass" class="auth-input" placeholder="Password (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Login karein</button>
   </div>
-</div>-->
+</div>
 
 <header class="master-header">
   <div class="brand-title">
@@ -53,7 +53,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
   <div class="module-tabs">
     <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Enrollment</button>
     <button class="mod-tab" onclick="loadModule('R3.html', this)">♿ CWSN</button>
-    <a href="../index.html" class="mod-tab" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Public Portal</a>
+    <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Logout</button>
   </div>
 </header>
 
@@ -63,6 +63,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 
 <script>
 const BRC_PASS = "brc@shahpur";
+let inactivityTimer;
 
 function checkAuth(){
   const val = document.getElementById("authPass").value.trim();
@@ -70,15 +71,47 @@ function checkAuth(){
   if(val === BRC_PASS){
     document.getElementById("authOverlay").style.display = "none";
     sessionStorage.setItem("brc_logged_in", "true");
+    resetInactivityTimer();
   } else {
     err.style.display = "block";
   }
 }
 
-// Agar pehle se login hain toh screen khuli rahegi
+// Check if already logged in on page load
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   document.getElementById("authOverlay").style.display = "none";
+  resetInactivityTimer();
+} else {
+  document.getElementById("authOverlay").style.display = "flex";
 }
+
+function logoutSession(){
+  sessionStorage.removeItem("brc_logged_in");
+  document.getElementById("authOverlay").style.display = "flex";
+  document.getElementById("authPass").value = "";
+}
+
+// SESSION TIMEOUT (Auto Logout after 15 minutes of inactivity)
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  // 15 minutes = 2 * 60 * 1000 milliseconds = 120000 ms
+  inactivityTimer = setTimeout(() => {
+    alert("Session Timeout: 15 minute tak koi activity na hone ke karan aapko logout kar diya gaya hai.");
+    logoutSession();
+  }, 900000); 
+}
+
+// Track user activity (mouse movement, keystrokes, clicks) to reset timeout
+window.onload = function() {
+  const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+  events.forEach(eventName => {
+    document.addEventListener(eventName, () => {
+      if(sessionStorage.getItem("brc_logged_in") === "true") {
+        resetInactivityTimer();
+      }
+    }, true);
+  });
+};
 
 function loadModule(fileName, btnElement){
   document.getElementById('moduleFrame').src = fileName;
