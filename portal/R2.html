@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Class & Caste Wise Enrollment Portal - BRC Shahpur</title>
+<title>Class & Caste Wise Enrollment & Compilation Portal - BRC Shahpur</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
@@ -23,23 +23,13 @@ section.active{display:block}
 .subtext{font-size:12px;color:#64748b;margin-top:4px}
 .filter-bar{background:#fff;padding:14px;border-radius:12px;margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 6px #ddd}
 select, input{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
-.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 6px #ddd;max-height:65vh}
-table{width:100%;border-collapse:collapse;min-width:1300px}
-th,td{padding:10px 10px;border:1px solid #e5e7eb;text-align:center;font-size:12px}
+.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 6px #ddd;max-height:70vh}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+th,td{padding:8px 10px;border:1px solid #cbd5e1;text-align:center;font-size:12px}
 th{background:#eef2ff;color:#1e3a8a;position:sticky;top:0;z-index:2}
-td:nth-child(2), td:nth-child(1){text-align:left}
-.tag-red{background:#fee2e2;color:#dc2626;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px}
-.tag-green{background:#dcfce7;color:#15803d;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px}
-
-/* EDIT MODAL */
-#editModal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:15px}
-.modal-card{background:#fff;border-radius:16px;max-width:750px;width:100%;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto}
-.modal-card h3{margin-top:0;color:#1e3a8a}
-.class-box{background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:10px;margin-bottom:12px}
-.class-box h5{margin:0 0 8px 0;color:#1d4ed8;font-size:14px}
-.form-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;margin-bottom:6px}
-.form-group label{display:block;font-weight:bold;font-size:11px;margin-bottom:3px}
-.form-group input{width:100%;padding:6px;font-size:13px}
+td:nth-child(1), th:nth-child(1){text-align:left}
+.total-row{background:#f1f5f9;font-weight:bold}
+.jsk-header{background:#e2e8f0;color:#0f172a;text-align:left;font-weight:bold;font-size:13px}
 
 /* LOGIN OVERLAY */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.92);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
@@ -57,28 +47,10 @@ td:nth-child(2), td:nth-child(1){text-align:left}
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC Staff Login</h2>
-    <p>Enrollment Portal dekhne hetu password darj karein.</p>
+    <p>Portal dekhne hetu password darj karein.</p>
     <div id="authErr" class="auth-err">Galat Password! Punah prayas karein.</div>
     <input type="password" id="authPass" class="auth-input" placeholder="Password (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login karein</button>
-  </div>
-</div>
-
-<div id="editModal">
-  <div class="modal-card">
-    <h3 id="modalSchoolName">Edit Class & Caste Enrollment</h3>
-    <p id="modalUdise" style="font-size:12px;color:#64748b;margin-bottom:15px;"></p>
-    
-    <div id="classesFormContainer"></div>
-
-    <div style="background:#f1f5f9;padding:12px;border-radius:8px;margin-bottom:15px;font-weight:bold;text-align:center;font-size:15px;">
-      Total School Enrollment: <span id="modalTotalSum" style="color:#1d4ed8">0</span>
-    </div>
-
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button class="secondary" onclick="closeModal()">Cancel</button>
-      <button onclick="saveModalData()">Save Changes</button>
-    </div>
   </div>
 </div>
 
@@ -96,33 +68,72 @@ td:nth-child(2), td:nth-child(1){text-align:left}
 </header>
 
 <nav>
-  <button onclick="showSection('dash')">📊 Summary & Status</button>
-  <button onclick="showSection('records')">📋 School Records & Filters</button>
-  <label class="button" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;display:inline-block;">
-    📤 Bulk Excel Upload <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none" onchange="handleExcelUpload(event)">
-  </label>
-  <button class="success" onclick="exportToExactExcelFormat()">📥 Exact Excel Download</button>
+  <button onclick="showSection('dash')">📊 Summary Dashboard</button>
+  <button onclick="showSection('entry')">✍️ School Data Entry View</button>
+  <button onclick="showSection('compilation')">📑 JSK-wise Compilation Report</button>
+  <button class="success" onclick="exportToExcel()">📥 Excel Download</button>
   <button class="secondary" onclick="window.print()">🖨️ Print Report</button>
   <button class="secondary" onclick="logout()" style="margin-left:auto">🚪 Logout</button>
 </nav>
 
 <main>
+  <!-- DASHBOARD -->
   <section id="dash" class="active">
     <h3 id="dashTitle">📊 BRC Shahpur Overview (Session: 2026-27)</h3>
     <div class="grid">
       <div class="card"><div class="num" id="statSchools">203</div><div>Total Schools</div></div>
       <div class="card"><div class="num" id="statTotal">0</div><div>Total Enrollment</div><div class="subtext" id="statBoysGirls">Boys: 0 | Girls: 0</div></div>
       <div class="card"><div class="num" id="statFilled" style="color:#15803d">0</div><div>Entry Completed</div></div>
-      <div class="card"><div class="num" id="statPending" style="color:#dc2626">0</div><div>Pending (Red Mark)</div></div>
     </div>
   </section>
 
-  <section id="records">
-    <h3 id="recordsTitle">📋 Class & Caste Wise School Records</h3>
+  <!-- 1. SCHOOL DATA ENTRY VIEW -->
+  <section id="entry">
+    <h3>✍️ School Dwara Bhara Jaye Tab Aisa Dikhe (Data Entry View)</h3>
     <div class="filter-bar">
-      <label><b>JSK (Sankul):</b></label>
-      <select id="jskFilter" onchange="renderTable()">
-        <option value="ALL">-- All Sankul --</option>
+      <label><b>School Chunein:</b></label>
+      <select id="schoolSelect" onchange="loadSchoolEntryForm()" style="flex:1;max-width:400px;font-weight:bold;">
+        <!-- Dynamic schools list -->
+      </select>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:middle;width:120px;">Class</th>
+            <th colspan="2">sc</th>
+            <th colspan="2">st</th>
+            <th colspan="2">obc</th>
+            <th colspan="2">gen</th>
+            <th colspan="2">toal</th>
+            <th rowspan="2" style="vertical-align:middle;width:60px;">T</th>
+          </tr>
+          <tr>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
+            <th>B</th><th>G</th>
+          </tr>
+        </thead>
+        <tbody id="entryTableBody">
+          <!-- JS Dynamic Classes 1 to 8 -->
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:15px;text-align:right;">
+      <button onclick="saveCurrentSchoolData()" style="padding:12px 24px;font-size:15px;">💾 Save Data</button>
+    </div>
+  </section>
+
+  <!-- 2. JSK-WISE COMPILATION REPORT VIEW -->
+  <section id="compilation">
+    <h3 id="compTitle">📑 2 Step For Report Compilation ki liye (Only JSK wise report)</h3>
+    <div class="filter-bar">
+      <label><b>JSK Filter:</b></label>
+      <select id="compJskFilter" onchange="renderCompilationReport()">
+        <option value="ALL">-- All JSK (Sankul) --</option>
         <option value="Bhoura">Bhoura</option>
         <option value="Bijadehi">Bijadehi</option>
         <option value="Dhodhramau">Dhodhramau</option>
@@ -131,45 +142,25 @@ td:nth-child(2), td:nth-child(1){text-align:left}
         <option value="Shahpur">Shahpur</option>
         <option value="Tara">Tara</option>
       </select>
-
-      <label><b>Category:</b></label>
-      <select id="catFilter" onchange="renderTable()">
-        <option value="ALL">-- All Categories --</option>
-        <option value="Primary">Primary School</option>
-        <option value="Middle">Middle School</option>
-        <option value="High">High School</option>
-        <option value="Higher Secondary">Higher Secondary</option>
-      </select>
-
-      <label><b>Status:</b></label>
-      <select id="statusFilter" onchange="renderTable()">
-        <option value="ALL">-- All Status --</option>
-        <option value="FILLED">Filled (Green)</option>
-        <option value="PENDING">Pending (Red Mark)</option>
-      </select>
-
-      <input type="text" id="searchBox" placeholder="School name ya UDISE khojein..." onkeyup="renderTable()" style="flex:1;min-width:180px;">
     </div>
 
     <div class="tablewrap">
-      <table id="enrollTable">
+      <table id="compileTable">
         <thead>
           <tr>
-            <th rowspan="2">S.No.</th>
-            <th rowspan="2">School Name</th>
-            <th rowspan="2">UDISE</th>
-            <th rowspan="2">Category</th>
-            <th rowspan="2">JSK</th>
-            <th colspan="8">Class-wise Total Enrollment Summary</th>
-            <th rowspan="2">Grand Total</th>
-            <th rowspan="2">Status</th>
-            <th rowspan="2">Action</th>
-          </tr>
-          <tr>
-            <th>C-1</th><th>C-2</th><th>C-3</th><th>C-4</th><th>C-5</th><th>C-6</th><th>C-7</th><th>C-8</th>
+            <th style="width:100px;">JSK</th>
+            <th style="width:100px;">Class</th>
+            <th>SC (B)</th><th>SC (G)</th>
+            <th>ST (B)</th><th>ST (G)</th>
+            <th>OBC (B)</th><th>OBC (G)</th>
+            <th>GEN (B)</th><th>GEN (G)</th>
+            <th>Total (B)</th><th>Total (G)</th>
+            <th>T</th>
           </tr>
         </thead>
-        <tbody id="schoolTableBody"></tbody>
+        <tbody id="compileTableBody">
+          <!-- Dynamic JSK Compilation -->
+        </tbody>
       </table>
     </div>
   </section>
@@ -385,10 +376,9 @@ const baseSchoolTemplate = [
 ];
 
 let currentSession = "2026-27";
-let currentEditingIndex = -1;
 
 function getStorageKey(){
-  return "brc_classwise_schools_v9_" + currentSession;
+  return "brc_schools_v10_" + currentSession;
 }
 
 function getSessionData(){
@@ -397,21 +387,19 @@ function getSessionData(){
     let freshList = JSON.parse(JSON.stringify(baseSchoolTemplate));
     freshList.forEach(s => {
       s.classes = {};
-      const classNames = ["Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8"];
+      const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
       classNames.forEach(c => {
         s.classes[c] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
       });
     });
 
-    // Agar session 2026-27 hai, toh initial pre-filled sample data daal do
     if(currentSession === "2026-27" && freshList.length > 0){
-      freshList[0].classes["Class-1"] = {scB:0, scG:0, stB:5, stG:5, obcB:0, obcG:0, genB:0, genG:0};
-      freshList[0].classes["Class-2"] = {scB:0, scG:0, stB:5, stG:4, obcB:0, obcG:0, genB:0, genG:0};
-      freshList[0].classes["Class-3"] = {scB:0, scG:0, stB:4, stG:2, obcB:0, obcG:0, genB:0, genG:0};
-      freshList[0].classes["Class-4"] = {scB:0, scG:0, stB:6, stG:5, obcB:0, obcG:0, genB:0, genG:0};
-      freshList[0].classes["Class-5"] = {scB:0, scG:0, stB:9, stG:3, obcB:0, obcG:0, genB:0, genG:0};
+      freshList[0].classes["Class 1"] = {scB:0, scG:0, stB:5, stG:5, obcB:0, obcG:0, genB:0, genG:0};
+      freshList[0].classes["Class 2"] = {scB:0, scG:0, stB:5, stG:4, obcB:0, obcG:0, genB:0, genG:0};
+      freshList[0].classes["Class 3"] = {scB:0, scG:0, stB:4, stG:2, obcB:0, obcG:0, genB:0, genG:0};
+      freshList[0].classes["Class 4"] = {scB:0, scG:0, stB:6, stG:5, obcB:0, obcG:0, genB:0, genG:0};
+      freshList[0].classes["Class 5"] = {scB:0, scG:0, stB:9, stG:3, obcB:0, obcG:0, genB:0, genG:0};
     }
-
     return freshList;
   }
   return JSON.parse(data);
@@ -447,9 +435,9 @@ if(sessionStorage.getItem("brc_logged_in") === "true"){
 function initPortal(){
   currentSession = document.getElementById("sessionSelect").value;
   document.getElementById("dashTitle").innerText = `📊 BRC Shahpur Overview (Session: ${currentSession})`;
-  document.getElementById("recordsTitle").innerText = `📋 Class & Caste Wise School Records (${currentSession})`;
-  renderTable();
+  populateSchoolDropdown();
   updateStats();
+  renderCompilationReport();
 }
 
 function changeSession(){
@@ -460,164 +448,228 @@ function changeSession(){
 function showSection(id){
   document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  if(id === 'records') renderTable();
+  if(id === 'entry') loadSchoolEntryForm();
+  if(id === 'compilation') renderCompilationReport();
 }
 
-function getSchoolTotal(s){
-  let total = 0;
-  for(let c in s.classes){
-    let cl = s.classes[c];
-    total += (cl.scB||0) + (cl.scG||0) + (cl.stB||0) + (cl.stG||0) + (cl.obcB||0) + (cl.obcG||0) + (cl.genB||0) + (cl.genG||0);
-  }
-  return total;
-}
-
-function getClassTotal(cl){
-  return (cl.scB||0) + (cl.scG||0) + (cl.stB||0) + (cl.stG||0) + (cl.obcB||0) + (cl.obcG||0) + (cl.genB||0) + (cl.genG||0);
-}
-
-function openEditModal(index){
-  currentEditingIndex = index;
+function populateSchoolDropdown(){
   let schools = getSessionData();
-  let s = schools[index];
+  let sel = document.getElementById("schoolSelect");
+  sel.innerHTML = "";
+  schools.forEach((s, idx) => {
+    let opt = document.createElement("option");
+    opt.value = idx;
+    opt.textContent = `${s.name} (UDISE: ${s.udise} | JSK: ${s.jsk})`;
+    sel.appendChild(opt);
+  });
+  loadSchoolEntryForm();
+}
+
+function loadSchoolEntryForm(){
+  let idx = document.getElementById("schoolSelect").value;
+  if(idx === "") return;
+  let schools = getSessionData();
+  let s = schools[idx];
   
-  document.getElementById("modalSchoolName").innerText = s.name;
-  document.getElementById("modalUdise").innerText = "UDISE: " + s.udise + " | JSK: " + s.jsk + " | Category: " + s.category;
+  let tbody = document.getElementById("entryTableBody");
+  tbody.innerHTML = "";
   
-  let container = document.getElementById("classesFormContainer");
-  container.innerHTML = "";
+  const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
   
-  const classNames = ["Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8"];
   classNames.forEach(cname => {
     if(!s.classes[cname]) {
       s.classes[cname] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
     }
     let cl = s.classes[cname];
-    let box = document.createElement("div");
-    box.className = "class-box";
-    box.innerHTML = `
-      <h5>${cname}</h5>
-      <div class="form-grid">
-        <div class="form-group"><label>SC Boys</label><input type="number" id="${cname}_scB" value="${cl.scB}" oninput="calcModalTotal()"></div>
-        <div class="form-group"><label>SC Girls</label><input type="number" id="${cname}_scG" value="${cl.scG}" oninput="calcModalTotal()"></div>
-        <div class="form-group"><label>ST Boys</label><input type="number" id="${cname}_stB" value="${cl.stB}" oninput="calcModalTotal()"></div>
-        <div class="form-group"><label>ST Girls</label><input type="number" id="${cname}_stG" value="${cl.stG}" oninput="calcModalTotal()"></div>
-      </div>
-      <div class="form-grid">
-        <div class="form-group"><label>OBC Boys</label><input type="number" id="${cname}_obcB" value="${cl.obcB}" oninput="calcModalTotal()"></div>
-        <div class="form-group"><label>OBC Girls</label><input type="number" id="${cname}_obcG" value="${cl.obcG}" oninput="calcModalTotal()"></div>
-        <div class="form-group"><label>GEN Boys</label><input type="number" id="${cname}_genB" value="${cl.genB}" oninput="calcModalTotal()"></div>
-        <div class="form-group"><label>GEN Girls</label><input type="number" id="${cname}_genG" value="${cl.genG}" oninput="calcModalTotal()"></div>
-      </div>
-    `;
-    container.appendChild(box);
+    let rowId = cname.replace(" ", "_");
+    
+    let row = `<tr>
+      <td style="font-weight:bold;background:#f8fafc;">${cname}</td>
+      <td><input type="number" id="${rowId}_scB" value="${cl.scB}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_scG" value="${cl.scG}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_stB" value="${cl.stB}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_stG" value="${cl.stG}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_obcB" value="${cl.obcB}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_obcG" value="${cl.obcG}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_genB" value="${cl.genB}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td><input type="number" id="${rowId}_genG" value="${cl.genG}" oninput="calcEntryRow('${rowId}')" style="width:100%;border:0;text-align:center;"></td>
+      <td style="background:#f8fafc;" id="${rowId}_totB">${cl.scB + cl.stB + cl.obcB + cl.genB}</td>
+      <td style="background:#f8fafc;" id="${rowId}_totG">${cl.scG + cl.stG + cl.obcG + cl.genG}</td>
+      <td style="background:#eef2ff;font-weight:bold;" id="${rowId}_T">${cl.scB + cl.scG + cl.stB + cl.stG + cl.obcB + cl.obcG + cl.genB + cl.genG}</td>
+    </tr>`;
+    tbody.innerHTML += row;
   });
   
-  calcModalTotal();
-  document.getElementById("editModal").style.display = "flex";
+  addEntryTotalRow();
 }
 
-function closeModal(){
-  document.getElementById("editModal").style.display = "none";
+function calcEntryRow(rowId){
+  let scB = parseInt(document.getElementById(`${rowId}_scB`).value)||0;
+  let scG = parseInt(document.getElementById(`${rowId}_scG`).value)||0;
+  let stB = parseInt(document.getElementById(`${rowId}_stB`).value)||0;
+  let stG = parseInt(document.getElementById(`${rowId}_stG`).value)||0;
+  let obcB = parseInt(document.getElementById(`${rowId}_obcB`).value)||0;
+  let obcG = parseInt(document.getElementById(`${rowId}_obcG`).value)||0;
+  let genB = parseInt(document.getElementById(`${rowId}_genB`).value)||0;
+  let genG = parseInt(document.getElementById(`${rowId}_genG`).value)||0;
+  
+  let totB = scB + stB + obcB + genB;
+  let totG = scG + stG + obcG + genG;
+  let T = totB + totG;
+  
+  document.getElementById(`${rowId}_totB`).innerText = totB;
+  document.getElementById(`${rowId}_totG`).innerText = totG;
+  document.getElementById(`${rowId}_T`).innerText = T;
+  
+  addEntryTotalRow();
 }
 
-function calcModalTotal(){
-  const classNames = ["Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8"];
-  let sum = 0;
+function addEntryTotalRow(){
+  const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+  let sumScB=0, sumScG=0, sumStB=0, sumStG=0, sumObcB=0, sumObcG=0, sumGenB=0, sumGenG=0;
+  
   classNames.forEach(cname => {
-    sum += parseInt(document.getElementById(`${cname}_scB`).value||0) + parseInt(document.getElementById(`${cname}_scG`).value||0) +
-           parseInt(document.getElementById(`${cname}_stB`).value||0) + parseInt(document.getElementById(`${cname}_stG`).value||0) +
-           parseInt(document.getElementById(`${cname}_obcB`).value||0) + parseInt(document.getElementById(`${cname}_obcG`).value||0) +
-           parseInt(document.getElementById(`${cname}_genB`).value||0) + parseInt(document.getElementById(`${cname}_genG`).value||0);
+    let rId = cname.replace(" ", "_");
+    sumScB += parseInt(document.getElementById(`${rId}_scB`)?.value||0);
+    sumScG += parseInt(document.getElementById(`${rId}_scG`)?.value||0);
+    sumStB += parseInt(document.getElementById(`${rId}_stB`)?.value||0);
+    sumStG += parseInt(document.getElementById(`${rId}_stG`)?.value||0);
+    sumObcB += parseInt(document.getElementById(`${rId}_obcB`)?.value||0);
+    sumObcG += parseInt(document.getElementById(`${rId}_obcG`)?.value||0);
+    sumGenB += parseInt(document.getElementById(`${rId}_genB`)?.value||0);
+    sumGenG += parseInt(document.getElementById(`${rId}_genG`)?.value||0);
   });
-  document.getElementById("modalTotalSum").innerText = sum;
+  
+  let totB = sumScB + sumStB + sumObcB + sumGenB;
+  let totG = sumScG + sumStG + sumObcG + sumGenG;
+  let grandT = totB + totG;
+  
+  let tbody = document.getElementById("entryTableBody");
+  // remove old total row if exists
+  let oldTr = document.getElementById("entryTotalRow");
+  if(oldTr) oldTr.remove();
+  
+  let tr = document.createElement("tr");
+  tr.id = "entryTotalRow";
+  tr.className = "total-row";
+  tr.innerHTML = `
+    <td>Total</td>
+    <td>${sumScB}</td><td>${sumScG}</td>
+    <td>${sumStB}</td><td>${sumStG}</td>
+    <td>${sumObcB}</td><td>${sumObcG}</td>
+    <td>${sumGenB}</td><td>${sumGenG}</td>
+    <td>${totB}</td><td>${totG}</td>
+    <td>${grandT}</td>
+  `;
+  tbody.appendChild(tr);
 }
 
-function saveModalData(){
+function saveCurrentSchoolData(){
+  let idx = document.getElementById("schoolSelect").value;
+  if(idx === "") return;
   let schools = getSessionData();
-  let s = schools[currentEditingIndex];
+  let s = schools[idx];
   
-  const classNames = ["Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8"];
+  const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
   classNames.forEach(cname => {
+    let rId = cname.replace(" ", "_");
     s.classes[cname] = {
-      scB: parseInt(document.getElementById(`${cname}_scB`).value) || 0,
-      scG: parseInt(document.getElementById(`${cname}_scG`).value) || 0,
-      stB: parseInt(document.getElementById(`${cname}_stB`).value) || 0,
-      stG: parseInt(document.getElementById(`${cname}_stG`).value) || 0,
-      obcB: parseInt(document.getElementById(`${cname}_obcB`).value) || 0,
-      obcG: parseInt(document.getElementById(`${cname}_obcG`).value) || 0,
-      genB: parseInt(document.getElementById(`${cname}_genB`).value) || 0,
-      genG: parseInt(document.getElementById(`${cname}_genG`).value) || 0,
+      scB: parseInt(document.getElementById(`${rId}_scB`).value)||0,
+      scG: parseInt(document.getElementById(`${rId}_scG`).value)||0,
+      stB: parseInt(document.getElementById(`${rId}_stB`).value)||0,
+      stG: parseInt(document.getElementById(`${rId}_stG`).value)||0,
+      obcB: parseInt(document.getElementById(`${rId}_obcB`).value)||0,
+      obcG: parseInt(document.getElementById(`${rId}_obcG`).value)||0,
+      genB: parseInt(document.getElementById(`${rId}_genB`).value)||0,
+      genG: parseInt(document.getElementById(`${rId}_genG`).value)||0,
     };
   });
   
   saveSessionData(schools);
-  closeModal();
-  renderTable();
   updateStats();
+  alert("School ka data safaltapurvak save ho gaya hai!");
 }
 
-function renderTable(){
-  let jskVal = document.getElementById("jskFilter").value;
-  let catVal = document.getElementById("catFilter").value;
-  let statusVal = document.getElementById("statusFilter").value;
-  let query = document.getElementById("searchBox").value.toLowerCase();
-  
+function renderCompilationReport(){
+  let jskFilter = document.getElementById("compJskFilter").value;
   let schools = getSessionData();
-  let tbody = document.getElementById("schoolTableBody");
+  let tbody = document.getElementById("compileTableBody");
   tbody.innerHTML = "";
-
-  let filtered = schools.filter(s => {
-    let total = getSchoolTotal(s);
-    let isFilled = total > 0;
-
-    let matchJsk = (jskVal === "ALL" || s.jsk.toLowerCase() === jskVal.toLowerCase());
-    let matchCat = (catVal === "ALL" || s.category.toLowerCase().includes(catVal.toLowerCase()));
-    let matchStatus = (statusVal === "ALL" || (statusVal === "FILLED" && isFilled) || (statusVal === "PENDING" && !isFilled));
-    let matchQuery = s.name.toLowerCase().includes(query) || s.udise.includes(query);
-
-    return matchJsk && matchCat && matchStatus && matchQuery;
-  });
-
-  if(filtered.length === 0){
-    tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;color:#64748b;padding:20px;">Koi data uplabdh nahi hai.</td></tr>`;
-    return;
-  }
-
-  filtered.forEach((s, idx) => {
-    let realIdx = schools.indexOf(s);
-    let total = getSchoolTotal(s);
-    let isFilled = total > 0;
-    let statusBadge = isFilled ? `<span class="tag-green">Filled</span>` : `<span class="tag-red">Pending</span>`;
-
-    let c1 = getClassTotal(s.classes["Class-1"]||{});
-    let c2 = getClassTotal(s.classes["Class-2"]||{});
-    let c3 = getClassTotal(s.classes["Class-3"]||{});
-    let c4 = getClassTotal(s.classes["Class-4"]||{});
-    let c5 = getClassTotal(s.classes["Class-5"]||{});
-    let c6 = getClassTotal(s.classes["Class-6"]||{});
-    let c7 = getClassTotal(s.classes["Class-7"]||{});
-    let c8 = getClassTotal(s.classes["Class-8"]||{});
-
-    let row = `<tr>
-      <td>${idx + 1}</td>
-      <td style="text-align:left"><strong>${s.name}</strong></td>
-      <td>${s.udise}</td>
-      <td style="text-align:left;font-size:11px;">${s.category}</td>
-      <td>${s.jsk}</td>
-      <td>${c1}</td><td>${c2}</td><td>${c3}</td><td>${c4}</td><td>${c5}</td><td>${c6}</td><td>${c7}</td><td>${c8}</td>
-      <td><strong>${total}</strong></td>
-      <td>${statusBadge}</td>
-      <td><button style="padding:5px 10px;font-size:11px;" onclick="openEditModal(${realIdx})">Edit</button></td>
-    </tr>`;
-    tbody.innerHTML += row;
+  
+  const jsks = ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"];
+  const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+  
+  jsks.forEach(jsk => {
+    if(jskFilter !== "ALL" && jskFilter !== jsk) return;
+    
+    // Header for JSK
+    let jskRow = document.createElement("tr");
+    jskRow.innerHTML = `<td colspan="13" class="jsk-header">${jsk}</td>`;
+    tbody.appendChild(jskRow);
+    
+    let jskTotals = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
+    
+    classNames.forEach(cname => {
+      let cScB=0, cScG=0, cStB=0, cStG=0, cObcB=0, cObcG=0, cGenB=0, cGenG=0;
+      
+      schools.forEach(s => {
+        if(s.jsk.toLowerCase() === jsk.toLowerCase()){
+          let cl = s.classes[cname] || {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
+          cScB += cl.scB; cScG += cl.scG;
+          cStB += cl.stB; cStG += cl.stG;
+          cObcB += cl.obcB; cObcG += cl.obcG;
+          cGenB += cl.genB; cGenG += cl.genG;
+        }
+      });
+      
+      jskTotals.scB += cScB; jskTotals.scG += cScG;
+      jskTotals.stB += cStB; jskTotals.stG += cStG;
+      jskTotals.obcB += cObcB; jskTotals.obcG += cObcG;
+      jskTotals.genB += cGenB; jskTotals.genG += cGenG;
+      
+      let totB = cScB + cStB + cObcB + cGenB;
+      let totG = cScG + cStG + cObcG + cGenG;
+      let T = totB + totG;
+      
+      let tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td></td>
+        <td style="text-align:left;font-weight:bold;">${cname}</td>
+        <td>${cScB}</td><td>${cScG}</td>
+        <td>${cStB}</td><td>${cStG}</td>
+        <td>${cObcB}</td><td>${cObcG}</td>
+        <td>${cGenB}</td><td>${cGenG}</td>
+        <td>${totB}</td><td>${totG}</td>
+        <td style="font-weight:bold;background:#f8fafc;">${T}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    
+    // JSK Total Row
+    let jTotB = jskTotals.scB + jskTotals.stB + jskTotals.obcB + jskTotals.genB;
+    let jTotG = jskTotals.scG + jskTotals.stG + jskTotals.obcG + jskTotals.genG;
+    let jGrand = jTotB + jTotG;
+    
+    let totTr = document.createElement("tr");
+    totTr.className = "total-row";
+    totTr.innerHTML = `
+      <td>Total</td>
+      <td style="text-align:left;">Total</td>
+      <td>${jskTotals.scB}</td><td>${jskTotals.scG}</td>
+      <td>${jskTotals.stB}</td><td>${jskTotals.stG}</td>
+      <td>${jskTotals.obcB}</td><td>${jskTotals.obcG}</td>
+      <td>${jskTotals.genB}</td><td>${jskTotals.genG}</td>
+      <td>${jTotB}</td><td>${jTotG}</td>
+      <td>${jGrand}</td>
+    `;
+    tbody.appendChild(totTr);
   });
 }
 
 function updateStats(){
   let schools = getSessionData();
   let totalSchools = schools.length;
-  let totalBoys = 0, totalGirls = 0, filledCount = 0, pendingCount = 0;
+  let totalBoys = 0, totalGirls = 0, filledCount = 0;
 
   schools.forEach(s => {
     let schoolTotalB = 0, schoolTotalG = 0;
@@ -629,148 +681,25 @@ function updateStats(){
     totalBoys += schoolTotalB;
     totalGirls += schoolTotalG;
     if((schoolTotalB + schoolTotalG) > 0) filledCount++;
-    else pendingCount++;
   });
-
-  let totalEnroll = totalBoys + totalGirls;
 
   document.getElementById("statSchools").innerText = totalSchools;
-  document.getElementById("statTotal").innerText = totalEnroll.toLocaleString();
+  document.getElementById("statTotal").innerText = (totalBoys + totalGirls).toLocaleString();
   document.getElementById("statBoysGirls").innerText = `Boys: ${totalBoys.toLocaleString()} | Girls: ${totalGirls.toLocaleString()}`;
   document.getElementById("statFilled").innerText = filledCount;
-  document.getElementById("statPending").innerText = pendingCount;
 }
 
-// Exact Excel Format Download (matching the user's uploaded screenshot format)
-function exportToExactExcelFormat(){
-  let schools = getSessionData();
-  let ws_data = [];
-
-  // Row 0: Top Header layout placeholder
-  ws_data.push(["", "", "", "", "", ""]);
-
-  // Row 1: Main Headers
-  let header1 = ["S.No.", "SCHOOL", "School Code", "Category", "JSK"];
-  const classNames = ["Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8"];
-  
-  classNames.forEach(() => {
-    header1.push("SC", "", "ST", "", "OBC", "", "GENERAL", "", "TOTAL", "", "");
-  });
-  header1.push("Actul Enrollment", "", "", "JSK", "JSK");
-  ws_data.push(header1);
-
-  // Row 2: Sub-headers for Caste
-  let header2 = ["", "", "", "", ""];
-  classNames.forEach(() => {
-    header2.push("B", "G", "B", "G", "B", "G", "B", "G", "B", "G", "T");
-  });
-  header2.push("B", "G", "T", "", "");
-  ws_data.push(header2);
-
-  // Row 3: Boys/Girls breakdown headers
-  let header3 = ["", "", "", "", ""];
-  classNames.forEach(() => {
-    header3.push("", "", "", "", "", "", "", "", "", "", "");
-  });
-  header3.push("", "", "", "", "");
-  ws_data.push(header3);
-
-  // Populate school rows
-  schools.forEach((s, idx) => {
-    let row = [idx + 1, s.name, s.udise, s.category, s.jsk];
-    let grandB = 0, grandG = 0;
-
-    classNames.forEach(cname => {
-      let cl = s.classes[cname] || {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
-      let scB = cl.scB, scG = cl.scG;
-      let stB = cl.stB, stG = cl.stG;
-      let obcB = cl.obcB, obcG = cl.obcG;
-      let genB = cl.genB, genG = cl.genG;
-
-      let totB = scB + stB + obcB + genB;
-      let totG = scG + stG + obcG + genG;
-      let totT = totB + totG;
-
-      grandB += totB;
-      grandG += totG;
-
-      row.push(scB, scG, stB, stG, obcB, obcG, genB, genG, totB, totG, totT);
-    });
-
-    let grandT = grandB + grandG;
-    row.push(grandB, grandG, grandT, s.jsk, s.jsk);
-    ws_data.push(row);
-  });
-
-  let wb = XLSX.utils.book_new();
-  let ws = XLSX.utils.aoa_to_sheet(ws_data);
-  XLSX.utils.book_append_sheet(wb, ws, "Enrollment " + currentSession);
-  XLSX.writeFile(wb, `Enrollment_${currentSession}_BRC_Shahpur.xlsx`);
-}
-
-function handleExcelUpload(event){
-  let file = event.target.files[0];
-  if(!file) return;
-
-  let reader = new FileReader();
-  reader.onload = function(e){
-    try {
-      let data = new Uint8Array(e.target.result);
-      let workbook = XLSX.read(data, {type: 'array'});
-      let firstSheetName = workbook.SheetNames[0];
-      let worksheet = workbook.Sheets[firstSheetName];
-      let jsonSheet = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-
-      let parsedSchools = [];
-      for(let i = 4; i < jsonSheet.length; i++){
-        let row = jsonSheet[i];
-        if(!row || !row[1] || !row[2]) continue;
-
-        let schoolName = String(row[1]).trim();
-        let udise = String(row[2]).trim();
-        let category = String(row[3] || "").trim();
-        let jsk = String(row[4] || "").trim();
-
-        let classesObj = {};
-        const classNames = ["Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8"];
-        let startCol = 5;
-        
-        classNames.forEach((cname, idx) => {
-          let c_start = startCol + (idx * 11);
-          classesObj[cname] = {
-            scB: parseInt(row[c_start] || 0),
-            scG: parseInt(row[c_start+1] || 0),
-            stB: parseInt(row[c_start+2] || 0),
-            stG: parseInt(row[c_start+3] || 0),
-            obcB: parseInt(row[c_start+4] || 0),
-            obcG: parseInt(row[c_start+5] || 0),
-            genB: parseInt(row[c_start+6] || 0),
-            genG: parseInt(row[c_start+7] || 0)
-          };
-        });
-
-        parsedSchools.push({
-          name: schoolName,
-          udise: udise,
-          category: category,
-          jsk: jsk,
-          classes: classesObj
-        });
-      }
-
-      if(parsedSchools.length > 0){
-        saveSessionData(parsedSchools);
-        initPortal();
-        alert(`Safaltapurvak ${parsedSchools.length} schools ka data ${currentSession} session ke liye import ho gaya hai!`);
-      } else {
-        alert("Excel file se data padhne mein samasya aayi.");
-      }
-    } catch(err) {
-      console.log(err);
-      alert("Excel file parse karne mein error aayi.");
-    }
-  };
-  reader.readAsArrayBuffer(file);
+function exportToExcel(){
+  let table = document.getElementById("compileTable");
+  let html = table.outerHTML;
+  let blob = new Blob(['\ufeff' + html], {type: 'application/vnd.ms-excel'});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = `JSK_Compilation_Report_${currentSession}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 </script>
 </body>
