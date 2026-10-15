@@ -3,16 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Modular Enrollment Portal - BRC Shahpur</title>
-<!-- Global CSS Styles -->
+<title>True Modular Portal - BRC Shahpur</title>
 <link rel="stylesheet" href="r2-styles.css">
-<!-- SheetJS for Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <header>
-  <h1>BRC Shahpur - Modular Enrollment Portal (R2)</h1>
+  <h1>BRC Shahpur - True Modular Portal (R2)</h1>
   <div style="display:flex;align-items:center;gap:10px;">
     <label style="font-size:13px;font-weight:bold;">Academic Session:</label>
     <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8;"></select>
@@ -24,7 +22,7 @@
   <button onclick="showTab('records')">📋 School List</button>
   <button onclick="showTab('entry')">✍️ Data Entry</button>
   <button onclick="showTab('compilation')">📑 JSK Compilation</button>
-  <button class="secondary" onclick="location.href='../index.html'">🏠 Home</button>
+  <button class="secondary" onclick="location.href='main.html'">🏠 Master Home</button>
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <label class="button" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload <input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
@@ -32,46 +30,82 @@
 </nav>
 
 <main>
-  <!-- Tabs Sections -->
   <section id="dash" class="active">
-    <h3>📊 Overall Summary Dashboard</h3>
-    <div class="grid" id="dashboardStats"></div>
+    <h3 id="dashTitle">📊 Summary Dashboard</h3>
+    <div class="grid" id="dashboardStats">
+      <div class="card"><div class="num" id="statSchools">204</div><div>Total Schools</div></div>
+      <div class="card"><div class="num" id="statTotal">0</div><div>Overall Total Enrollment</div><div class="subtext" id="statBoysGirls">Boys: 0 | Girls: 0</div></div>
+      <div class="card"><div class="num" id="statFilled" style="color:#15803d">0</div><div>Entry Completed</div></div>
+      <div class="card"><div class="num" id="statPending" style="color:#dc2626">0</div><div>Pending Schools</div></div>
+    </div>
   </section>
 
   <section id="records">
     <h3>📋 School-wise Data & Filters</h3>
-    <div class="filter-bar" id="filterBarContainer"></div>
-    <div class="tablewrap"><table id="schoolTable"><thead></thead><tbody id="schoolTableBody"></tbody></table></div>
+    <div class="filter-bar">
+      <label><b>JSK:</b></label>
+      <select id="jskFilter" onchange="SchoolRecords.render()">
+        <option value="ALL">-- All Sankul --</option>
+        <option value="Bhoura">Bhoura</option>
+        <option value="Bijadehi">Bijadehi</option>
+        <option value="Dhodhramau">Dhodhramau</option>
+        <option value="Kesiya">Kesiya</option>
+        <option value="Kundi">Kundi</option>
+        <option value="Shahpur">Shahpur</option>
+        <option value="Tara">Tara</option>
+      </select>
+      <input type="text" id="searchBox" placeholder="School name ya UDISE khojein..." onkeyup="SchoolRecords.render()" style="flex:1;min-width:180px;">
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>S.No.</th><th>School Name</th><th>UDISE Code</th><th>Category</th><th>JSK</th><th>Total Enrollment</th><th>Status</th></tr></thead><tbody id="schoolTableBody"></tbody></table></div>
   </section>
 
   <section id="entry">
     <h3>✍️ School Data Entry Module</h3>
-    <div class="filter-bar" id="entrySelectorContainer"></div>
-    <div class="tablewrap"><table><thead></thead><tbody id="entryTableBody"></tbody></table></div>
-    <div style="margin-top:15px;text-align:right;"><button onclick="EntryModule.saveData()">💾 Save Data</button></div>
+    <div class="filter-bar">
+      <label><b>School Chunein:</b></label>
+      <select id="schoolSelect" onchange="EntryModule.loadForm()" style="flex:1;max-width:400px;font-weight:bold;"></select>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:middle;width:120px;">Class</th>
+            <th colspan="2">sc</th><th colspan="2">st</th><th colspan="2">obc</th><th colspan="2">gen</th><th colspan="2">toal</th>
+            <th rowspan="2" style="vertical-align:middle;width:60px;">T</th>
+          </tr>
+          <tr><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th></tr>
+        </thead>
+        <tbody id="entryTableBody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:15px;text-align:right;"><button onclick="EntryModule.saveData()" style="padding:10px 20px;">💾 Save Data</button></div>
   </section>
 
   <section id="compilation">
     <h3>📑 JSK-wise Compilation Report</h3>
-    <div class="tablewrap"><table id="compileTable"><thead></thead><tbody id="compileTableBody"></tbody></table></div>
+    <div class="filter-bar">
+      <label><b>JSK Filter:</b></label>
+      <select id="compJskFilter" onchange="CompilationModule.render()">
+        <option value="ALL">-- All JSK (Sankul) --</option>
+        <option value="Bhoura">Bhoura</option>
+        <option value="Bijadehi">Bijadehi</option>
+        <option value="Dhodhramau">Dhodhramau</option>
+        <option value="Kesiya">Kesiya</option>
+        <option value="Kundi">Kundi</option>
+        <option value="Shahpur">Shahpur</option>
+        <option value="Tara">Tara</option>
+      </select>
+    </div>
+    <div class="tablewrap"><table id="compileTable"><thead><tr><th style="width:100px;">JSK</th><th style="width:100px;">Class</th><th>SC (B)</th><th>SC (G)</th><th>ST (B)</th><th>ST (G)</th><th>OBC (B)</th><th>OBC (G)</th><th>GEN (B)</th><th>GEN (G)</th><th>Total (B)</th><th>Total (G)</th><th>T</th></tr></thead><tbody id="compileTableBody"></tbody></table></div>
   </section>
 </main>
 
-<!-- Link all small modular scripts -->
-<script src="schools-data.js"></script>
-<script src="session-manager.js"></script>
-<script src="entry-module.js"></script>
-<script src="compilation.js"></script>
-<script src="excel-handler.js"></script>
+<!-- Load Main Modular Controller as type="module" -->
+<script type="module" src="app.js"></script>
 <script>
 function showTab(id){
   document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  if(id === 'entry') EntryModule.init();
-  if(id === 'compilation') CompilationModule.init();
-}
-window.onload = function(){
-  SessionManager.init();
 }
 </script>
 </body>
