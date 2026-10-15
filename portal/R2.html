@@ -12,6 +12,7 @@ header h1{margin:0;font-size:20px}
 nav{display:flex;gap:7px;flex-wrap:wrap;background:#fff;padding:10px 20px;position:sticky;top:0;z-index:5;box-shadow:0 1px 5px #ddd}
 button{border:0;border-radius:8px;padding:9px 14px;background:#1d4ed8;color:#fff;cursor:pointer;font-weight:bold}
 button.secondary{background:#64748b}
+button.success{background:#15803d}
 main{max-width:1400px;margin:auto;padding:15px}
 section{display:none}
 section.active{display:block}
@@ -21,10 +22,10 @@ section.active{display:block}
 .subtext{font-size:12px;color:#64748b;margin-top:4px}
 .filter-bar{background:#fff;padding:14px;border-radius:12px;margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 6px #ddd}
 select, input{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
-.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 6px #ddd}
-table{width:100%;border-collapse:collapse;min-width:1000px}
+.tablewrap{overflow:auto;background:#fff;border-radius:12px;margin-top:16px;box-shadow:0 1px 6px #ddd;max-height:65vh}
+table{width:100%;border-collapse:collapse;min-width:1100px}
 th,td{padding:10px 12px;border:1px solid #e5e7eb;text-align:center;font-size:13px}
-th{background:#eef2ff;color:#1e3a8a}
+th{background:#eef2ff;color:#1e3a8a;position:sticky;top:0;z-index:2}
 td:nth-child(2), td:nth-child(1){text-align:left}
 .tag-red{background:#fee2e2;color:#dc2626;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px}
 .tag-green{background:#dcfce7;color:#15803d;padding:4px 8px;border-radius:6px;font-weight:bold;font-size:11px}
@@ -110,6 +111,8 @@ td:nth-child(2), td:nth-child(1){text-align:left}
 <nav>
   <button onclick="showSection('dash')">📊 Summary & Status</button>
   <button onclick="showSection('records')">📋 School Records & Filters</button>
+  <button class="success" onclick="exportToExcel()">📥 Excel Download</button>
+  <button class="secondary" onclick="window.print()">🖨️ Print Report</button>
   <button class="secondary" onclick="logout()" style="margin-left:auto">🚪 Logout</button>
 </nav>
 
@@ -161,7 +164,7 @@ td:nth-child(2), td:nth-child(1){text-align:left}
     </div>
 
     <div class="tablewrap">
-      <table>
+      <table id="enrollTable">
         <thead>
           <tr>
             <th rowspan="2">S.No.</th>
@@ -195,21 +198,20 @@ td:nth-child(2), td:nth-child(1){text-align:left}
 <script>
 const BRC_PASS = "brc@shahpur";
 
-// Exact 203 official schools list provided by user with excel values
 const initialSchools = [
   {name: "GPS DHODHARAMOHAR", udise: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 29, stG: 19, obcB: 0, obcG: 0, genB: 0, genG: 0},
   {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 3, scG: 0, stB: 6, stG: 4, obcB: 0, obcG: 1, genB: 0, genG: 0},
-  {name: "GMS GURGUNDA 1 TO 8", udise: "23351008203", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 1, scG: 2, stB: 46, stG: 50, obcB: 1, obcG: 3, genB: 0, genG: 0},
+  {name: "GMS GURGUNDA 1 TO 8", udise: "23351008203", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 1, scG: 2, stB: 46, stG: 50, obcB: 1, obcG: 3, genB: 0, genG: 0},
   {name: "GPS CHIRMATEKRI", udise: "23351008301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 2, scG: 0, stB: 26, stG: 30, obcB: 0, obcG: 0, genB: 0, genG: 0},
   {name: "GOVT. HS DHAR 1 TO 10", udise: "23351008403", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura", scB: 0, scG: 0, stB: 101, stG: 30, obcB: 0, obcG: 0, genB: 0, genG: 0},
   {name: "GPS CHIMDI", udise: "23351011601", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 12, stG: 20, obcB: 0, obcG: 0, genB: 0, genG: 0},
   {name: "GPS DENDUPURA", udise: "23351011901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 11, stG: 19, obcB: 0, obcG: 0, genB: 0, genG: 0},
-  {name: "GMS GUVADI 1 TO 8", udise: "23351012102", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 3, scG: 1, stB: 44, stG: 51, obcB: 23, obcG: 22, genB: 0, genG: 0},
+  {name: "GMS GUVADI 1 TO 8", udise: "23351012102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 3, scG: 1, stB: 44, stG: 51, obcB: 23, obcG: 22, genB: 0, genG: 0},
   {name: "GOVT. HSS DHAPADA 1 TO 12", udise: "23351012204", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bhoura", scB: 0, scG: 1, stB: 44, stG: 39, obcB: 27, obcG: 24, genB: 0, genG: 0},
-  {name: "GMS NEW CHIKHALDA BUJURG 1 TO 8", udise: "23351012302", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 0, scG: 0, stB: 30, stG: 31, obcB: 12, obcG: 9, genB: 0, genG: 0},
+  {name: "GMS NEW CHIKHALDA BUJURG 1 TO 8", udise: "23351012302", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 30, stG: 31, obcB: 12, obcG: 9, genB: 0, genG: 0},
   {name: "GPS(U) KOYAL BUDDI", udise: "23351015501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 1, scG: 0, stB: 8, stG: 10, obcB: 8, obcG: 5, genB: 0, genG: 0},
   {name: "GPS(U) DHAPADA RAIYAT", udise: "23351016701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 25, stG: 17, obcB: 15, obcG: 17, genB: 0, genG: 0},
-  {name: "GMS NAYA NISHAN 1 TO 8", udise: "23351017202", category: "Primary with Middle School (Class 1 to 8)", jsk: "bhoura", scB: 0, scG: 0, stB: 30, stG: 28, obcB: 23, obcG: 12, genB: 0, genG: 0},
+  {name: "GMS NAYA NISHAN 1 TO 8", udise: "23351017202", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 30, stG: 28, obcB: 23, obcG: 12, genB: 0, genG: 0},
   {name: "GPS HANDIPANI", udise: "23351002901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 1, scG: 0, stB: 20, stG: 20, obcB: 13, obcG: 10, genB: 0, genG: 0},
   {name: "GMS NEW HANDIPANI", udise: "23351002902", category: "Middle School (Class 6 to 8)", jsk: "Bhoura", scB: 0, scG: 0, stB: 34, stG: 19, obcB: 10, obcG: 14, genB: 0, genG: 0},
   {name: "GPS SONADHEH", udise: "23351003001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura", scB: 0, scG: 0, stB: 11, scG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0},
@@ -406,7 +408,7 @@ let currentSession = "2026-27";
 let currentEditingIndex = -1;
 
 function getStorageKey(){
-  return "brc_caste_schools_v6_" + currentSession;
+  return "brc_caste_schools_v7_" + currentSession;
 }
 
 function getSessionData(){
@@ -587,6 +589,21 @@ function updateStats(){
   document.getElementById("statBoysGirls").innerText = `Boys: ${totalBoys.toLocaleString()} | Girls: ${totalGirls.toLocaleString()}`;
   document.getElementById("statFilled").innerText = filledCount;
   document.getElementById("statPending").innerText = pendingCount;
+}
+
+function exportToExcel(){
+  let table = document.getElementById("enrollTable");
+  let html = table.outerHTML;
+  let blob = new Blob(['\ufeff' + html], {
+    type: 'application/vnd.ms-excel'
+  });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href = url;
+  a.download = `BRC_Shahpur_Enrollment_${currentSession}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 </script>
 </body>
