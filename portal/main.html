@@ -40,16 +40,16 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 <!-- Login Lock Screen with SNA Check Option -->
 <div id="authOverlay">
   <div class="auth-card">
-    <h2>🔐 BRC Staff Login</h2>
-    <p>Portal access karne ke liye password darj karein.</p>
-    <div id="authErr" class="auth-err">Galat Password! Punah prayas karein.</div>
-    <input type="password" id="authPass" class="auth-input" placeholder="Password (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Login karein</button>
+    <h2>🔐 BRC_Login</h2>
+    <p>Please enter the password.</p>
+    <div id="authErr" class="auth-err">Wrong Password.</div>
+    <input type="password" id="authPass" class="auth-input" placeholder="Password (Enter password)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Login</button>
     
-    <div style="margin:12px 0 8px;font-size:12px;color:#94a3b8;font-weight:bold;">--- YA ---</div>
+    <div style="margin:12px 0 8px;font-size:12px;color:#94a3b8;font-weight:bold;">--- Or---</div>
     
     <!-- Separate SNA Account Check Button -->
-    <a href="../index.html" class="sna-link-btn">🔍 SNA Account Check Karein</a>
+    <a href="../index.html" class="sna-link-btn">🔍 SNA Account Check </a>
   </div>
 </div>
 
@@ -102,9 +102,9 @@ function logoutSession(){
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   inactivityTimer = setTimeout(() => {
-    alert("Session Timeout: 15 minute tak koi activity na hone ke karan aapko logout kar diya gaya hai.");
+    alert("Session Timeout: 2 minute tak koi activity na hone ke karan aapko logout kar diya gaya hai.");
     logoutSession();
-  }, 900000); 
+  }, 120000); 
 }
 
 window.onload = function() {
