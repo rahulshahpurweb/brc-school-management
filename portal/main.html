@@ -22,19 +22,22 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .frame-container{flex:1;width:100%;height:100%;background:#f4f7fb}
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* LOGIN OVERLAY */
+/* LOGIN OVERLAY WITH SNA BUTTON */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
-.auth-card{background:#ffffff;border-radius:18px;max-width:380px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
+.auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
 .auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
 .auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px}
-.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer}
+.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;margin-bottom:10px}
+.auth-btn:hover{background:#145dc6}
+.sna-link-btn{display:block;width:100%;height:44px;background:#10b981;color:#fff;border-radius:10px;font-weight:bold;font-size:14px;text-decoration:none;line-height:44px;box-shadow:0 3px 8px rgba(16,185,129,0.3)}
+.sna-link-btn:hover{background:#059669}
 .auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
 </style>
 </head>
 <body>
 
-<!-- Login Lock Screen (Secured Access) -->
+<!-- Login Lock Screen with SNA Check Option -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC Staff Login</h2>
@@ -42,6 +45,11 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
     <div id="authErr" class="auth-err">Galat Password! Punah prayas karein.</div>
     <input type="password" id="authPass" class="auth-input" placeholder="Password (brc@shahpur)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login karein</button>
+    
+    <div style="margin:12px 0 8px;font-size:12px;color:#94a3b8;font-weight:bold;">--- YA ---</div>
+    
+    <!-- Separate SNA Account Check Button -->
+    <a href="../index.html" class="sna-link-btn">🔍 SNA Account Check Karein</a>
   </div>
 </div>
 
@@ -53,6 +61,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
   <div class="module-tabs">
     <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Enrollment</button>
     <button class="mod-tab" onclick="loadModule('R3.html', this)">♿ CWSN</button>
+    <a href="../index.html" class="mod-tab" style="background:#0d9488;border-color:#0d9488;color:#fff;">🔍 SNA Account Check</a>
     <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Logout</button>
   </div>
 </header>
@@ -77,7 +86,6 @@ function checkAuth(){
   }
 }
 
-// Check if already logged in on page load
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   document.getElementById("authOverlay").style.display = "none";
   resetInactivityTimer();
@@ -91,17 +99,14 @@ function logoutSession(){
   document.getElementById("authPass").value = "";
 }
 
-// SESSION TIMEOUT (Auto Logout after 15 minutes of inactivity)
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
-  // 15 minutes = 2 * 60 * 1000 milliseconds = 120000 ms
   inactivityTimer = setTimeout(() => {
     alert("Session Timeout: 15 minute tak koi activity na hone ke karan aapko logout kar diya gaya hai.");
     logoutSession();
   }, 900000); 
 }
 
-// Track user activity (mouse movement, keystrokes, clicks) to reset timeout
 window.onload = function() {
   const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
   events.forEach(eventName => {
