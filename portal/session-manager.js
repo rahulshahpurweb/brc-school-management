@@ -1,9 +1,12 @@
 import { AdminLocks } from './admin-locks.js';
 import { MASTER_SCHOOLS } from './schools-data.js';
 
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwc86P21oguytplVIndZSiNIJI4grgT9fjhEfWozm6R8S4l-FGHkE6AJDi7SECT2LWkCQ/exec";
+
 export const SessionManager = {
-  init() {
+  async init() {
     this.renderDropdown();
+    await this.loadCloudData();
     this.updateStats();
     
     window.addEventListener('storage', (e) => {
@@ -55,11 +58,39 @@ export const SessionManager = {
     }
   },
 
+  async loadCloudData() {
+    let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
+    let dataKey = `brc_schools_data_${activeSession}`;
+    
+    try {
+      let response = await fetch(WEB_APP_URL);
+      let cloudData = await response.json();
+      if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
+        localStorage.setItem(dataKey, JSON.stringify(cloudData));
+      } else {
+        // Agar sheet khali hai toh master data bhej dein
+        let initialData = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+        localStorage.setItem(dataKey, JSON.stringify(initialData));
+        this.saveData(initialData);
+      }
+    } catch (err) {
+      console.error("Cloud Load Error, using local storage:", err);
+    }
+  },
+
   saveData(schoolsData) {
     let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
     let dataKey = `brc_schools_data_${activeSession}`;
     localStorage.setItem(dataKey, JSON.stringify(schoolsData));
     this.updateStats();
+
+    // Background mein Google Sheet par bhi bhej dein
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(schoolsData)
+    }).catch(err => console.error("Cloud Save Error:", err));
   },
 
   updateStats() {
