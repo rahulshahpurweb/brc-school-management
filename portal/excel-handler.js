@@ -25,24 +25,37 @@ export const ExcelHandler = {
         let updatedCount = 0;
 
         jsonRows.forEach(row => {
-          let udise = row.UDISE || row.udise || row["UDISE Code"] || row["Udise Code"] || row["School Code"];
+          // Normalize keys to lowercase for flexible matching
+          let normalizedRow = {};
+          Object.keys(row).forEach(k => {
+            normalizedRow[k.trim().toLowerCase()] = row[k];
+          });
+
+          let udise = normalizedRow["udise"] || normalizedRow["udise code"] || normalizedRow["school code"] || normalizedRow["code"] || normalizedRow["udise_code"];
+          
           if (udise) {
-            let targetSchool = schools.find(s => String(s.udise) === String(udise));
+            let targetSchool = schools.find(s => String(s.udise).trim() === String(udise).trim());
             if (targetSchool) {
               updatedCount++;
-              if (row.Name || row["School Name"]) {
-                targetSchool.name = row.Name || row["School Name"];
+              
+              if (normalizedRow["name"] || normalizedRow["school name"]) {
+                targetSchool.name = normalizedRow["name"] || normalizedRow["school name"];
               }
 
-              // Classes 1 to 8 data mapping from Excel columns
+              // Map Class 1 to 8 dynamically from various possible column names
               ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(cName => {
-                let val = row[cName] || row[cName.replace(" ", "")] || row[cName.toLowerCase()];
-                if (val !== undefined && !isNaN(val)) {
+                let cleanName = cName.toLowerCase();
+                let altName = cleanName.replace("class ", "c");
+                let altName2 = cleanName.replace("class ", "class-");
+                
+                let val = normalizedRow[cleanName] || normalizedRow[altName] || normalizedRow[altName2] || normalizedRow[cName];
+                
+                if (val !== undefined && val !== "" && !isNaN(val)) {
                   let num = parseInt(val) || 0;
                   if (!targetSchool.classes[cName]) {
                     targetSchool.classes[cName] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:num, genG:0};
                   } else {
-                    targetSchool.classes[cName].genB = num; // Bulk total mapped to genB as primary entry
+                    targetSchool.classes[cName].genB = num;
                   }
                 }
               });
