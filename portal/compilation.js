@@ -7,6 +7,7 @@ export const CompilationModule = {
     if (!schools || schools.length === 0) schools = MASTER_SCHOOLS;
 
     let jskFilter = document.getElementById("compJskFilter")?.value || "ALL";
+    let classFilter = document.getElementById("compClassFilter")?.value || "ALL";
     let table = document.getElementById("compileTable");
     if(!table) return;
 
@@ -39,8 +40,10 @@ export const CompilationModule = {
       let sScB=0, sScG=0, sStB=0, sStG=0, sObcB=0, sObcG=0, sGenB=0, sGenG=0, sTotB=0, sTotG=0, sGTotal=0;
       let isFilled = false;
 
-      Object.keys(s.classes || {}).forEach(c => {
-        let cl = s.classes[c] || {};
+      let classesToLoop = classFilter === "ALL" ? ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"] : [classFilter];
+
+      classesToLoop.forEach(c => {
+        let cl = s.classes && s.classes[c] ? s.classes[c] : {};
         let b = (cl.scB||0)+(cl.stB||0)+(cl.obcB||0)+(cl.genB||0);
         let g = (cl.scG||0)+(cl.stG||0)+(cl.obcG||0)+(cl.genG||0);
         let t = b + g;
@@ -60,8 +63,7 @@ export const CompilationModule = {
       totals.totB += sTotB; totals.totG += sTotG;
       totals.grandTotal += sGTotal;
 
-      // Stylish Row Background based on Entry Status
-      let rowBg = isFilled ? "#f0fdf4" : "#fefce8"; // Soft Green if filled, Soft Yellow if pending
+      let rowBg = isFilled ? "#f0fdf4" : "#fefce8";
       let statusBadge = isFilled 
         ? `<span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;">✅ Feeded</span>` 
         : `<span style="background:#fef9c3;color:#854d0e;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ Pending</span>`;
@@ -81,9 +83,8 @@ export const CompilationModule = {
       </tr>`;
     });
 
-    // Grand Total Row
     html += `<tr style="background:#1e3a8a;color:#fff;font-weight:bold;">
-      <td colspan="3" style="text-align:right;padding-right:10px;">Grand Total:</td>
+      <td colspan="3" style="text-align:right;padding-right:10px;">Grand Total (${classFilter}):</td>
       <td style="text-align:center;">${totals.scB}</td><td style="text-align:center;">${totals.scG}</td>
       <td style="text-align:center;">${totals.stB}</td><td style="text-align:center;">${totals.stG}</td>
       <td style="text-align:center;">${totals.obcB}</td><td style="text-align:center;">${totals.obcG}</td>
