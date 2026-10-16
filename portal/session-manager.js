@@ -63,34 +63,39 @@ export const SessionManager = {
     let dataKey = `brc_schools_data_${activeSession}`;
     
     try {
+      console.log("Google Sheet Cloud se data laya ja raha hai...");
       let response = await fetch(WEB_APP_URL);
       let cloudData = await response.json();
+      
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
         localStorage.setItem(dataKey, JSON.stringify(cloudData));
-      } else {
-        // Agar sheet khali hai toh master data bhej dein
-        let initialData = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
-        localStorage.setItem(dataKey, JSON.stringify(initialData));
-        this.saveData(initialData);
+        console.log("Cloud data successfully load ho gaya!");
       }
     } catch (err) {
-      console.error("Cloud Load Error, using local storage:", err);
+      console.error("Cloud Load Error, local storage use ho raha hai:", err);
     }
+    this.updateStats();
   },
 
   saveData(schoolsData) {
     let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
     let dataKey = `brc_schools_data_${activeSession}`;
+    
+    // 1. LocalStorage par turant save karo taaki UI fast chale
     localStorage.setItem(dataKey, JSON.stringify(schoolsData));
     this.updateStats();
 
-    // Background mein Google Sheet par bhi bhej dein
+    // 2. Background mein Google Sheet par data bhejo (POST)
     fetch(WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(schoolsData)
-    }).catch(err => console.error("Cloud Save Error:", err));
+    }).then(() => {
+      console.log("Data Google Sheet par safaltapurvak save ho gaya!");
+    }).catch(err => {
+      console.error("Google Sheet Save Error:", err);
+    });
   },
 
   updateStats() {
@@ -141,3 +146,5 @@ export const SessionManager = {
     if(statPending) statPending.innerText = totalSchools - filled;
   }
 };
+
+window.SessionManager = SessionManager;
