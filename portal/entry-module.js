@@ -48,31 +48,30 @@ export const EntryModule = {
       }
       
       let cl = s.classes[c];
-      let rId = c.replace(" ", "_");
-      
-      // Calculate initial values directly from stored school data
-      let totB = (parseInt(cl.scB)||0) + (parseInt(cl.stB)||0) + (parseInt(cl.obcB)||0) + (parseInt(cl.genB)||0);
-      let totG = (parseInt(cl.scG)||0) + (parseInt(cl.stG)||0) + (parseInt(cl.obcG)||0) + (parseInt(cl.genG)||0);
-      let totalT = totB + totG;
+      let rId = c.replace(" ", "_"); // e.g., Class_1
 
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;vertical-align:middle;">${c}</td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="scB" value="${cl.scB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="scG" value="${cl.scG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="stB" value="${cl.stB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="stG" value="${cl.stG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="obcB" value="${cl.obcB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="obcG" value="${cl.obcG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="genB" value="${cl.genB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="genG" value="${cl.genG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td id="${rId}_totB" style="text-align:center;font-weight:bold;">${totB}</td>
-        <td id="${rId}_totG" style="text-align:center;font-weight:bold;">${totG}</td>
-        <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">${totalT}</td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_scB" value="${cl.scB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_scG" value="${cl.scG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_stB" value="${cl.stB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_stG" value="${cl.stG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_obcB" value="${cl.obcB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_obcG" value="${cl.obcG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_genB" value="${cl.genB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_genG" value="${cl.genG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td id="${rId}_totB" style="text-align:center;font-weight:bold;">0</td>
+        <td id="${rId}_totG" style="text-align:center;font-weight:bold;">0</td>
+        <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">0</td>
       </tr>`;
     });
 
     this.attachListeners();
-    this.addTotalRow();
+    
+    // Sabhi classes ke liye calc run karke totals update kar do
+    classes.forEach(c => {
+      this.calc(c.replace(" ", "_"));
+    });
   },
 
   attachListeners() {
@@ -95,13 +94,17 @@ export const EntryModule = {
     let genB = parseInt(document.getElementById(`${rId}_genB`)?.value) || 0;
     let genG = parseInt(document.getElementById(`${rId}_genG`)?.value) || 0;
 
+    let totB = scB + stB + obcB + genB;
+    let totG = scG + stG + obcG + genG;
+    let totalT = totB + totG;
+
     let totBNode = document.getElementById(`${rId}_totB`);
     let totGNode = document.getElementById(`${rId}_totG`);
     let tNode = document.getElementById(`${rId}_T`);
 
-    if(totBNode) totBNode.innerText = scB + stB + obcB + genB;
-    if(totGNode) totGNode.innerText = scG + stG + obcG + genG;
-    if(tNode) tNode.innerText = scB + scG + stB + stG + obcB + obcG + genB + genG;
+    if(totBNode) totBNode.innerText = totB;
+    if(totGNode) totGNode.innerText = totG;
+    if(tNode) tNode.innerText = totalT;
     
     this.addTotalRow();
   },
