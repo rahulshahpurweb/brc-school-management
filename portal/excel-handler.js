@@ -22,12 +22,30 @@ export const ExcelHandler = {
         }
 
         let schools = SessionManager.getData();
+        let updatedCount = 0;
+
         jsonRows.forEach(row => {
-          let udise = row.UDISE || row.udise || row["UDISE Code"] || row["Udise Code"];
-          if(udise) {
+          let udise = row.UDISE || row.udise || row["UDISE Code"] || row["Udise Code"] || row["School Code"];
+          if (udise) {
             let targetSchool = schools.find(s => String(s.udise) === String(udise));
-            if(targetSchool) {
-              if(row.Name || row["School Name"]) targetSchool.name = row.Name || row["School Name"];
+            if (targetSchool) {
+              updatedCount++;
+              if (row.Name || row["School Name"]) {
+                targetSchool.name = row.Name || row["School Name"];
+              }
+
+              // Classes 1 to 8 data mapping from Excel columns
+              ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(cName => {
+                let val = row[cName] || row[cName.replace(" ", "")] || row[cName.toLowerCase()];
+                if (val !== undefined && !isNaN(val)) {
+                  let num = parseInt(val) || 0;
+                  if (!targetSchool.classes[cName]) {
+                    targetSchool.classes[cName] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:num, genG:0};
+                  } else {
+                    targetSchool.classes[cName].genB = num; // Bulk total mapped to genB as primary entry
+                  }
+                }
+              });
             }
           }
         });
@@ -37,7 +55,7 @@ export const ExcelHandler = {
         SchoolRecords.render();
         CompilationModule.render();
 
-        alert("Excel file safaltapurvak upload aur sync ho gayi hai!");
+        alert(`Excel file se ${updatedCount} schools ka data safaltapurvak feed aur sync ho gaya hai!`);
       } catch (err) {
         console.error("Excel Upload Error:", err);
         alert("Excel file read karne mein error aayi. Kripya sahi format upload karein.");
