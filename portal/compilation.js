@@ -44,27 +44,48 @@ export const CompilationModule = {
 
         jskSchools.forEach(s => {
           let cat = (s.category || "").toLowerCase();
-          let classesObj = s.classes || {};
-          let has1_5 = false, has6_8 = false, has9_10 = false, has11_12 = false;
-
-          Object.keys(classesObj).forEach(cName => {
-            let cl = classesObj[cName] || {};
-            let sum = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
-            if (sum > 0) {
-              if (["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"].includes(cName)) has1_5 = true;
-              if (["Class 6", "Class 7", "Class 8"].includes(cName)) has6_8 = true;
-              if (["Class 9", "Class 10"].includes(cName)) has9_10 = true;
-              if (["Class 11", "Class 12"].includes(cName)) has11_12 = true;
+          
+          if (cat.includes("12") || cat.includes("higher secondary") || cat.includes("hr.sec") || cat.includes("higher")) {
+            if (cat.includes("primary") || cat.includes("1 to 12") || cat.includes("1-12")) {
+              c7++; // Primary to Higher Sec (1 to 12)
+            } else {
+              c5++; // Middle to Higher Sec (6 to 12)
             }
-          });
+          } else if (cat.includes("10") || cat.includes("high school") || cat.includes("high") || cat.includes("secondary")) {
+            if (cat.includes("primary") || cat.includes("1 to 10") || cat.includes("1-10")) {
+              c6++; // Primary to High School (1 to 10)
+            } else {
+              c4++; // Middle to High School (6 to 10)
+            }
+          } else if (cat.includes("primary") && cat.includes("middle")) {
+            c3++; // Primary with Middle (1 to 8)
+          } else if (cat.includes("middle")) {
+            c2++; // Middle School (6 to 8)
+          } else if (cat.includes("primary")) {
+            c1++; // Primary School (1 to 5)
+          } else {
+            let classesObj = s.classes || {};
+            let has1_5 = false, has6_8 = false, has9_10 = false, has11_12 = false;
 
-          if ((has11_12 || cat.includes("12") || cat.includes("higher secondary")) && has1_5) c7++;
-          else if ((has9_10 || cat.includes("10") || cat.includes("high school")) && has1_5) c6++;
-          else if ((has11_12 || cat.includes("12") || cat.includes("higher secondary")) && has6_8) c5++;
-          else if ((has9_10 || cat.includes("10") || cat.includes("high school")) && has6_8) c4++;
-          else if ((has1_5 && has6_8) || (cat.includes("primary") && cat.includes("middle"))) c3++;
-          else if (has6_8 || cat.includes("middle")) c2++;
-          else c1++;
+            Object.keys(classesObj).forEach(cName => {
+              let cl = classesObj[cName] || {};
+              let sum = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
+              if (sum > 0) {
+                if (["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"].includes(cName)) has1_5 = true;
+                if (["Class 6", "Class 7", "Class 8"].includes(cName)) has6_8 = true;
+                if (["Class 9", "Class 10"].includes(cName)) has9_10 = true;
+                if (["Class 11", "Class 12"].includes(cName)) has11_12 = true;
+              }
+            });
+
+            if (has11_12 && has1_5) c7++;
+            else if (has9_10 && has1_5) c6++;
+            else if (has11_12) c5++;
+            else if (has9_10) c4++;
+            else if (has1_5 && has6_8) c3++;
+            else if (has6_8) c2++;
+            else c1++;
+          }
         });
 
         let rowTotal = c1 + c2 + c3 + c4 + c5 + c6 + c7;
