@@ -6,156 +6,103 @@ export const CompilationModule = {
     let schools = SessionManager.getData();
     if (!schools || schools.length === 0) schools = MASTER_SCHOOLS;
 
-    let jskFilter = document.getElementById("compJskFilter")?.value || "ALL";
-    let viewMode = document.getElementById("compViewMode")?.value || "detailed"; // detailed or summary
+    let viewMode = document.getElementById("compViewMode")?.value || "format1"; 
     let table = document.getElementById("compileTable");
     if(!table) return;
 
-    let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
-
     let html = '';
 
-    if (viewMode === "summary") {
-      // --- ONLY JSK / SANKUL SUMMARY VIEW ---
+    if (viewMode === "format1" || viewMode === "summary") {
+      // --- FORMAT 1: JSK-Wise And Category-wise No. Of Schools ---
       html += `<thead>
         <tr>
-          <th style="background:#1e3a8a;color:#fff;">S.No.</th>
-          <th style="background:#1e3a8a;color:#fff;">JSK (Sankul) Name</th>
-          <th style="background:#0284c7;color:#fff;">Total Schools</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">SC (B/G)</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">ST (B/G)</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">OBC (B/G)</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">GEN (B/G)</th>
-          <th style="background:#15803d;color:#fff;">Total Enrollment</th>
+          <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">JSK</th>
+          <th style="background:#0284c7;color:#fff;">Primary School (Class 1 to 5)</th>
+          <th style="background:#0284c7;color:#fff;">Middle School (Class 6 to 8)</th>
+          <th style="background:#0284c7;color:#fff;">Primary with Middle School (Class 1 to 8)</th>
+          <th style="background:#0284c7;color:#fff;">Middle to High School (Class 6 to 10)</th>
+          <th style="background:#0284c7;color:#fff;">Middle to Higher Secondary School (Class 6 to 12)</th>
+          <th style="background:#0284c7;color:#fff;">Primary to High School (Class 1 to 10)</th>
+          <th style="background:#0284c7;color:#fff;">Primary to Higher Secondary School (Class 1 to 12)</th>
+          <th style="background:#15803d;color:#fff;">Grand Total</th>
         </tr>
       </thead><tbody>`;
 
-      let jskGroups = {};
-      filteredSchools.forEach(s => {
-        let jsk = s.jsk || "Unassigned";
-        if (!jskGroups[jsk]) jskGroups[jsk] = { count: 0, scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0, total:0 };
-        jskGroups[jsk].count++;
+      let jskList = ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"];
+      let totals = { p:0, m:0, pm:0, mh:0, mhs:0, ph:0, phs:0, grand:0 };
 
-        Object.keys(s.classes || {}).forEach(c => {
-          let cl = s.classes[c] || {};
-          jskGroups[jsk].scB += cl.scB || 0; jskGroups[jsk].scG += cl.scG || 0;
-          jskGroups[jsk].stB += cl.stB || 0; jskGroups[jsk].stG += cl.stG || 0;
-          jskGroups[jsk].obcB += cl.obcB || 0; jskGroups[jsk].obcG += cl.obcG || 0;
-          jskGroups[jsk].genB += cl.genB || 0; jskGroups[jsk].genG += cl.genG || 0;
-          jskGroups[jsk].total += (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
+      jskList.forEach(jsk => {
+        let jskSchools = schools.filter(s => s.jsk === jsk);
+        
+        let c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0, c6 = 0, c7 = 0;
+
+        jskSchools.forEach(s => {
+          let cat = (s.category || "").toLowerCase();
+          if (cat.includes("primary") && !cat.includes("middle") && !cat.includes("high")) c1++;
+          else if (cat.includes("middle") && !cat.includes("primary") && !cat.includes("high") && !cat.includes("higher")) c2++;
+          else if (cat.includes("primary") && cat.includes("middle") && !cat.includes("high")) c3++;
+          else if (cat.includes("middle") && cat.includes("high") && !cat.includes("primary")) c4++;
+          else if (cat.includes("middle") && cat.includes("higher")) c5++;
+          else if (cat.includes("primary") && cat.includes("high") && !cat.includes("higher")) c6++;
+          else if (cat.includes("primary") && cat.includes("higher")) c7++;
+          else c1++; // Default fallback
         });
-      });
 
-      let gCount=0, gScB=0, gScG=0, gStB=0, gStG=0, gObcB=0, gObcG=0, gGenB=0, gGenG=0, gTotal=0;
-      let idx = 1;
-
-      Object.keys(jskGroups).forEach(jsk => {
-        let j = jskGroups[jsk];
-        gCount += j.count; gScB += j.scB; gScG += j.scG; gStB += j.stB; gStG += j.stG;
-        gObcB += j.obcB; gObcG += j.obcG; gGenB += j.genB; gGenG += j.genG; gTotal += j.total;
+        let rowTotal = c1 + c2 + c3 + c4 + c5 + c6 + c7;
+        totals.p += c1; totals.m += c2; totals.pm += c3; totals.mh += c4;
+        totals.mhs += c5; totals.ph += c6; totals.phs += c7; totals.grand += rowTotal;
 
         html += `<tr style="background:#f8fafc;">
-          <td style="text-align:center;font-weight:bold;">${idx++}</td>
           <td style="font-weight:bold;color:#1e3a8a;">${jsk}</td>
-          <td style="text-align:center;">${j.count}</td>
-          <td style="text-align:center;">${j.scB}</td><td style="text-align:center;">${j.scG}</td>
-          <td style="text-align:center;">${j.stB}</td><td style="text-align:center;">${j.stG}</td>
-          <td style="text-align:center;">${j.obcB}</td><td style="text-align:center;">${j.obcG}</td>
-          <td style="text-align:center;">${j.genB}</td><td style="text-align:center;">${j.genG}</td>
-          <td style="text-align:center;font-weight:bold;background:#dcfce7;color:#14532d;">${j.total}</td>
+          <td style="text-align:center;">${c1 || ''}</td>
+          <td style="text-align:center;">${c2 || ''}</td>
+          <td style="text-align:center;">${c3 || ''}</td>
+          <td style="text-align:center;">${c4 || ''}</td>
+          <td style="text-align:center;">${c5 || ''}</td>
+          <td style="text-align:center;">${c6 || ''}</td>
+          <td style="text-align:center;">${c7 || ''}</td>
+          <td style="text-align:center;font-weight:bold;background:#dcfce7;color:#14532d;">${rowTotal}</td>
         </tr>`;
       });
 
       html += `<tr style="background:#1e3a8a;color:#fff;font-weight:bold;">
-        <td colspan="2" style="text-align:right;">Grand Total:</td>
-        <td style="text-align:center;">${gCount}</td>
-        <td style="text-align:center;">${gScB}</td><td style="text-align:center;">${gScG}</td>
-        <td style="text-align:center;">${gStB}</td><td style="text-align:center;">${gStG}</td>
-        <td style="text-align:center;">${gObcB}</td><td style="text-align:center;">${gObcG}</td>
-        <td style="text-align:center;">${gGenB}</td><td style="text-align:center;">${gGenG}</td>
-        <td style="text-align:center;background:#15803d;">${gTotal}</td>
+        <td>Grand Total</td>
+        <td style="text-align:center;">${totals.p}</td>
+        <td style="text-align:center;">${totals.m}</td>
+        <td style="text-align:center;">${totals.pm}</td>
+        <td style="text-align:center;">${totals.mh}</td>
+        <td style="text-align:center;">${totals.mhs}</td>
+        <td style="text-align:center;">${totals.ph}</td>
+        <td style="text-align:center;">${totals.phs}</td>
+        <td style="text-align:center;background:#15803d;">${totals.grand}</td>
       </tr>`;
 
     } else {
       // --- DETAILED SCHOOL-WISE VIEW ---
       html += `<thead>
         <tr>
-          <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">S.No.</th>
-          <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">School Name & UDISE</th>
-          <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">JSK</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">SC</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">ST</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">OBC</th>
-          <th colspan="2" style="background:#0284c7;color:#fff;">GEN</th>
-          <th colspan="3" style="background:#15803d;color:#fff;">Total</th>
-          <th rowspan="2" style="background:#475569;color:#fff;vertical-align:middle;">Status</th>
-        </tr>
-        <tr>
-          <th style="background:#e0f2fe;color:#0369a1;">B</th><th style="background:#e0f2fe;color:#0369a1;">G</th>
-          <th style="background:#e0f2fe;color:#0369a1;">B</th><th style="background:#e0f2fe;color:#0369a1;">G</th>
-          <th style="background:#e0f2fe;color:#0369a1;">B</th><th style="background:#e0f2fe;color:#0369a1;">G</th>
-          <th style="background:#e0f2fe;color:#0369a1;">B</th><th style="background:#e0f2fe;color:#0369a1;">G</th>
-          <th style="background:#dcfce7;color:#166534;">B</th><th style="background:#dcfce7;color:#166534;">G</th><th style="background:#dcfce7;color:#166534;">T</th>
+          <th style="background:#1e3a8a;color:#fff;">S.No.</th>
+          <th style="background:#1e3a8a;color:#fff;">School Name & UDISE</th>
+          <th style="background:#1e3a8a;color:#fff;">JSK</th>
+          <th style="background:#0284c7;color:#fff;">Category</th>
+          <th style="background:#15803d;color:#fff;">Total Enrollment</th>
         </tr>
       </thead><tbody>`;
 
-      let totals = { scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0, totB:0, totG:0, grandTotal:0 };
-
-      filteredSchools.forEach((s, idx) => {
-        let sScB=0, sScG=0, sStB=0, sStG=0, sObcB=0, sObcG=0, sGenB=0, sGenG=0, sTotB=0, sTotG=0, sGTotal=0;
-        let isFilled = false;
-
-        Object.keys(s.classes || {}).forEach(c => {
-          let cl = s.classes[c] || {};
-          let b = (cl.scB||0)+(cl.stB||0)+(cl.obcB||0)+(cl.genB||0);
-          let g = (cl.scG||0)+(cl.stG||0)+(cl.obcG||0)+(cl.genG||0);
-          let t = b + g;
-          if(t > 0) isFilled = true;
-
-          sScB += cl.scB||0; sScG += cl.scG||0;
-          sStB += cl.stB||0; sStG += cl.stG||0;
-          sObcB += cl.obcB||0; sObcG += cl.obcG||0;
-          sGenB += cl.genB||0; sGenG += cl.genG||0;
-          sTotB += b; sTotG += g; sGTotal += t;
+      schools.forEach((s, idx) => {
+        let t = 0;
+        Object.values(s.classes || {}).forEach(cl => {
+          t += (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
         });
 
-        totals.scB += sScB; totals.scG += sScG;
-        totals.stB += sStB; totals.stG += sStG;
-        totals.obcB += sObcB; totals.obcG += sObcG;
-        totals.genB += sGenB; totals.genG += sGenG;
-        totals.totB += sTotB; totals.totG += sTotG;
-        totals.grandTotal += sGTotal;
-
-        let rowBg = isFilled ? "#f0fdf4" : "#fefce8";
-        let statusBadge = isFilled 
-          ? `<span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;">✅ Feeded</span>` 
-          : `<span style="background:#fef9c3;color:#854d0e;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ Pending</span>`;
-
-        html += `<tr style="background:${rowBg};">
+        html += `<tr>
           <td style="text-align:center;font-weight:bold;">${idx + 1}</td>
-          <td style="text-align:left;font-weight:600;padding-left:8px;">${s.name}<br><small style="color:#64748b;">UDISE: ${s.udise}</small></td>
-          <td style="text-align:center;font-size:11px;">${s.jsk}</td>
-          <td style="text-align:center;">${sScB}</td><td style="text-align:center;">${sScG}</td>
-          <td style="text-align:center;">${sStB}</td><td style="text-align:center;">${sStG}</td>
-          <td style="text-align:center;">${sObcB}</td><td style="text-align:center;">${sObcG}</td>
-          <td style="text-align:center;">${sGenB}</td><td style="text-align:center;">${sGenG}</td>
-          <td style="text-align:center;font-weight:bold;color:#166534;">${sTotB}</td>
-          <td style="text-align:center;font-weight:bold;color:#166534;">${sTotG}</td>
-          <td style="text-align:center;font-weight:bold;background:#dcfce7;color:#14532d;">${sGTotal}</td>
-          <td style="text-align:center;">${statusBadge}</td>
+          <td>${s.name}<br><small>UDISE: ${s.udise}</small></td>
+          <td style="text-align:center;">${s.jsk}</td>
+          <td>${s.category || 'Primary with Middle'}</td>
+          <td style="text-align:center;font-weight:bold;color:#166534;">${t}</td>
         </tr>`;
       });
-
-      html += `<tr style="background:#1e3a8a;color:#fff;font-weight:bold;">
-        <td colspan="3" style="text-align:right;padding-right:10px;">Grand Total:</td>
-        <td style="text-align:center;">${totals.scB}</td><td style="text-align:center;">${totals.scG}</td>
-        <td style="text-align:center;">${totals.stB}</td><td style="text-align:center;">${totals.stG}</td>
-        <td style="text-align:center;">${totals.obcB}</td><td style="text-align:center;">${totals.obcG}</td>
-        <td style="text-align:center;">${totals.genB}</td><td style="text-align:center;">${totals.genG}</td>
-        <td style="text-align:center;">${totals.totB}</td><td style="text-align:center;">${totals.totG}</td>
-        <td style="text-align:center;background:#15803d;">${totals.grandTotal}</td>
-        <td style="text-align:center;">-</td>
-      </tr>`;
     }
 
     html += `</tbody>`;
