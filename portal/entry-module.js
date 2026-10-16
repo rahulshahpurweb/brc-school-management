@@ -56,20 +56,31 @@ export const EntryModule = {
 
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;vertical-align:middle;">${c}</td>
-        <td><input type="number" min="0" id="${rId}_scB" value="${cl.scB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_scG" value="${cl.scG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_stB" value="${cl.stB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_stG" value="${cl.stG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_obcB" value="${cl.obcB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_obcG" value="${cl.obcG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_genB" value="${cl.genB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_genG" value="${cl.genG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="scB" value="${cl.scB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="scG" value="${cl.scG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="stB" value="${cl.stB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="stG" value="${cl.stG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="obcB" value="${cl.obcB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="obcG" value="${cl.obcG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="genB" value="${cl.genB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" data-field="genG" value="${cl.genG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
         <td id="${rId}_totB" style="text-align:center;font-weight:bold;">${totB}</td>
         <td id="${rId}_totG" style="text-align:center;font-weight:bold;">${totG}</td>
         <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">${totalT}</td>
       </tr>`;
     });
     this.addTotalRow();
+    this.attachListeners();
+  },
+
+  attachListeners() {
+    let inputs = document.querySelectorAll(".entry-input");
+    inputs.forEach(input => {
+      input.addEventListener("input", (e) => {
+        let rId = e.target.getAttribute("data-rid");
+        this.calc(rId);
+      });
+    });
   },
 
   calc(rId) {
@@ -82,9 +93,14 @@ export const EntryModule = {
     let genB = parseInt(document.getElementById(`${rId}_genB`)?.value) || 0;
     let genG = parseInt(document.getElementById(`${rId}_genG`)?.value) || 0;
 
-    document.getElementById(`${rId}_totB`).innerText = scB + stB + obcB + genB;
-    document.getElementById(`${rId}_totG`).innerText = scG + stG + obcG + genG;
-    document.getElementById(`${rId}_T`).innerText = scB + scG + stB + stG + obcB + obcG + genB + genG;
+    let totBNode = document.getElementById(`${rId}_totB`);
+    let totGNode = document.getElementById(`${rId}_totG`);
+    let tNode = document.getElementById(`${rId}_T`);
+
+    if(totBNode) totBNode.innerText = scB + stB + obcB + genB;
+    if(totGNode) totGNode.innerText = scG + stG + obcG + genG;
+    if(tNode) tNode.innerText = scB + scG + stB + stG + obcB + obcG + genB + genG;
+    
     this.addTotalRow();
   },
 
@@ -154,5 +170,4 @@ export const EntryModule = {
   }
 };
 
-// Make EntryModule globally available for inline event handlers
 window.EntryModule = EntryModule;
