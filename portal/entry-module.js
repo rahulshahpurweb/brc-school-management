@@ -1,3 +1,4 @@
+import { MASTER_SCHOOLS } from './schools-data.js';
 import { SessionManager } from './session-manager.js';
 import { SchoolRecords } from './school-records.js';
 import { CompilationModule } from './compilation.js';
@@ -5,15 +6,24 @@ import { CompilationModule } from './compilation.js';
 export const EntryModule = {
   populateDropdown() {
     let schools = SessionManager.getData();
+    
+    // Fallback: Agar session data khali hai toh master schools load kar lein
+    if (!schools || schools.length === 0) {
+      schools = MASTER_SCHOOLS;
+      SessionManager.saveData(schools);
+    }
+
     let sel = document.getElementById("schoolSelect");
     if(!sel) return;
     sel.innerHTML = "";
+    
     schools.forEach((s, idx) => {
       let opt = document.createElement("option");
       opt.value = idx;
       opt.textContent = `${s.name} (UDISE: ${s.udise} | JSK: ${s.jsk})`;
       sel.appendChild(opt);
     });
+    
     this.loadForm();
   },
 
@@ -21,13 +31,18 @@ export const EntryModule = {
     let sel = document.getElementById("schoolSelect");
     if(!sel || sel.value === "") return;
     let schools = SessionManager.getData();
+    if(!schools || schools.length === 0) schools = MASTER_SCHOOLS;
+    
     let s = schools[sel.value];
+    if(!s) return;
+    
     let tbody = document.getElementById("entryTableBody");
     if(!tbody) return;
     tbody.innerHTML = "";
 
     const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     classes.forEach(c => {
+      if(!s.classes) s.classes = {};
       if(!s.classes[c]) s.classes[c] = {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
       let cl = s.classes[c], rId = c.replace(" ", "_");
       
