@@ -48,79 +48,92 @@ export const EntryModule = {
       }
       
       let cl = s.classes[c];
-      let rId = c.replace(" ", "_"); // e.g., Class_1
 
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;vertical-align:middle;">${c}</td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_scB" value="${cl.scB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_scG" value="${cl.scG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_stB" value="${cl.stB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_stG" value="${cl.stG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_obcB" value="${cl.obcB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_obcG" value="${cl.obcG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_genB" value="${cl.genB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" class="entry-input" data-rid="${rId}" id="${rId}_genG" value="${cl.genG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td id="${rId}_totB" style="text-align:center;font-weight:bold;">0</td>
-        <td id="${rId}_totG" style="text-align:center;font-weight:bold;">0</td>
-        <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">0</td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.scB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.scG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.stB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.stG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.obcB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.obcG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.genB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" class="entry-input" value="${cl.genG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td class="row-totB" style="text-align:center;font-weight:bold;">0</td>
+        <td class="row-totG" style="text-align:center;font-weight:bold;">0</td>
+        <td class="row-totalT" style="text-align:center;font-weight:bold;background:#eef2ff;">0</td>
       </tr>`;
     });
 
     this.attachListeners();
-    
-    // Sabhi classes ke liye calc run karke totals update kar do
-    classes.forEach(c => {
-      this.calc(c.replace(" ", "_"));
-    });
+    this.calculateAllRows();
   },
 
   attachListeners() {
     let inputs = document.querySelectorAll(".entry-input");
     inputs.forEach(input => {
       input.addEventListener("input", (e) => {
-        let rId = e.target.getAttribute("data-rid");
-        this.calc(rId);
+        let row = e.target.closest("tr");
+        this.calcRow(row);
       });
     });
   },
 
-  calc(rId) {
-    let scB = parseInt(document.getElementById(`${rId}_scB`)?.value) || 0;
-    let scG = parseInt(document.getElementById(`${rId}_scG`)?.value) || 0;
-    let stB = parseInt(document.getElementById(`${rId}_stB`)?.value) || 0;
-    let stG = parseInt(document.getElementById(`${rId}_stG`)?.value) || 0;
-    let obcB = parseInt(document.getElementById(`${rId}_obcB`)?.value) || 0;
-    let obcG = parseInt(document.getElementById(`${rId}_obcG`)?.value) || 0;
-    let genB = parseInt(document.getElementById(`${rId}_genB`)?.value) || 0;
-    let genG = parseInt(document.getElementById(`${rId}_genG`)?.value) || 0;
+  calcRow(row) {
+    if(!row) return;
+    let inputs = row.querySelectorAll("input");
+    if(inputs.length < 8) return;
+
+    let scB = parseInt(inputs[0].value) || 0;
+    let scG = parseInt(inputs[1].value) || 0;
+    let stB = parseInt(inputs[2].value) || 0;
+    let stG = parseInt(inputs[3].value) || 0;
+    let obcB = parseInt(inputs[4].value) || 0;
+    let obcG = parseInt(inputs[5].value) || 0;
+    let genB = parseInt(inputs[6].value) || 0;
+    let genG = parseInt(inputs[7].value) || 0;
 
     let totB = scB + stB + obcB + genB;
     let totG = scG + stG + obcG + genG;
     let totalT = totB + totG;
 
-    let totBNode = document.getElementById(`${rId}_totB`);
-    let totGNode = document.getElementById(`${rId}_totG`);
-    let tNode = document.getElementById(`${rId}_T`);
+    let cells = row.querySelectorAll("td");
+    if(cells.length >= 12) {
+      cells[9].innerText = totB;
+      cells[10].innerText = totG;
+      cells[11].innerText = totalT;
+    }
 
-    if(totBNode) totBNode.innerText = totB;
-    if(totGNode) totGNode.innerText = totG;
-    if(tNode) tNode.innerText = totalT;
-    
     this.addTotalRow();
+  },
+
+  calculateAllRows() {
+    let rows = document.querySelectorAll("#entryTableBody tr");
+    rows.forEach(row => {
+      if(!row.id.includes("entryTotalRow")) {
+        this.calcRow(row);
+      }
+    });
   },
 
   addTotalRow() {
     let sB=0, sG=0, stB=0, stG=0, oB=0, oG=0, gB=0, gG=0;
-    ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
-      let rId = c.replace(" ", "_");
-      sB += parseInt(document.getElementById(`${rId}_scB`)?.value || 0); 
-      sG += parseInt(document.getElementById(`${rId}_scG`)?.value || 0);
-      stB += parseInt(document.getElementById(`${rId}_stB`)?.value || 0); 
-      stG += parseInt(document.getElementById(`${rId}_stG`)?.value || 0);
-      oB += parseInt(document.getElementById(`${rId}_obcB`)?.value || 0); 
-      oG += parseInt(document.getElementById(`${rId}_obcG`)?.value || 0);
-      gB += parseInt(document.getElementById(`${rId}_genB`)?.value || 0); 
-      gG += parseInt(document.getElementById(`${rId}_genG`)?.value || 0);
+    let rows = document.querySelectorAll("#entryTableBody tr");
+    
+    rows.forEach(row => {
+      if(!row.id.includes("entryTotalRow")) {
+        let inputs = row.querySelectorAll("input");
+        if(inputs.length >= 8) {
+          sB += parseInt(inputs[0].value) || 0;
+          sG += parseInt(inputs[1].value) || 0;
+          stB += parseInt(inputs[2].value) || 0;
+          stG += parseInt(inputs[3].value) || 0;
+          oB += parseInt(inputs[4].value) || 0;
+          oG += parseInt(inputs[5].value) || 0;
+          gB += parseInt(inputs[6].value) || 0;
+          gG += parseInt(inputs[7].value) || 0;
+        }
+      }
     });
     
     let tb = sB + stB + oB + gB;
@@ -129,7 +142,7 @@ export const EntryModule = {
     if(!tbody) return;
     
     document.getElementById("entryTotalRow")?.remove();
-    tbody.innerHTML += `<tr id="entryTotalRow" style="background:#f1f5f9;font-weight:bold;">
+    tbody.insertAdjacentHTML('beforeend', `<tr id="entryTotalRow" style="background:#f1f5f9;font-weight:bold;">
       <td style="text-align:center;">Total</td>
       <td style="text-align:center;">${sB}</td><td style="text-align:center;">${sG}</td>
       <td style="text-align:center;">${stB}</td><td style="text-align:center;">${stG}</td>
@@ -137,7 +150,7 @@ export const EntryModule = {
       <td style="text-align:center;">${gB}</td><td style="text-align:center;">${gG}</td>
       <td style="text-align:center;">${tb}</td><td style="text-align:center;">${tg}</td>
       <td style="text-align:center;background:#dcfce7;color:#14532d;">${tb + tg}</td>
-    </tr>`;
+    </tr>`);
   },
 
   saveData() {
@@ -153,18 +166,26 @@ export const EntryModule = {
 
     if(!s.classes) s.classes = {};
 
-    ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
-      let rId = c.replace(" ", "_");
-      s.classes[c] = {
-        scB: parseInt(document.getElementById(`${rId}_scB`)?.value) || 0, 
-        scG: parseInt(document.getElementById(`${rId}_scG`)?.value) || 0,
-        stB: parseInt(document.getElementById(`${rId}_stB`)?.value) || 0, 
-        stG: parseInt(document.getElementById(`${rId}_stG`)?.value) || 0,
-        obcB: parseInt(document.getElementById(`${rId}_obcB`)?.value) || 0, 
-        obcG: parseInt(document.getElementById(`${rId}_obcG`)?.value) || 0,
-        genB: parseInt(document.getElementById(`${rId}_genB`)?.value) || 0, 
-        genG: parseInt(document.getElementById(`${rId}_genG`)?.value) || 0
-      };
+    let rows = document.querySelectorAll("#entryTableBody tr");
+    const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    
+    rows.forEach((row, idx) => {
+      if(idx < classes.length) {
+        let cName = classes[idx];
+        let inputs = row.querySelectorAll("input");
+        if(inputs.length >= 8) {
+          s.classes[cName] = {
+            scB: parseInt(inputs[0].value) || 0,
+            scG: parseInt(inputs[1].value) || 0,
+            stB: parseInt(inputs[2].value) || 0,
+            stG: parseInt(inputs[3].value) || 0,
+            obcB: parseInt(inputs[4].value) || 0,
+            obcG: parseInt(inputs[5].value) || 0,
+            genB: parseInt(inputs[6].value) || 0,
+            genG: parseInt(inputs[7].value) || 0
+          };
+        }
+      }
     });
 
     SessionManager.saveData(schools);
