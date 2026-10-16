@@ -8,7 +8,6 @@ export const EntryModule = {
     let sel = document.getElementById("schoolSelect");
     if(!sel) return;
     
-    // Save current selection if any
     let currentVal = sel.value;
     sel.innerHTML = "";
     
@@ -32,7 +31,7 @@ export const EntryModule = {
     if(!tbody) return;
     
     if(!sel || sel.value === "" || sel.value === undefined) {
-      sel.value = 0; // Default to first school
+      sel.value = 0;
     }
 
     let schools = SessionManager.getData();
@@ -40,7 +39,6 @@ export const EntryModule = {
     if(!s) return;
 
     tbody.innerHTML = "";
-
     const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     
     classes.forEach(c => {
@@ -58,14 +56,14 @@ export const EntryModule = {
 
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;vertical-align:middle;">${c}</td>
-        <td><input type="number" min="0" id="${rId}_scB" value="${cl.scB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_scG" value="${cl.scG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_stB" value="${cl.stB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_stG" value="${cl.stG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_obcB" value="${cl.obcB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_obcG" value="${cl.obcG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_genB" value="${cl.genB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
-        <td><input type="number" min="0" id="${rId}_genG" value="${cl.genG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_scB" value="${cl.scB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_scG" value="${cl.scG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_stB" value="${cl.stB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_stG" value="${cl.stG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_obcB" value="${cl.obcB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_obcG" value="${cl.obcG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_genB" value="${cl.genB || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_genG" value="${cl.genG || 0}" oninput="window.EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
         <td id="${rId}_totB" style="text-align:center;font-weight:bold;">${totB}</td>
         <td id="${rId}_totG" style="text-align:center;font-weight:bold;">${totG}</td>
         <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">${totalT}</td>
@@ -152,6 +150,9 @@ export const EntryModule = {
     SessionManager.updateStats();
     SchoolRecords.render();
     CompilationModule.render();
-    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
+    alert("School ka data safaltapurvak save aur cloud par sync ho gaya hai!");
   }
 };
+
+// Make EntryModule globally available for inline event handlers
+window.EntryModule = EntryModule;
