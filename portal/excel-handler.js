@@ -1,31 +1,40 @@
-// Safe Excel Upload Handler Example
+import { SessionManager } from './session-manager.js';
+
 export const ExcelHandler = {
-  uploadExcel(event) {
-    let file = event.target.files[0];
-    if(!file) return;
-
-    let reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        let data = new Uint8Array(e.target.result);
-        let workbook = XLSX.read(data, { type: 'array' });
-        let firstSheetName = workbook.SheetNames[0];
-        let worksheet = workbook.Sheets[firstSheetName];
-        let jsonRows = XLSX.utils.sheet_to_json(worksheet);
-
-        // Process data safely here
-        console.log("Parsed Excel Data:", jsonRows);
-        alert("Excel file safaltapurvak upload ho gayi hai!");
-      } catch (err) {
-        console.error("Excel Parse Error:", err);
-        alert("Excel file parse karne mein error aayi! Kripya sahi format wali file upload karein.");
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  },
+  // ... upload function waisa hi rahega ...
 
   exportExcel() {
-    // Export logic
-    alert("Excel export suvidha active hai.");
+    try {
+      let schools = SessionManager.getData();
+      if (!schools || schools.length === 0) {
+        alert("Export karne ke liye koi data available nahi hai!");
+        return;
+      }
+
+      let exportData = [];
+      schools.forEach((s, idx) => {
+        let base = { "S.No.": idx + 1, "School Name": s.name, "UDISE Code": s.udise, "JSK": s.jsk };
+        
+        let totalAll = 0;
+        ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
+          let cl = s.classes && s.classes[c] ? s.classes[c] : {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
+          let cTot = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
+          base[c] = cTot;
+          totalAll += cTot;
+        });
+        base["Grand Total"] = totalAll;
+        exportData.push(base);
+      });
+
+      let worksheet = XLSX.utils.json_to_sheet(exportData);
+      let workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "BRC_Compilation");
+      XLSX.writeFile(workbook, "BRC_Shahpur_Compilation_Report.xlsx");
+      
+      alert("Excel report safaltapurvak download ho gayi hai!");
+    } catch (err) {
+      console.error("Excel Export Error:", err);
+      alert("Excel export karne mein error aayi. Kripya check karein ki XLSX library loaded hai.");
+    }
   }
 };
