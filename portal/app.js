@@ -4,6 +4,7 @@ import { SchoolRecords } from './school-records.js';
 import { EntryModule } from './entry-module.js';
 import { CompilationModule } from './compilation.js';
 import { ExcelHandler } from './excel-handler.js';
+import { PrintHandler } from './print-handler.js';
 
 // Make modules globally accessible for HTML onclick events
 window.SessionManager = SessionManager;
@@ -11,6 +12,7 @@ window.SchoolRecords = SchoolRecords;
 window.EntryModule = EntryModule;
 window.CompilationModule = CompilationModule;
 window.ExcelHandler = ExcelHandler;
+window.PrintHandler = PrintHandler;
 
 window.onload = function() {
     SessionManager.init();
