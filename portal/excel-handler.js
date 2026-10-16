@@ -15,30 +15,47 @@ export const ExcelHandler = {
         let firstSheetName = workbook.SheetNames[0];
         let worksheet = workbook.Sheets[firstSheetName];
         
-        // Read as array of arrays to handle multi-row headers correctly
         let rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        if (!rows || rows.length < 4) {
-          alert("Excel file ka format sahi nahi hai!");
+        if (!rows || rows.length === 0) {
+          alert("Excel file khali hai!");
           return;
         }
 
         let schools = SessionManager.getData();
         let updatedCount = 0;
 
-        // Find header rows (Row index 1, 2, 3 in 0-indexed: r1=Class, r2=Category, r3=B/G)
-        for (let i = 4; i < rows.length; i++) {
-          let r = rows[i];
-          let udise = r[2]; // School Code / UDISE is at index 2
-          let schoolName = r[1]; // School Name is at index 1
+        // Har row ko check karein jisme UDISE/School Code (column 2 ya similar) ho
+        rows.forEach((r) => {
+          if (!r || r.length < 3) return;
+          
+          // UDISE code usually column index 2 par hota hai, ya fir kisi bhi column mein 11 digit ka number ho
+          let udise = null;
+          let schoolName = "";
+
+          for (let colIdx = 0; colIdx < r.length; colIdx++) {
+            let val = String(r[colIdx] || "").trim();
+            // UDISE code is generally 11 digits
+            if (/^\d{11}$/.test(val)) {
+              udise = val;
+              schoolName = String(r[colIdx - 1] || r[1] || "").trim();
+              break;
+            }
+          }
+
+          if (!udise && r[2] && String(r[2]).length >= 5) {
+            udise = String(r[2]).trim();
+            schoolName = String(r[1] || "").trim();
+          }
 
           if (udise) {
-            let targetSchool = schools.find(s => String(s.udise).trim() === String(udise).trim());
+            let targetSchool = schools.find(s => String(s.udise).trim() === udise);
             if (targetSchool) {
               updatedCount++;
-              if (schoolName) targetSchool.name = schoolName;
+              if (schoolName && schoolName !== "SCHOOL" && schoolName !== "School Code") {
+                targetSchool.name = schoolName;
+              }
 
-              // Classes 1 to 8 mapping based on columns
-              // Class 1 starts at index 5, each class takes 14 columns (SC_B, SC_G, ST_B, ST_G, OBC_B, OBC_G, GEN_B, GEN_G, Total...)
+              // Classes 1 to 8 mapping dynamically
               const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
               
               classNames.forEach((cName, idx) => {
@@ -57,14 +74,14 @@ export const ExcelHandler = {
               });
             }
           }
-        }
+        });
 
         SessionManager.saveData(schools);
         SessionManager.updateStats();
         SchoolRecords.render();
         CompilationModule.render();
 
-        alert(`Excel file se ${updatedCount} schools ka data safaltapurvak feed aur sync ho gaya hai!`);
+        alert(`Excel file se ${updatedCount} schools ka data safaltapurvak feed aur cloud par sync ho gaya hai!`);
       } catch (err) {
         console.error("Excel Upload Error:", err);
         alert("Excel file read karne mein error aayi. Kripya sahi format upload karein.");
