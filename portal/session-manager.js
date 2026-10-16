@@ -1,63 +1,91 @@
-import { MASTER_SCHOOLS } from './schools-data.js';
-import { SchoolRecords } from './school-records.js';
-import { EntryModule } from './entry-module.js';
-import { CompilationModule } from './compilation.js';
+import { AdminLocks } from './admin-locks.js';
 
 export const SessionManager = {
-  currentSession: "2026-27",
   init() {
-    let sel = document.getElementById("sessionSelect");
-    if(sel) {
-      sel.innerHTML = `<option value="2026-27">2026-27</option><option value="2027-28">2027-28</option><option value="2028-29">2028-29</option><option value="2029-30">2029-30</option>`;
-    }
-    this.loadSessionData();
-  },
-  changeSession() {
-    let sel = document.getElementById("sessionSelect");
-    if(sel) this.currentSession = sel.value;
-    let title = document.getElementById("dashTitle");
-    if(title) title.innerText = `📊 BRC Shahpur Overall Summary (Session: ${this.currentSession})`;
-    this.loadSessionData();
-  },
-  getStorageKey() { return "brc_true_modular_" + this.currentSession; },
-  getData() {
-    let data = localStorage.getItem(this.getStorageKey());
-    if(!data){
-      let fresh = JSON.parse(JSON.stringify(MASTER_SCHOOLS));
-      fresh.forEach(s => {
-        s.classes = {};
-        ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
-          s.classes[c] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
-        });
-      });
-      return fresh;
-    }
-    return JSON.parse(data);
-  },
-  saveData(data) { localStorage.setItem(this.getStorageKey(), JSON.stringify(data)); },
-  loadSessionData() {
-    SchoolRecords.render();
-    EntryModule.populateDropdown();
-    CompilationModule.render();
+    this.renderDropdown();
     this.updateStats();
   },
+
+  renderDropdown() {
+    let select = document.getElementById("sessionSelect");
+    if(!select) return;
+    let sessions = AdminLocks.getSessions();
+    let current = localStorage.getItem("brc_active_session") || "2026-27";
+    
+    select.innerHTML = "";
+    sessions.forEach(s => {
+      let opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = s.locked ? `🔒 ${s.name} (Locked)` : `🔓 ${s.name}`;
+      if(s.id === current) opt.selected = true;
+      select.appendChild(opt);
+    });
+  },
+
+  changeSession() {
+    let select = document.getElementById("sessionSelect");
+    if(!select) return;
+    let targetSession = select.value;
+
+    // Check if locked
+    if(AdminLocks.isLocked(targetSession)) {
+      let pass = prompt(`Session ${targetSession} locked hai! Unlock karne ke liye BRC Admin Password darj karein:`);
+      if(pass) {
+        let success = AdminLocks.toggleLock(targetSession, pass);
+        if(!success) {
+          this.renderDropdown(); // reset select
+          return;
+        }
+      } else {
+        this.renderDropdown(); // reset select
+        return;
+      }
+    }
+
+    localStorage.setItem("brc_active_session", targetSession);
+    this.renderDropdown();
+    location.reload(); // Refresh to load that session's data safely
+  },
+
+  getData() {
+    let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
+    let dataKey = `brc_schools_data_${activeSession}`;
+    let saved = localStorage.getItem(dataKey);
+    
+    if(!saved) {
+      // Return default master data if not saved for this session yet
+      return window.MASTER_SCHOOLS || [];
+    }
+    return JSON.parse(saved);
+  },
+
+  saveData(schoolsData) {
+    let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
+    let dataKey = `brc_schools_data_${activeSession}`;
+    localStorage.setItem(dataKey, JSON.stringify(schoolsData));
+  },
+
   updateStats() {
     let schools = this.getData();
-    let b=0, g=0, filled=0, pending=0;
+    let totalSchools = schools.length;
+    let totalEnroll = 0, boys = 0, girls = 0, filled = 0;
+
     schools.forEach(s => {
-      let sb=0, sg=0;
-      for(let c in s.classes){
-        let cl = s.classes[c];
-        sb += (cl.scB||0)+(cl.stB||0)+(cl.obcB||0)+(cl.genB||0);
-        sg += (cl.scG||0)+(cl.stG||0)+(cl.obcG||0)+(cl.genG||0);
-      }
-      b += sb; g += sg;
-      if((sb+sg) > 0) filled++; else pending++;
+      let hasData = false;
+      Object.values(s.classes || {}).forEach(c => {
+        let sum = (c.scB||0)+(c.scG||0)+(c.stB||0)+(c.stG||0)+(c.obcB||0)+(c.obcG||0)+(c.genB||0)+(c.genG||0);
+        if(sum > 0) hasData = true;
+        boys += (c.scB||0)+(c.stB||0)+(c.obcB||0)+(c.genB||0);
+        girls += (c.scG||0)+(c.stG||0)+(c.obcG||0)+(c.genG||0);
+        totalEnroll += sum;
+      });
+      if(hasData) filled++;
     });
-    document.getElementById("statSchools").innerText = schools.length;
-    document.getElementById("statTotal").innerText = (b+g).toLocaleString();
-    document.getElementById("statBoysGirls").innerText = `Boys: ${b.toLocaleString()} | Girls: ${g.toLocaleString()}`;
-    document.getElementById("statFilled").innerText = filled;
-    document.getElementById("statPending").innerText = pending;
+
+    if(document.getElementById("statSchools")) document.getElementById("statSchools").innerText = totalSchools;
+    if(document.getElementById("statTotal")) document.getElementById("statTotal").innerText = totalEnroll;
+    if(document.getElementById("statBoysGirls")) document.getElementById("statBoysGirls").innerText = `Boys: ${boys} | Girls: ${girls}`;
+    if(document.getElementById("statFilled")) document.getElementById("statFilled").innerText = filled;
+    if(document.getElementById("statPending")) document.getElementById("statPending").innerText = totalSchools - filled;
   }
 };
