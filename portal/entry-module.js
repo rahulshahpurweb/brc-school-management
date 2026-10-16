@@ -127,7 +127,7 @@ export const EntryModule = {
       };
     });
     SessionManager.saveData(schools);
-    SessionManager.updateStats();
+    if(typeof SessionManager.updateStats === 'function') SessionManager.updateStats();
     SchoolRecords.render();
     CompilationModule.render();
     
