@@ -55,8 +55,7 @@ export const ExcelHandler = {
         let firstSheetName = workbook.SheetNames[0];
         let worksheet = workbook.Sheets[firstSheetName];
         
-        // Convert sheet to JSON objects using header row
-        let rows = XLSX.utils.sheet_to_json(worksheet);
+        let rows = XLSX.utils.sheet_to_json(worksheet, { defval: 0 });
         if (!rows || rows.length === 0) {
           alert("Excel file khali hai!");
           return;
@@ -66,41 +65,48 @@ export const ExcelHandler = {
         let updatedCount = 0;
 
         rows.forEach((r) => {
-          // Find UDISE Code from possible column names
-          let udise = String(r["UDISE Code"] || r["School Code"] || r["udise"] || "").trim();
-          
-          if (!udise) {
-            // Search dynamically in keys if exact match not found
+          try {
+            let udise = "";
             for (let key in r) {
-              if (key.toLowerCase().includes("udise") || key.toLowerCase().includes("code")) {
+              let cleanKey = key.toLowerCase().trim();
+              if (cleanKey.includes("udise") || cleanKey.includes("school code")) {
                 udise = String(r[key]).trim();
                 break;
               }
             }
-          }
 
-          if (udise) {
-            let targetSchool = schools.find(s => String(s.udise).trim() === udise);
-            if (targetSchool) {
-              updatedCount++;
-              
-              const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
-              
-              classes.forEach(c => {
-                let scB = parseInt(r[`${c} SC Boys`] ?? r[`${c}_scB`] ?? 0) || 0;
-                let scG = parseInt(r[`${c} SC Girls`] ?? r[`${c}_scG`] ?? 0) || 0;
-                let stB = parseInt(r[`${c} ST Boys`] ?? r[`${c}_stB`] ?? 0) || 0;
-                let stG = parseInt(r[`${c} ST Girls`] ?? r[`${c}_stG`] ?? 0) || 0;
-                let obcB = parseInt(r[`${c} OBC Boys`] ?? r[`${c}_obcB`] ?? 0) || 0;
-                let obcG = parseInt(r[`${c} OBC Girls`] ?? r[`${c}_obcG`] ?? 0) || 0;
-                let genB = parseInt(r[`${c} Gen Boys`] ?? r[`${c}_genB`] ?? 0) || 0;
-                let genG = parseInt(r[`${c} Gen Girls`] ?? r[`${c}_genG`] ?? 0) || 0;
+            if (!udise && r["UDISE Code"]) udise = String(r["UDISE Code"]).trim();
+            if (!udise && r["School Code"]) udise = String(r["School Code"]).trim();
 
-                targetSchool.classes[c] = { scB, scG, stB, stG, obcB, obcG, genB, genG };
-              });
+            if (udise) {
+              let targetSchool = schools.find(s => String(s.udise).trim() === udise);
+              if (targetSchool) {
+                updatedCount++;
+                const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+                
+                classes.forEach(c => {
+                  let scB = parseInt(r[`${c} SC Boys`] ?? r[`${c}_scB`] ?? 0) || 0;
+                  let scG = parseInt(r[`${c} SC Girls`] ?? r[`${c}_scG`] ?? 0) || 0;
+                  let stB = parseInt(r[`${c} ST Boys`] ?? r[`${c}_stB`] ?? 0) || 0;
+                  let stG = parseInt(r[`${c} ST Girls`] ?? r[`${c}_stG`] ?? 0) || 0;
+                  let obcB = parseInt(r[`${c} OBC Boys`] ?? r[`${c}_obcB`] ?? 0) || 0;
+                  let obcG = parseInt(r[`${c} OBC Girls`] ?? r[`${c}_obcG`] ?? 0) || 0;
+                  let genB = parseInt(r[`${c} Gen Boys`] ?? r[`${c}_genB`] ?? 0) || 0;
+                  let genG = parseInt(r[`${c} Gen Girls`] ?? r[`${c}_genG`] ?? 0) || 0;
+
+                  targetSchool.classes[c] = { scB, scG, stB, stG, obcB, obcG, genB, genG };
+                });
+              }
             }
+          } catch (rowErr) {
+            console.error("Row processing error:", rowErr);
           }
         });
+
+        if (updatedCount === 0) {
+          alert("Excel file mein koi bhi match karta hua UDISE Code nahi mila!");
+          return;
+        }
 
         SessionManager.saveData(schools);
         SessionManager.updateStats();
@@ -110,7 +116,7 @@ export const ExcelHandler = {
         alert(`Excel file se ${updatedCount} schools ka data safaltapurvak feed aur cloud par sync ho gaya hai!`);
       } catch (err) {
         console.error("Excel Upload Error:", err);
-        alert("Excel file read karne mein error aayi. Kripya hamara Download Template use karke data bharein.");
+        alert("Excel file read karne mein error aayi.");
       }
     };
     reader.readAsArrayBuffer(file);
