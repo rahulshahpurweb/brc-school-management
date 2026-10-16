@@ -82,6 +82,12 @@ export const ExcelHandler = {
               let targetSchool = schools.find(s => String(s.udise).trim() === udise);
               if (targetSchool) {
                 updatedCount++;
+                
+                // Ensure classes object exists
+                if (!targetSchool.classes) {
+                  targetSchool.classes = {};
+                }
+
                 const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
                 
                 classes.forEach(c => {
