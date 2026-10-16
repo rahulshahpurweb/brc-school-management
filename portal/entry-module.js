@@ -16,6 +16,7 @@ export const EntryModule = {
     });
     this.loadForm();
   },
+
   loadForm() {
     let sel = document.getElementById("schoolSelect");
     if(!sel || sel.value === "") return;
@@ -29,23 +30,56 @@ export const EntryModule = {
     classes.forEach(c => {
       if(!s.classes[c]) s.classes[c] = {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
       let cl = s.classes[c], rId = c.replace(" ", "_");
+      
+      // By default inputs are disabled (Frozen) for data safety
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;">${c}</td>
-        <td><input type="number" id="${rId}_scB" value="${cl.scB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_scG" value="${cl.scG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_stB" value="${cl.stB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_stG" value="${cl.stG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_obcB" value="${cl.obcB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_obcG" value="${cl.obcG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_genB" value="${cl.genB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_genG" value="${cl.genG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
+        <td><input type="number" id="${rId}_scB" value="${cl.scB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_scG" value="${cl.scG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_stB" value="${cl.stB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_stG" value="${cl.stG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_obcB" value="${cl.obcB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_obcG" value="${cl.obcG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_genB" value="${cl.genB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
+        <td><input type="number" id="${rId}_genG" value="${cl.genG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
         <td id="${rId}_totB">${cl.scB+cl.stB+cl.obcB+cl.genB}</td>
         <td id="${rId}_totG">${cl.scG+cl.stG+cl.obcG+cl.genG}</td>
         <td id="${rId}_T" style="font-weight:bold;background:#eef2ff;">${cl.scB+cl.scG+cl.stB+cl.stG+cl.obcB+cl.obcG+cl.genB+cl.genG}</td>
       </tr>`;
     });
     this.addTotalRow();
+
+    // Reset Edit Toggle button state on school change
+    let editBtn = document.getElementById("editToggleBtn");
+    if(editBtn) {
+      editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
+      editBtn.style.background = "#1d4ed8";
+    }
   },
+
+  toggleEdit() {
+    let inputs = document.querySelectorAll("#entryTableBody input[type='number']");
+    let editBtn = document.getElementById("editToggleBtn");
+    if(inputs.length === 0) return;
+    
+    let isLocked = inputs[0].disabled;
+    if(isLocked) {
+      inputs.forEach(inp => {
+        inp.disabled = false;
+        inp.style.background = "#fff"; // Active editable background
+      });
+      editBtn.innerHTML = "🔒 Lock Mode (Editing Active)";
+      editBtn.style.background = "#d97706";
+    } else {
+      inputs.forEach(inp => {
+        inp.disabled = true;
+        inp.style.background = "#f1f5f9"; // Frozen background
+      });
+      editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
+      editBtn.style.background = "#1d4ed8";
+    }
+  },
+
   calc(rId) {
     let scB = parseInt(document.getElementById(`${rId}_scB`).value)||0, scG = parseInt(document.getElementById(`${rId}_scG`).value)||0;
     let stB = parseInt(document.getElementById(`${rId}_stB`).value)||0, stG = parseInt(document.getElementById(`${rId}_stG`).value)||0;
@@ -56,6 +90,7 @@ export const EntryModule = {
     document.getElementById(`${rId}_T`).innerText = scB+scG+stB+stG+obcB+obcG+genB+genG;
     this.addTotalRow();
   },
+
   addTotalRow() {
     let sB=0, sG=0, stB=0, stG=0, oB=0, oG=0, gB=0, gG=0;
     ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
@@ -71,6 +106,7 @@ export const EntryModule = {
     document.getElementById("entryTotalRow")?.remove();
     tbody.innerHTML += `<tr id="entryTotalRow" class="total-row"><td>Total</td><td>${sB}</td><td>${sG}</td><td>${stB}</td><td>${stG}</td><td>${oB}</td><td>${oG}</td><td>${gB}</td><td>${gG}</td><td>${tb}</td><td>${tg}</td><td>${tb+tg}</td></tr>`;
   },
+
   saveData() {
     let sel = document.getElementById("schoolSelect");
     if(!sel || sel.value === "") return;
@@ -89,6 +125,19 @@ export const EntryModule = {
     SessionManager.updateStats();
     SchoolRecords.render();
     CompilationModule.render();
-    alert("School ka data safaltapurvak save ho gaya hai!");
+    
+    // Save ke baad wapas inputs ko freeze kar dein
+    let inputs = document.querySelectorAll("#entryTableBody input[type='number']");
+    inputs.forEach(inp => {
+      inp.disabled = true;
+      inp.style.background = "#f1f5f9";
+    });
+    let editBtn = document.getElementById("editToggleBtn");
+    if(editBtn) {
+      editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
+      editBtn.style.background = "#1d4ed8";
+    }
+
+    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
   }
 };
