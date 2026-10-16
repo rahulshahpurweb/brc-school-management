@@ -31,7 +31,7 @@ export const EntryModule = {
       if(!s.classes[c]) s.classes[c] = {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
       let cl = s.classes[c], rId = c.replace(" ", "_");
       
-      // By default inputs are disabled (Frozen) for data safety
+      // By default inputs are disabled (Frozen) for safety
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;">${c}</td>
         <td><input type="number" id="${rId}_scB" value="${cl.scB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
@@ -49,7 +49,6 @@ export const EntryModule = {
     });
     this.addTotalRow();
 
-    // Reset Edit Toggle button state on school change
     let editBtn = document.getElementById("editToggleBtn");
     if(editBtn) {
       editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
@@ -66,14 +65,14 @@ export const EntryModule = {
     if(isLocked) {
       inputs.forEach(inp => {
         inp.disabled = false;
-        inp.style.background = "#fff"; // Active editable background
+        inp.style.background = "#fff"; 
       });
       editBtn.innerHTML = "🔒 Lock Mode (Editing Active)";
       editBtn.style.background = "#d97706";
     } else {
       inputs.forEach(inp => {
         inp.disabled = true;
-        inp.style.background = "#f1f5f9"; // Frozen background
+        inp.style.background = "#f1f5f9"; 
       });
       editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
       editBtn.style.background = "#1d4ed8";
@@ -126,7 +125,7 @@ export const EntryModule = {
     SchoolRecords.render();
     CompilationModule.render();
     
-    // Save ke baad wapas inputs ko freeze kar dein
+    // Save ke turant baad inputs ko wapas freeze (lock) kar dein
     let inputs = document.querySelectorAll("#entryTableBody input[type='number']");
     inputs.forEach(inp => {
       inp.disabled = true;
