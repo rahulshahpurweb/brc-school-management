@@ -13,7 +13,15 @@ export const CompilationModule = {
 
     let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
 
+    // Dynamic Title Indicator for Header
+    let displayTitle = classFilter === "ALL" ? "All Classes (Total)" : `Selected Class: ${classFilter}`;
+
     let html = `<thead>
+      <tr>
+        <th colspan="15" style="background:#0284c7;color:#fff;text-align:center;font-size:14px;padding:8px;">
+          📊 Compilation Report — <span style="background:#fff;color:#0284c7;padding:2px 8px;border-radius:4px;">${displayTitle}</span> | JSK: ${jskFilter}
+        </th>
+      </tr>
       <tr>
         <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">S.No.</th>
         <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">School Name & UDISE</th>
