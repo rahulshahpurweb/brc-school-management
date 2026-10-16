@@ -50,8 +50,9 @@ export const EntryModule = {
       let cl = s.classes[c];
       let rId = c.replace(" ", "_");
       
-      let totB = (cl.scB||0) + (cl.stB||0) + (cl.obcB||0) + (cl.genB||0);
-      let totG = (cl.scG||0) + (cl.stG||0) + (cl.obcG||0) + (cl.genG||0);
+      // Calculate initial values directly from stored school data
+      let totB = (parseInt(cl.scB)||0) + (parseInt(cl.stB)||0) + (parseInt(cl.obcB)||0) + (parseInt(cl.genB)||0);
+      let totG = (parseInt(cl.scG)||0) + (parseInt(cl.stG)||0) + (parseInt(cl.obcG)||0) + (parseInt(cl.genG)||0);
       let totalT = totB + totG;
 
       tbody.innerHTML += `<tr>
@@ -69,13 +70,9 @@ export const EntryModule = {
         <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">${totalT}</td>
       </tr>`;
     });
-    
-    // Turant saari classes ke liye calc run kar do taaki totals show ho jayein
-    classes.forEach(c => {
-      this.calc(c.replace(" ", "_"));
-    });
 
     this.attachListeners();
+    this.addTotalRow();
   },
 
   attachListeners() {
