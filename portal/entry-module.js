@@ -69,7 +69,12 @@ export const EntryModule = {
         <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">${totalT}</td>
       </tr>`;
     });
-    this.addTotalRow();
+    
+    // Turant saari classes ke liye calc run kar do taaki totals show ho jayein
+    classes.forEach(c => {
+      this.calc(c.replace(" ", "_"));
+    });
+
     this.attachListeners();
   },
 
