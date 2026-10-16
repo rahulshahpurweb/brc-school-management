@@ -6,8 +6,6 @@ import { CompilationModule } from './compilation.js';
 export const EntryModule = {
   populateDropdown() {
     let schools = SessionManager.getData();
-    
-    // Fallback: Agar session data khali hai toh master schools load kar lein
     if (!schools || schools.length === 0) {
       schools = MASTER_SCHOOLS;
       SessionManager.saveData(schools);
@@ -46,20 +44,20 @@ export const EntryModule = {
       if(!s.classes[c]) s.classes[c] = {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
       let cl = s.classes[c], rId = c.replace(" ", "_");
       
-      // By default inputs are disabled (Frozen) for safety
+      // Attractive styling: Frozen state has grey background, editable state gets clear grid box borders
       tbody.innerHTML += `<tr>
         <td style="font-weight:bold;background:#f8fafc;">${c}</td>
-        <td><input type="number" id="${rId}_scB" value="${cl.scB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_scG" value="${cl.scG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_stB" value="${cl.stB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_stG" value="${cl.stG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_obcB" value="${cl.obcB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_obcG" value="${cl.obcG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_genB" value="${cl.genB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td><input type="number" id="${rId}_genG" value="${cl.genG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;border:0;text-align:center;background:#f1f5f9;"></td>
-        <td id="${rId}_totB">${cl.scB+cl.stB+cl.obcB+cl.genB}</td>
-        <td id="${rId}_totG">${cl.scG+cl.stG+cl.obcG+cl.genG}</td>
-        <td id="${rId}_T" style="font-weight:bold;background:#eef2ff;">${cl.scB+cl.scG+cl.stB+cl.stG+cl.obcB+cl.obcG+cl.genB+cl.genG}</td>
+        <td><input type="number" id="${rId}_scB" value="${cl.scB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_scG" value="${cl.scG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_stB" value="${cl.stB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_stG" value="${cl.stG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_obcB" value="${cl.obcB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_obcG" value="${cl.obcG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_genB" value="${cl.genB}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td><input type="number" id="${rId}_genG" value="${cl.genG}" oninput="EntryModule.calc('${rId}')" disabled style="width:100%;height:32px;border:1px solid #cbd5e1;text-align:center;background:#f1f5f9;border-radius:4px;font-weight:600;"></td>
+        <td id="${rId}_totB" style="font-weight:600;">${cl.scB+cl.stB+cl.obcB+cl.genB}</td>
+        <td id="${rId}_totG" style="font-weight:600;">${cl.scG+cl.stG+cl.obcG+cl.genG}</td>
+        <td id="${rId}_T" style="font-weight:bold;background:#eef2ff;color:#1e3a8a;">${cl.scB+cl.scG+cl.stB+cl.stG+cl.obcB+cl.obcG+cl.genB+cl.genG}</td>
       </tr>`;
     });
     this.addTotalRow();
@@ -78,16 +76,22 @@ export const EntryModule = {
     
     let isLocked = inputs[0].disabled;
     if(isLocked) {
+      // Unlock: Make boxes look attractive with white background and bright blue borders
       inputs.forEach(inp => {
         inp.disabled = false;
-        inp.style.background = "#fff"; 
+        inp.style.background = "#ffffff"; 
+        inp.style.border = "2px solid #2563eb";
+        inp.style.boxShadow = "inset 0 1px 2px rgba(0,0,0,0.1)";
       });
       editBtn.innerHTML = "🔒 Lock Mode (Editing Active)";
       editBtn.style.background = "#d97706";
     } else {
+      // Lock: Back to frozen state
       inputs.forEach(inp => {
         inp.disabled = true;
         inp.style.background = "#f1f5f9"; 
+        inp.style.border = "1px solid #cbd5e1";
+        inp.style.boxShadow = "none";
       });
       editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
       editBtn.style.background = "#1d4ed8";
@@ -140,11 +144,13 @@ export const EntryModule = {
     SchoolRecords.render();
     CompilationModule.render();
     
-    // Save ke turant baad inputs ko wapas freeze (lock) kar dein
+    // Save ke turant baad inputs ko wapas freeze karke style normal kar dein
     let inputs = document.querySelectorAll("#entryTableBody input[type='number']");
     inputs.forEach(inp => {
       inp.disabled = true;
       inp.style.background = "#f1f5f9";
+      inp.style.border = "1px solid #cbd5e1";
+      inp.style.boxShadow = "none";
     });
     let editBtn = document.getElementById("editToggleBtn");
     if(editBtn) {
