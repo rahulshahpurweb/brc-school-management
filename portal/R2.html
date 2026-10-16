@@ -80,17 +80,16 @@
       </table>
     </div>
     <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px; border-radius:10px; box-shadow:0 1px 6px #ddd;">
-  <button type="button" id="editToggleBtn" onclick="EntryModule.toggleEdit()" style="background:#1d4ed8; color:#fff; padding:10px 18px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">🔓 Unlock to Edit (डेटा एडिट करें)</button>
-  <button type="button" onclick="EntryModule.saveData()" style="background:#15803d; color:#fff; padding:10px 20px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save & Freeze Data</button>
-</div>
-
+      <button type="button" id="editToggleBtn" onclick="EntryModule.toggleEdit()" style="background:#1d4ed8; color:#fff; padding:10px 18px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">🔓 Unlock to Edit (डेटा एडिट करें)</button>
+      <button type="button" onclick="EntryModule.saveData()" style="background:#15803d; color:#fff; padding:10px 20px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save & Freeze Data</button>
+    </div>
   </section>
 
   <section id="compilation">
     <h3>📑 JSK-wise Compilation Report</h3>
-    <div class="filter-bar">
+    <div class="filter-bar" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
       <label><b>JSK Filter:</b></label>
-      <select id="compJskFilter" onchange="CompilationModule.render()">
+      <select id="compJskFilter" onchange="CompilationModule.render()" style="font-weight:bold;">
         <option value="ALL">-- All JSK (Sankul) --</option>
         <option value="Bhoura">Bhoura</option>
         <option value="Bijadehi">Bijadehi</option>
@@ -100,8 +99,22 @@
         <option value="Shahpur">Shahpur</option>
         <option value="Tara">Tara</option>
       </select>
+
+      <!-- Added Class Filter Dropdown -->
+      <label style="margin-left:10px;"><b>Class Filter:</b></label>
+      <select id="compClassFilter" onchange="CompilationModule.render()" style="font-weight:bold;">
+        <option value="ALL">-- All Classes --</option>
+        <option value="Class 1">Class 1</option>
+        <option value="Class 2">Class 2</option>
+        <option value="Class 3">Class 3</option>
+        <option value="Class 4">Class 4</option>
+        <option value="Class 5">Class 5</option>
+        <option value="Class 6">Class 6</option>
+        <option value="Class 7">Class 7</option>
+        <option value="Class 8">Class 8</option>
+      </select>
     </div>
-    <div class="tablewrap"><table id="compileTable"><thead><tr><th style="width:100px;">JSK</th><th style="width:100px;">Class</th><th>SC (B)</th><th>SC (G)</th><th>ST (B)</th><th>ST (G)</th><th>OBC (B)</th><th>OBC (G)</th><th>GEN (B)</th><th>GEN (G)</th><th>Total (B)</th><th>Total (G)</th><th>T</th></tr></thead><tbody id="compileTableBody"></tbody></table></div>
+    <div class="tablewrap"><table id="compileTable"></table></div>
   </section>
 </main>
 
