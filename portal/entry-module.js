@@ -7,88 +7,151 @@ export const EntryModule = {
     let schools = SessionManager.getData();
     let sel = document.getElementById("schoolSelect");
     if(!sel) return;
+    
+    // Save current selection if any
+    let currentVal = sel.value;
     sel.innerHTML = "";
+    
     schools.forEach((s, idx) => {
       let opt = document.createElement("option");
       opt.value = idx;
       opt.textContent = `${s.name} (UDISE: ${s.udise} | JSK: ${s.jsk})`;
       sel.appendChild(opt);
     });
+
+    if(currentVal !== "" && schools[currentVal]) {
+      sel.value = currentVal;
+    }
+    
     this.loadForm();
   },
+
   loadForm() {
     let sel = document.getElementById("schoolSelect");
-    if(!sel || sel.value === "") return;
-    let schools = SessionManager.getData();
-    let s = schools[sel.value];
     let tbody = document.getElementById("entryTableBody");
     if(!tbody) return;
+    
+    if(!sel || sel.value === "" || sel.value === undefined) {
+      sel.value = 0; // Default to first school
+    }
+
+    let schools = SessionManager.getData();
+    let s = schools[sel.value];
+    if(!s) return;
+
     tbody.innerHTML = "";
 
     const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    
     classes.forEach(c => {
-      if(!s.classes[c]) s.classes[c] = {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
-      let cl = s.classes[c], rId = c.replace(" ", "_");
+      if(!s.classes) s.classes = {};
+      if(!s.classes[c]) {
+        s.classes[c] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
+      }
+      
+      let cl = s.classes[c];
+      let rId = c.replace(" ", "_");
+      
+      let totB = (cl.scB||0) + (cl.stB||0) + (cl.obcB||0) + (cl.genB||0);
+      let totG = (cl.scG||0) + (cl.stG||0) + (cl.obcG||0) + (cl.genG||0);
+      let totalT = totB + totG;
+
       tbody.innerHTML += `<tr>
-        <td style="font-weight:bold;background:#f8fafc;">${c}</td>
-        <td><input type="number" id="${rId}_scB" value="${cl.scB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_scG" value="${cl.scG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_stB" value="${cl.stB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_stG" value="${cl.stG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_obcB" value="${cl.obcB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_obcG" value="${cl.obcG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_genB" value="${cl.genB}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td><input type="number" id="${rId}_genG" value="${cl.genG}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:0;text-align:center;"></td>
-        <td id="${rId}_totB">${cl.scB+cl.stB+cl.obcB+cl.genB}</td>
-        <td id="${rId}_totG">${cl.scG+cl.stG+cl.obcG+cl.genG}</td>
-        <td id="${rId}_T" style="font-weight:bold;background:#eef2ff;">${cl.scB+cl.scG+cl.stB+cl.stG+cl.obcB+cl.obcG+cl.genB+cl.genG}</td>
+        <td style="font-weight:bold;background:#f8fafc;vertical-align:middle;">${c}</td>
+        <td><input type="number" min="0" id="${rId}_scB" value="${cl.scB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_scG" value="${cl.scG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_stB" value="${cl.stB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_stG" value="${cl.stG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_obcB" value="${cl.obcB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_obcG" value="${cl.obcG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_genB" value="${cl.genB || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td><input type="number" min="0" id="${rId}_genG" value="${cl.genG || 0}" oninput="EntryModule.calc('${rId}')" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
+        <td id="${rId}_totB" style="text-align:center;font-weight:bold;">${totB}</td>
+        <td id="${rId}_totG" style="text-align:center;font-weight:bold;">${totG}</td>
+        <td id="${rId}_T" style="text-align:center;font-weight:bold;background:#eef2ff;">${totalT}</td>
       </tr>`;
     });
     this.addTotalRow();
   },
+
   calc(rId) {
-    let scB = parseInt(document.getElementById(`${rId}_scB`).value)||0, scG = parseInt(document.getElementById(`${rId}_scG`).value)||0;
-    let stB = parseInt(document.getElementById(`${rId}_stB`).value)||0, stG = parseInt(document.getElementById(`${rId}_stG`).value)||0;
-    let obcB = parseInt(document.getElementById(`${rId}_obcB`).value)||0, obcG = parseInt(document.getElementById(`${rId}_obcG`).value)||0;
-    let genB = parseInt(document.getElementById(`${rId}_genB`).value)||0, genG = parseInt(document.getElementById(`${rId}_genG`).value)||0;
-    document.getElementById(`${rId}_totB`).innerText = scB+stB+obcB+genB;
-    document.getElementById(`${rId}_totG`).innerText = scG+stG+obcG+genG;
-    document.getElementById(`${rId}_T`).innerText = scB+scG+stB+stG+obcB+obcG+genB+genG;
+    let scB = parseInt(document.getElementById(`${rId}_scB`)?.value) || 0;
+    let scG = parseInt(document.getElementById(`${rId}_scG`)?.value) || 0;
+    let stB = parseInt(document.getElementById(`${rId}_stB`)?.value) || 0;
+    let stG = parseInt(document.getElementById(`${rId}_stG`)?.value) || 0;
+    let obcB = parseInt(document.getElementById(`${rId}_obcB`)?.value) || 0;
+    let obcG = parseInt(document.getElementById(`${rId}_obcG`)?.value) || 0;
+    let genB = parseInt(document.getElementById(`${rId}_genB`)?.value) || 0;
+    let genG = parseInt(document.getElementById(`${rId}_genG`)?.value) || 0;
+
+    document.getElementById(`${rId}_totB`).innerText = scB + stB + obcB + genB;
+    document.getElementById(`${rId}_totG`).innerText = scG + stG + obcG + genG;
+    document.getElementById(`${rId}_T`).innerText = scB + scG + stB + stG + obcB + obcG + genB + genG;
     this.addTotalRow();
   },
+
   addTotalRow() {
     let sB=0, sG=0, stB=0, stG=0, oB=0, oG=0, gB=0, gG=0;
     ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
       let rId = c.replace(" ", "_");
-      sB += parseInt(document.getElementById(`${rId}_scB`)?.value||0); sG += parseInt(document.getElementById(`${rId}_scG`)?.value||0);
-      stB += parseInt(document.getElementById(`${rId}_stB`)?.value||0); stG += parseInt(document.getElementById(`${rId}_stG`)?.value||0);
-      oB += parseInt(document.getElementById(`${rId}_obcB`)?.value||0); oG += parseInt(document.getElementById(`${rId}_obcG`)?.value||0);
-      gB += parseInt(document.getElementById(`${rId}_genB`)?.value||0); gG += parseInt(document.getElementById(`${rId}_genG`)?.value||0);
+      sB += parseInt(document.getElementById(`${rId}_scB`)?.value || 0); 
+      sG += parseInt(document.getElementById(`${rId}_scG`)?.value || 0);
+      stB += parseInt(document.getElementById(`${rId}_stB`)?.value || 0); 
+      stG += parseInt(document.getElementById(`${rId}_stG`)?.value || 0);
+      oB += parseInt(document.getElementById(`${rId}_obcB`)?.value || 0); 
+      oG += parseInt(document.getElementById(`${rId}_obcG`)?.value || 0);
+      gB += parseInt(document.getElementById(`${rId}_genB`)?.value || 0); 
+      gG += parseInt(document.getElementById(`${rId}_genG`)?.value || 0);
     });
-    let tb = sB+stB+oB+gB, tg = sG+stG+oG+gG;
+    
+    let tb = sB + stB + oB + gB;
+    let tg = sG + stG + oG + gG;
     let tbody = document.getElementById("entryTableBody");
     if(!tbody) return;
+    
     document.getElementById("entryTotalRow")?.remove();
-    tbody.innerHTML += `<tr id="entryTotalRow" class="total-row"><td>Total</td><td>${sB}</td><td>${sG}</td><td>${stB}</td><td>${stG}</td><td>${oB}</td><td>${oG}</td><td>${gB}</td><td>${gG}</td><td>${tb}</td><td>${tg}</td><td>${tb+tg}</td></tr>`;
+    tbody.innerHTML += `<tr id="entryTotalRow" style="background:#f1f5f9;font-weight:bold;">
+      <td style="text-align:center;">Total</td>
+      <td style="text-align:center;">${sB}</td><td style="text-align:center;">${sG}</td>
+      <td style="text-align:center;">${stB}</td><td style="text-align:center;">${stG}</td>
+      <td style="text-align:center;">${oB}</td><td style="text-align:center;">${oG}</td>
+      <td style="text-align:center;">${gB}</td><td style="text-align:center;">${gG}</td>
+      <td style="text-align:center;">${tb}</td><td style="text-align:center;">${tg}</td>
+      <td style="text-align:center;background:#dcfce7;color:#14532d;">${tb + tg}</td>
+    </tr>`;
   },
+
   saveData() {
     let sel = document.getElementById("schoolSelect");
-    if(!sel || sel.value === "") return;
+    if(!sel || sel.value === "") {
+      alert("Kripya pehle school chunein!");
+      return;
+    }
+    
     let schools = SessionManager.getData();
     let s = schools[sel.value];
+    if(!s) return;
+
+    if(!s.classes) s.classes = {};
+
     ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
       let rId = c.replace(" ", "_");
       s.classes[c] = {
-        scB: parseInt(document.getElementById(`${rId}_scB`).value)||0, scG: parseInt(document.getElementById(`${rId}_scG`).value)||0,
-        stB: parseInt(document.getElementById(`${rId}_stB`).value)||0, stG: parseInt(document.getElementById(`${rId}_stG`).value)||0,
-        obcB: parseInt(document.getElementById(`${rId}_obcB`).value)||0, obcG: parseInt(document.getElementById(`${rId}_obcG`).value)||0,
-        genB: parseInt(document.getElementById(`${rId}_genB`).value)||0, genG: parseInt(document.getElementById(`${rId}_genG`).value)||0
+        scB: parseInt(document.getElementById(`${rId}_scB`)?.value) || 0, 
+        scG: parseInt(document.getElementById(`${rId}_scG`)?.value) || 0,
+        stB: parseInt(document.getElementById(`${rId}_stB`)?.value) || 0, 
+        stG: parseInt(document.getElementById(`${rId}_stG`)?.value) || 0,
+        obcB: parseInt(document.getElementById(`${rId}_obcB`)?.value) || 0, 
+        obcG: parseInt(document.getElementById(`${rId}_obcG`)?.value) || 0,
+        genB: parseInt(document.getElementById(`${rId}_genB`)?.value) || 0, 
+        genG: parseInt(document.getElementById(`${rId}_genG`)?.value) || 0
       };
     });
+
     SessionManager.saveData(schools);
     SessionManager.updateStats();
     SchoolRecords.render();
     CompilationModule.render();
-    alert("School ka data safaltapurvak save ho gaya hai!");
+    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
   }
 };
