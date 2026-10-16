@@ -102,9 +102,9 @@ function logoutSession(){
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   inactivityTimer = setTimeout(() => {
-    alert("Session Timeout: 2 minute tak koi activity na hone ke karan aapko logout kar diya gaya hai.");
+    alert("Session Timeout");
     logoutSession();
-  }, 120000); 
+  }, 1500000); 
 }
 
 window.onload = function() {
