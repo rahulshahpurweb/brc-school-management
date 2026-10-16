@@ -15,5 +15,18 @@ window.ExcelHandler = ExcelHandler;
 window.PrintHandler = PrintHandler;
 
 window.onload = function() {
-    SessionManager.init();
+  SessionManager.init();
+  SchoolRecords.render();
+  EntryModule.populateDropdown(); // <-- Yeh line zaroori hai taaki dropdown bhara aaye
+  CompilationModule.render();
 };
+
+// Tab switching helper function for R2.html
+window.showTab = function(id) {
+  document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  
+  if(id === 'entry') {
+    EntryModule.populateDropdown(); // Jab bhi Data Entry tab par click ho, list update ho jaye
+  }
+}
