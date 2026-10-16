@@ -14,7 +14,7 @@ export const CompilationModule = {
     let html = '';
 
     if (viewMode === "format1") {
-      // --- FORMAT 1: JSK-Wise And Category-wise No. Of Schools ---
+      // --- FORMAT 1: JSK-Wise And Category-wise No. Of Schools (Accurate Mapping) ---
       html += `<thead>
         <tr>
           <th rowspan="2" style="background:#1e3a8a;color:#fff;vertical-align:middle;">JSK</th>
@@ -33,39 +33,28 @@ export const CompilationModule = {
       let totals = { p:0, m:0, pm:0, mh:0, mhs:0, ph:0, phs:0, grand:0 };
 
       jskList.forEach(jsk => {
+        if (jskFilter !== "ALL" && jskFilter !== jsk) return; // Skip if JSK filter doesn't match
         let jskSchools = schools.filter(s => s.jsk === jsk);
+
         let c1=0, c2=0, c3=0, c4=0, c5=0, c6=0, c7=0;
 
         jskSchools.forEach(s => {
-          let cat = (s.category || "").toLowerCase();
-          let classesObj = s.classes || {};
-          let has1_5 = false, has6_8 = false, has9_10 = false, has11_12 = false;
-
-          Object.keys(classesObj).forEach(cName => {
-            let cl = classesObj[cName] || {};
-            let sum = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
-            if (sum > 0) {
-              if (["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"].includes(cName)) has1_5 = true;
-              if (["Class 6", "Class 7", "Class 8"].includes(cName)) has6_8 = true;
-              if (["Class 9", "Class 10"].includes(cName)) has9_10 = true;
-              if (["Class 11", "Class 12"].includes(cName)) has11_12 = true;
-            }
-          });
-
-          if ((has11_12 || cat.includes("12") || cat.includes("higher secondary")) && has1_5) {
-            c7++; // Primary to Higher Sec (1 to 12)
-          } else if ((has9_10 || cat.includes("10") || cat.includes("high school")) && has1_5) {
-            c6++; // Primary to High School (1 to 10)
-          } else if ((has11_12 || cat.includes("12") || cat.includes("higher secondary")) && has6_8) {
-            c5++; // Middle to Higher Sec (6 to 12)
-          } else if ((has9_10 || cat.includes("10") || cat.includes("high school")) && has6_8) {
-            c4++; // Middle to High School (6 to 10)
-          } else if ((has1_5 && has6_8) || (cat.includes("primary") && cat.includes("middle"))) {
-            c3++; // Primary with Middle (1 to 8)
-          } else if (has6_8 || cat.includes("middle")) {
-            c2++; // Middle School (6 to 8)
+          let cat = (s.category || "").trim().toLowerCase();
+          
+          if (cat.includes("primary to higher secondary") || (cat.includes("1 to 12") && !cat.includes("middle"))) {
+            c7++;
+          } else if (cat.includes("primary to high school") || cat.includes("1 to 10")) {
+            c6++;
+          } else if (cat.includes("middle to higher secondary") || cat.includes("6 to 12")) {
+            c5++;
+          } else if (cat.includes("middle to high school") || cat.includes("6 to 10")) {
+            c4++;
+          } else if (cat.includes("primary with middle") || cat.includes("1 to 8")) {
+            c3++;
+          } else if (cat.includes("middle school") || cat.includes("6 to 8")) {
+            c2++;
           } else {
-            c1++; // Primary School (1 to 5)
+            c1++; // Default Primary School (1 to 5)
           }
         });
 
@@ -181,6 +170,7 @@ export const CompilationModule = {
       let gSum = { c1:0, c2:0, c3:0, c4:0, c5:0, t1_5:0, c6:0, c7:0, c8:0, t6_8:0, grand:0 };
 
       jskList.forEach(jsk => {
+        if (jskFilter !== "ALL" && jskFilter !== jsk) return;
         let jskSchools = schools.filter(s => s.jsk === jsk);
         let t = { c1:0, c2:0, c3:0, c4:0, c5:0, c6:0, c7:0, c8:0 };
 
@@ -281,54 +271,3 @@ export const CompilationModule = {
           <th rowspan="2" style="background:#1e3a8a;color:#fff;">School Code</th>
           <th rowspan="2" style="background:#1e3a8a;color:#fff;">Category</th>
           <th rowspan="2" style="background:#1e3a8a;color:#fff;">JSK</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-1</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-2</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-3</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-4</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-5</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-6</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-7</th>
-          <th colspan="9" style="background:#0284c7;color:#fff;">Class-8</th>
-        </tr>
-        <tr>`;
-        
-      for(let i=1; i<=8; i++) {
-        html += `<th style="background:#e0f2fe;color:#0369a1;font-size:10px;">SC-B</th><th style="background:#e0f2fe;color:#0369a1;font-size:10px;">SC-G</th>
-                 <th style="background:#e0f2fe;color:#0369a1;font-size:10px;">ST-B</th><th style="background:#e0f2fe;color:#0369a1;font-size:10px;">ST-G</th>
-                 <th style="background:#e0f2fe;color:#0369a1;font-size:10px;">OBC-B</th><th style="background:#e0f2fe;color:#0369a1;font-size:10px;">OBC-G</th>
-                 <th style="background:#e0f2fe;color:#0369a1;font-size:10px;">GEN-B</th><th style="background:#e0f2fe;color:#0369a1;font-size:10px;">GEN-G</th>
-                 <th style="background:#dcfce7;color:#166534;font-size:10px;">Total</th>`;
-      }
-      html += `</tr></thead><tbody>`;
-
-      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
-      filteredSchools.forEach((s, idx) => {
-        html += `<tr>
-          <td style="text-align:center;font-weight:bold;">${idx + 1}</td>
-          <td>${s.name}</td><td>${s.udise}</td><td>${s.category || ''}</td><td>${s.jsk}</td>`;
-
-        ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
-          let cl = s.classes && s.classes[c] ? s.classes[c] : {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
-          let cTot = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
-          
-          html += `<td style="text-align:center;">${cl.scB||''}</td><td style="text-align:center;">${cl.scG||''}</td>
-                   <td style="text-align:center;">${cl.stB||''}</td><td style="text-align:center;">${cl.stG||''}</td>
-                   <td style="text-align:center;">${cl.obcB||''}</td><td style="text-align:center;">${cl.obcG||''}</td>
-                   <td style="text-align:center;">${cl.genB||''}</td><td style="text-align:center;">${cl.genG||''}</td>
-                   <td style="text-align:center;font-weight:bold;background:#f0fdf4;">${cTot||''}</td>`;
-        });
-        html += `</tr>`;
-      });
-
-    } else {
-      // --- DEFAULT DETAILED VIEW ---
-      html += `<thead><tr><th>S.No.</th><th>School Name</th><th>JSK</th><th>Total Enrollment</th></tr></thead><tbody>`;
-      schools.forEach((s, idx) => {
-        html += `<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.jsk}</td><td>-</td></tr>`;
-      });
-    }
-
-    html += `</tbody>`;
-    table.innerHTML = html;
-  }
-};
