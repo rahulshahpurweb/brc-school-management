@@ -14,54 +14,50 @@ export const ExcelHandler = {
         let workbook = XLSX.read(data, { type: 'array' });
         let firstSheetName = workbook.SheetNames[0];
         let worksheet = workbook.Sheets[firstSheetName];
-        let jsonRows = XLSX.utils.sheet_to_json(worksheet);
-
-        if (!jsonRows || jsonRows.length === 0) {
-          alert("Excel file khali hai!");
+        
+        // Read as array of arrays to handle multi-row headers correctly
+        let rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        if (!rows || rows.length < 4) {
+          alert("Excel file ka format sahi nahi hai!");
           return;
         }
 
         let schools = SessionManager.getData();
         let updatedCount = 0;
 
-        jsonRows.forEach(row => {
-          // Normalize keys to lowercase for flexible matching
-          let normalizedRow = {};
-          Object.keys(row).forEach(k => {
-            normalizedRow[k.trim().toLowerCase()] = row[k];
-          });
+        // Find header rows (Row index 1, 2, 3 in 0-indexed: r1=Class, r2=Category, r3=B/G)
+        for (let i = 4; i < rows.length; i++) {
+          let r = rows[i];
+          let udise = r[2]; // School Code / UDISE is at index 2
+          let schoolName = r[1]; // School Name is at index 1
 
-          let udise = normalizedRow["udise"] || normalizedRow["udise code"] || normalizedRow["school code"] || normalizedRow["code"] || normalizedRow["udise_code"];
-          
           if (udise) {
             let targetSchool = schools.find(s => String(s.udise).trim() === String(udise).trim());
             if (targetSchool) {
               updatedCount++;
-              
-              if (normalizedRow["name"] || normalizedRow["school name"]) {
-                targetSchool.name = normalizedRow["name"] || normalizedRow["school name"];
-              }
+              if (schoolName) targetSchool.name = schoolName;
 
-              // Map Class 1 to 8 dynamically from various possible column names
-              ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(cName => {
-                let cleanName = cName.toLowerCase();
-                let altName = cleanName.replace("class ", "c");
-                let altName2 = cleanName.replace("class ", "class-");
+              // Classes 1 to 8 mapping based on columns
+              // Class 1 starts at index 5, each class takes 14 columns (SC_B, SC_G, ST_B, ST_G, OBC_B, OBC_G, GEN_B, GEN_G, Total...)
+              const classNames = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+              
+              classNames.forEach((cName, idx) => {
+                let baseCol = 5 + (idx * 14);
                 
-                let val = normalizedRow[cleanName] || normalizedRow[altName] || normalizedRow[altName2] || normalizedRow[cName];
-                
-                if (val !== undefined && val !== "" && !isNaN(val)) {
-                  let num = parseInt(val) || 0;
-                  if (!targetSchool.classes[cName]) {
-                    targetSchool.classes[cName] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:num, genG:0};
-                  } else {
-                    targetSchool.classes[cName].genB = num;
-                  }
-                }
+                let scB = parseInt(r[baseCol + 0]) || 0;
+                let scG = parseInt(r[baseCol + 1]) || 0;
+                let stB = parseInt(r[baseCol + 2]) || 0;
+                let stG = parseInt(r[baseCol + 3]) || 0;
+                let obcB = parseInt(r[baseCol + 4]) || 0;
+                let obcG = parseInt(r[baseCol + 5]) || 0;
+                let genB = parseInt(r[baseCol + 6]) || 0;
+                let genG = parseInt(r[baseCol + 7]) || 0;
+
+                targetSchool.classes[cName] = { scB, scG, stB, stG, obcB, obcG, genB, genG };
               });
             }
           }
-        });
+        }
 
         SessionManager.saveData(schools);
         SessionManager.updateStats();
