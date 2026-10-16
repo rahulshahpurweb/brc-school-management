@@ -57,12 +57,18 @@ export const ExcelHandler = {
         
         let rows = XLSX.utils.sheet_to_json(worksheet, { defval: 0 });
         if (!rows || rows.length === 0) {
-          alert("Excel file khali hai!");
+          alert("Excel file khali hai ya galat format hai!");
           return;
         }
 
         let schools = SessionManager.getData();
+        if (!schools || schools.length === 0) {
+          alert("Master schools data load nahi hua hai!");
+          return;
+        }
+
         let updatedCount = 0;
+        let totalSumCheck = 0;
 
         rows.forEach((r) => {
           try {
@@ -83,7 +89,6 @@ export const ExcelHandler = {
               if (targetSchool) {
                 updatedCount++;
                 
-                // Ensure classes object exists
                 if (!targetSchool.classes) {
                   targetSchool.classes = {};
                 }
@@ -91,14 +96,16 @@ export const ExcelHandler = {
                 const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
                 
                 classes.forEach(c => {
-                  let scB = parseInt(r[`${c} SC Boys`] ?? r[`${c}_scB`] ?? 0) || 0;
-                  let scG = parseInt(r[`${c} SC Girls`] ?? r[`${c}_scG`] ?? 0) || 0;
-                  let stB = parseInt(r[`${c} ST Boys`] ?? r[`${c}_stB`] ?? 0) || 0;
-                  let stG = parseInt(r[`${c} ST Girls`] ?? r[`${c}_stG`] ?? 0) || 0;
-                  let obcB = parseInt(r[`${c} OBC Boys`] ?? r[`${c}_obcB`] ?? 0) || 0;
-                  let obcG = parseInt(r[`${c} OBC Girls`] ?? r[`${c}_obcG`] ?? 0) || 0;
-                  let genB = parseInt(r[`${c} Gen Boys`] ?? r[`${c}_genB`] ?? 0) || 0;
-                  let genG = parseInt(r[`${c} Gen Girls`] ?? r[`${c}_genG`] ?? 0) || 0;
+                  let scB = parseInt(r[`${c} SC Boys`] ?? 0) || 0;
+                  let scG = parseInt(r[`${c} SC Girls`] ?? 0) || 0;
+                  let stB = parseInt(r[`${c} ST Boys`] ?? 0) || 0;
+                  let stG = parseInt(r[`${c} ST Girls`] ?? 0) || 0;
+                  let obcB = parseInt(r[`${c} OBC Boys`] ?? 0) || 0;
+                  let obcG = parseInt(r[`${c} OBC Girls`] ?? 0) || 0;
+                  let genB = parseInt(r[`${c} Gen Boys`] ?? 0) || 0;
+                  let genG = parseInt(r[`${c} Gen Girls`] ?? 0) || 0;
+
+                  totalSumCheck += (scB + scG + stB + stG + obcB + obcG + genB + genG);
 
                   targetSchool.classes[c] = { scB, scG, stB, stG, obcB, obcG, genB, genG };
                 });
@@ -109,6 +116,9 @@ export const ExcelHandler = {
           }
         });
 
+        // Debug Alert to show exact status
+        alert(`Debug: Total rows found = ${rows.length}, Matched schools = ${updatedCount}, Total Enrollment calculated = ${totalSumCheck}`);
+
         if (updatedCount === 0) {
           alert("Excel file mein koi bhi match karta hua UDISE Code nahi mila!");
           return;
@@ -117,13 +127,11 @@ export const ExcelHandler = {
         SessionManager.saveData(schools);
         SessionManager.updateStats();
 
-        alert(`Excel file se ${updatedCount} schools ka data safaltapurvak feed aur cloud par sync ho gaya hai!`);
-        
-        // Auto reload page to show updated dashboard stats instantly
+        alert(`Excel file se ${updatedCount} schools ka data safaltapurvak save ho gaya hai! Refresh ho raha hai...`);
         location.reload();
       } catch (err) {
         console.error("Excel Upload Error:", err);
-        alert("Excel file read karne mein error aayi.");
+        alert("Excel file read karne mein error aayi: " + err.message);
       }
     };
     reader.readAsArrayBuffer(file);
