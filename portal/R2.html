@@ -79,7 +79,11 @@
         <tbody id="entryTableBody"></tbody>
       </table>
     </div>
-    <div style="margin-top:15px;text-align:right;"><button onclick="EntryModule.saveData()" style="padding:10px 20px;">💾 Save Data</button></div>
+    <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px; border-radius:10px; box-shadow:0 1px 6px #ddd;">
+  <button type="button" id="editToggleBtn" onclick="EntryModule.toggleEdit()" style="background:#1d4ed8; color:#fff; padding:10px 18px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">🔓 Unlock to Edit (डेटा एडिट करें)</button>
+  <button type="button" onclick="EntryModule.saveData()" style="background:#15803d; color:#fff; padding:10px 20px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save & Freeze Data</button>
+</div>
+
   </section>
 
   <section id="compilation">
