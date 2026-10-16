@@ -110,10 +110,11 @@ export const ExcelHandler = {
 
         SessionManager.saveData(schools);
         SessionManager.updateStats();
-        SchoolRecords.render();
-        CompilationModule.render();
 
         alert(`Excel file se ${updatedCount} schools ka data safaltapurvak feed aur cloud par sync ho gaya hai!`);
+        
+        // Auto reload page to show updated dashboard stats instantly
+        location.reload();
       } catch (err) {
         console.error("Excel Upload Error:", err);
         alert("Excel file read karne mein error aayi.");
