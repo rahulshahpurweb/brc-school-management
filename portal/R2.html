@@ -6,39 +6,6 @@
 <title>True Modular Portal - BRC Shahpur</title>
 <link rel="stylesheet" href="r2-styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
-  // Inline Maintenance Check for R2
-  (function() {
-    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-    if (isMaintenance && user.role !== "admin") {
-      document.open();
-      document.write(`
-        <!DOCTYPE html>
-        <html lang="hi">
-        <head>
-          <meta charset="utf-8">
-          <title>Portal Under Maintenance</title>
-          <style>
-            body { background: #0b2854; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 20px; }
-            .box { background: #ffffff10; padding: 40px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid #ffffff22; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-            h1 { color: #f4b400; font-size: 24px; margin-bottom: 15px; }
-            p { font-size: 15px; color: #cbd5e1; line-height: 1.6; }
-          </style>
-        </head>
-        <body>
-          <div class="box">
-            <h1>🚧 Portal Under Maintenance</h1>
-            <p>Kripya asuvidha ke liye khed hai!<br>Abhi portal par naye updates aur maintenance ka kaam chal raha hai. Jaldi hi portal wapas live hoga.</p>
-          </div>
-        </body>
-        </html>
-      `);
-      document.close();
-      throw new Error("Portal under maintenance");
-    }
-  })();
-</script>
 <style>
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
   .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
@@ -46,6 +13,41 @@
   .modal-box input { width:100%; padding:10px; margin:8px 0 15px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
+
+  /* Full Screen Professional Maintenance Overlay */
+  #maintenanceOverlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #071b38, #0b2854);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  .maint-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 40px 30px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  }
+  .maint-card h1 {
+    color: #f4b400;
+    font-size: 26px;
+    margin-bottom: 15px;
+  }
+  .maint-card p {
+    color: #e2e8f0;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+  }
 
   @media print {
     header, nav, .filter-bar, button, label, .modal-overlay, #editToggleBtn, [onclick], input, select {
@@ -69,6 +71,14 @@
 </style>
 </head>
 <body>
+
+<!-- Full Screen Maintenance Overlay -->
+<div id="maintenanceOverlay">
+  <div class="maint-card">
+    <h1>🚧 Portal Under Maintenance</h1>
+    <p>पोर्टल पर अभी मेंटेनेंस का कार्य चल रहा है। कृपया कुछ समय बाद लॉगिन करें, प्रतीक्षा करने के लिए धन्यवाद।</p>
+  </div>
+</div>
 
 <header>
   <h1>BRC Shahpur - True Modular Portal (R2)</h1>
@@ -198,6 +208,15 @@
 <script type="module" src="app.js"></script>
 <script type="module">
   window.addEventListener('DOMContentLoaded', () => {
+    // Check maintenance mode on load for R2
+    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    
+    if (isMaintenance && user.role !== "admin") {
+      let overlay = document.getElementById("maintenanceOverlay");
+      if (overlay) overlay.style.display = "flex";
+    }
+
     setTimeout(() => {
       try {
         let userStr = localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user");
