@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BRC Shahpur - Master Portal</title>
-<!-- Maintenance Script Integration -->
-<script src="maintenance.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;overflow:hidden;height:100vh;display:flex;flex-direction:column}
@@ -36,10 +34,43 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .sna-link-btn:hover{background:#059669}
 .auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
 </style>
+<script>
+  // Inline Maintenance Mode Check
+  (function() {
+    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    if (isMaintenance && user.role !== "admin") {
+      document.open();
+      document.write(`
+        <!DOCTYPE html>
+        <html lang="hi">
+        <head>
+          <meta charset="utf-8">
+          <title>Portal Under Maintenance</title>
+          <style>
+            body { background: #0b2854; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 20px; }
+            .box { background: #ffffff10; padding: 40px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid #ffffff22; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+            h1 { color: #f4b400; font-size: 24px; margin-bottom: 15px; }
+            p { font-size: 15px; color: #cbd5e1; line-height: 1.6; }
+          </style>
+        </head>
+        <body>
+          <div class="box">
+            <h1>🚧 Portal Under Maintenance</h1>
+            <p>Kripya asuvidha ke liye khed hai!<br>Abhi portal par naye updates aur maintenance ka kaam chal raha hai. Jaldi hi portal wapas live hoga.</p>
+          </div>
+        </body>
+        </html>
+      `);
+      document.close();
+      throw new Error("Portal under maintenance");
+    }
+  })();
+</script>
 </head>
 <body>
 
-<!-- Login Lock Screen supporting Admin Master Password or School UDISE Code -->
+<!-- Login Lock Screen -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
@@ -48,10 +79,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User Id" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Enter password)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login</button>
-    
     <div style="margin:12px 0 8px;font-size:12px;color:#94a3b8;font-weight:bold;">--- Or---</div>
-    
-    <!-- Separate SNA Account Check Button -->
     <a href="../index.html" class="sna-link-btn">🔍 SNA Account Check </a>
   </div>
 </div>
@@ -66,10 +94,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
     <button class="mod-tab" onclick="loadModule('R3.html', this)">♿ CWSN</button>
     <a href="../index.html" class="mod-tab" style="background:#0d9488;border-color:#0d9488;color:#fff;">🔍 SNA Account Check</a>
     
-    <!-- Admin Maintenance Toggle Button in Master Header -->
+    <!-- Admin Maintenance Toggle Button -->
     <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:4px 8px; border-radius:6px;">
       <span style="font-size:11px; font-weight:bold;">🛠️ Maint:</span>
-      <button id="maintToggleBtn" onclick="MaintenanceModule.toggle()" style="padding:3px 8px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
+      <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:3px 8px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
     </div>
 
     <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Logout</button>
@@ -85,52 +113,69 @@ const ADMIN_PASS = "brc@shahpur";
 let inactivityTimer;
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (window.MaintenanceModule) {
-    MaintenanceModule.renderAdminToggle("adminMaintenancePanel");
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  if (user.role === 'admin') {
+    let panel = document.getElementById("adminMaintenancePanel");
+    if(panel) panel.style.display = "flex";
+    updateMaintUI();
   }
 });
+
+function updateMaintUI() {
+  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
+  let btn = document.getElementById("maintToggleBtn");
+  if(btn) {
+    if(isMaint) {
+      btn.innerText = "🔴 ON (Site Band Hai)";
+      btn.style.background = "#dc2626";
+      btn.style.color = "#fff";
+    } else {
+      btn.innerText = "🟢 OFF (Site Live Hai)";
+      btn.style.background = "#16a34a";
+      btn.style.color = "#fff";
+    }
+  }
+}
+
+function toggleMaintenance() {
+  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
+  if(isMaint) {
+    localStorage.setItem("brc_maintenance_mode", "false");
+    alert("Portal ab sabhi users ke liye LIVE kar diya gaya hai!");
+  } else {
+    if(confirm("Kya aap sach mein portal ko maintenance mode par daalna chahte hain?")) {
+      localStorage.setItem("brc_maintenance_mode", "true");
+      alert("Portal ab MAINTENANCE mode par chala gaya hai!");
+    }
+  }
+  updateMaintUI();
+  location.reload();
+}
 
 function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
 
-  // 1. Admin Master Login Check
-  if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
+  if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS) || (passVal === "" && inputVal === ADMIN_PASS)) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
-    resetInactivityTimer();
     location.reload();
     return;
   }
 
-  if(passVal === "" && inputVal === ADMIN_PASS) {
-    sessionStorage.setItem("brc_logged_in", "true");
-    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
-    document.getElementById("authOverlay").style.display = "none";
-    resetInactivityTimer();
-    location.reload();
-    return;
-  }
-
-  // 2. JSK Login Check
   if(inputVal === "jsk_login") {
     let jskPass = passVal || "jskpassword";
     if(jskPass === "jskpassword" || jskPass === "brc@123") {
       sessionStorage.setItem("brc_logged_in", "true");
-      localStorage.setItem("brc_logged_user", JSON.stringify({ 
-        role: 'jsk', 
-        name: 'JSK Coordinator' 
-      }));
+      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
       document.getElementById("authOverlay").style.display = "none";
-      resetInactivityTimer();
       location.reload();
       return;
     }
   }
 
-  // 3. School UDISE Login Check
   let schools = JSON.parse(localStorage.getItem("brc_schools_data_2026-27") || "[]");
   let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
 
@@ -138,13 +183,8 @@ function checkAuth(){
     let p = passVal || "12345";
     if(p === "12345" || p === String(foundSchool.udise).trim()) {
       sessionStorage.setItem("brc_logged_in", "true");
-      localStorage.setItem("brc_logged_user", JSON.stringify({ 
-        role: 'school', 
-        udise: foundSchool.udise, 
-        name: foundSchool.name 
-      }));
+      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
       document.getElementById("authOverlay").style.display = "none";
-      resetInactivityTimer();
       document.getElementById('moduleFrame').src = document.getElementById('moduleFrame').src;
       return;
     }
@@ -155,7 +195,6 @@ function checkAuth(){
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   document.getElementById("authOverlay").style.display = "none";
-  resetInactivityTimer();
 } else {
   document.getElementById("authOverlay").style.display = "flex";
 }
@@ -164,28 +203,7 @@ function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
   document.getElementById("authOverlay").style.display = "flex";
-  document.getElementById("authUserInput").value = "";
-  document.getElementById("authPass").value = "";
 }
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(() => {
-    alert("Session Timeout");
-    logoutSession();
-  }, 1500000); 
-}
-
-window.onload = function() {
-  const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-  events.forEach(eventName => {
-    document.addEventListener(eventName, () => {
-      if(sessionStorage.getItem("brc_logged_in") === "true") {
-        resetInactivityTimer();
-      }
-    }, true);
-  });
-};
 
 function loadModule(fileName, btnElement){
   document.getElementById('moduleFrame').src = fileName;
