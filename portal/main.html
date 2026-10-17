@@ -99,14 +99,14 @@ function checkAuth(){
     return;
   }
 
-  // 2. JSK Login Check (Jaise jsk_shahpur / jskpassword)
-  if(inputVal.startsWith("jsk") || inputVal === "jsk_shahpur" || inputVal === "bhoura" || inputVal === "bijadehi") {
+    // 2. JSK Login Check (Ab ID 'jsk_login' hogi aur password 'jskpassword')
+  if(inputVal === "jsk_login") {
     let jskPass = passVal || "jskpassword";
     if(jskPass === "jskpassword" || jskPass === "brc@123") {
       sessionStorage.setItem("brc_logged_in", "true");
       localStorage.setItem("brc_logged_user", JSON.stringify({ 
         role: 'jsk', 
-        name: `JSK Coordinator (${inputVal})` 
+        name: 'JSK Coordinator' 
       }));
       document.getElementById("authOverlay").style.display = "none";
       resetInactivityTimer();
@@ -114,6 +114,7 @@ function checkAuth(){
       return;
     }
   }
+  
 
   // 3. School UDISE Login Check
   let schools = JSON.parse(localStorage.getItem("brc_schools_data_2026-27") || "[]");
