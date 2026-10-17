@@ -5,6 +5,13 @@ import { CompilationModule } from './compilation.js';
 export const ExcelHandler = {
   downloadTemplate() {
     try {
+      // Permission Check for JSK / Role
+      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      if (user.role === 'jsk' && window.FeaturePermissions && !FeaturePermissions.isAllowed('r2_jsk_template_download')) {
+        alert("Admin dwara JSK ke liye Template Download ki anumati nahi di gayi hai!");
+        return;
+      }
+
       let schools = SessionManager.getData();
       let templateData = [];
       
@@ -44,6 +51,14 @@ export const ExcelHandler = {
   },
 
   uploadExcel(event) {
+    // Permission Check for JSK / Role
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    if (user.role === 'jsk' && window.FeaturePermissions && !FeaturePermissions.isAllowed('r2_jsk_upload_excel')) {
+      alert("Admin dwara JSK ke liye Excel Upload ki anumati nahi di gayi hai!");
+      event.target.value = ""; // Reset file input
+      return;
+    }
+
     let file = event.target.files[0];
     if (!file) return;
 
@@ -116,7 +131,6 @@ export const ExcelHandler = {
           }
         });
 
-        // Debug Alert to show exact status
         alert(`Debug: Total rows found = ${rows.length}, Matched schools = ${updatedCount}, Total Enrollment calculated = ${totalSumCheck}`);
 
         if (updatedCount === 0) {
