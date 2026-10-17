@@ -122,11 +122,12 @@ const ADMIN_PASS = "brc@shahpur";
 let inactivityTimer;
 
 window.addEventListener('DOMContentLoaded', () => {
-  // Check maintenance mode on load
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  if (isMaintenance && user.role !== "admin") {
+  // Agar maintenance ON hai, user logged in hai, aur woh ADMIN NAHI hai, tabhi maintenance overlay dikhao
+  if (isMaintenance && isLoggedIn && user.role !== "admin") {
     let overlay = document.getElementById("maintenanceOverlay");
     if (overlay) overlay.style.display = "flex";
     let authOverlay = document.getElementById("authOverlay");
@@ -215,15 +216,14 @@ function checkAuth(){
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  if (!(isMaintenance && user.role !== "admin")) {
+  if (isMaintenance && user.role !== "admin") {
+    // Non-admin logged in during maintenance -> overlay will show
+  } else {
     document.getElementById("authOverlay").style.display = "none";
   }
 } else {
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  if (!(isMaintenance && user.role !== "admin")) {
-    document.getElementById("authOverlay").style.display = "flex";
-  }
+  // Not logged in -> always show login screen first
+  document.getElementById("authOverlay").style.display = "flex";
 }
 
 function logoutSession(){
