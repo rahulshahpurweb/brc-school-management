@@ -25,22 +25,19 @@ export const EntryModule = {
     this.loadForm();
   },
 
-  // School ki category aur hamare 1-8 scope ke hisab से classes tay karna
+    // School ki category ke hisab se exact classes tay karna
   getClassesForSchool(category) {
-    let cat = (category || "").toLowerCase();
+    let cat = (category || "").toUpperCase().trim();
     
-    let hasMiddle = cat.includes("6") || cat.includes("middle") || cat.includes("high") || cat.includes("sec") || cat.includes("hr");
-    let hasPrimary = cat.includes("1") || cat.includes("primary");
-
-    // Agar sirf middle classes hain (jaise 6-8, 6-10, 6-12 bina primary ke)
-    if (hasMiddle && !hasPrimary && (cat.includes("6") || cat.includes("middle"))) {
-      return ["Class 6", "Class 7", "Class 8"];
-    }
-    // Agar sirf primary classes hain (jaise 1-5)
-    else if (hasPrimary && !hasMiddle) {
+    // Agar category PS hai ya sirf Primary hai (jaise "PS", "PRIMARY SCHOOL", "1 TO 5")
+    if (cat === "PS" || (cat.includes("PRIMARY") && !cat.includes("MIDDLE") && !cat.includes("1-8") && !cat.includes("1 TO 8"))) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
     }
-    // Default / Primary + Middle dono (jaise 1-8, 1-10, 1-12 ya standard schools)
+    // Agar category UPS ya Middle hai (jaise "UPS", "MIDDLE", "6 TO 8")
+    else if (cat === "UPS" || (cat.includes("MIDDLE") && !cat.includes("PRIMARY"))) {
+      return ["Class 6", "Class 7", "Class 8"];
+    }
+    // Baaki sabhi ke liye default 1 se 8 tak
     else {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
