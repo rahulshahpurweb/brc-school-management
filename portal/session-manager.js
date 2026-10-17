@@ -29,7 +29,6 @@ export const SessionManager = {
     sessions.forEach(s => {
       let opt = document.createElement("option");
       opt.value = s.id;
-      // Agar purana session hai toh locked icon dikhayega
       opt.textContent = s.locked ? `🔒 ${s.name} (Locked)` : `🔓 ${s.name} (Active)`;
       if(s.id === current) opt.selected = true;
       select.appendChild(opt);
@@ -51,7 +50,6 @@ export const SessionManager = {
     let saved = localStorage.getItem(dataKey);
 
     if (!saved) {
-      // Naye ya future session ke liye fresh blank data (0 enrollment) generate karna
       let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
       let freshSchools = JSON.parse(JSON.stringify(baseSchools));
       
@@ -86,6 +84,9 @@ export const SessionManager = {
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
         localStorage.setItem(dataKey, JSON.stringify(cloudData));
         console.log("Cloud data successfully load ho gaya!");
+        this.updateStats();
+        if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();
+        if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
       }
     } catch (err) {
       console.error("Cloud Load Error, local storage use ho raha hai:", err);
@@ -96,7 +97,6 @@ export const SessionManager = {
   saveData(schoolsData) {
     let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
     
-    // Check karein ki session locked toh nahi hai (Purane saal read-only rahenge)
     let sessions = AdminLocks.getSessions();
     let currentSessionObj = sessions.find(s => s.id === activeSession);
     if (currentSessionObj && currentSessionObj.locked) {
@@ -105,10 +105,9 @@ export const SessionManager = {
     }
 
     let dataKey = `brc_schools_data_${activeSession}`;
-    localStorage.setItem(dataKey, JSON.stringifyschoolsData ? JSON.stringify(schoolsData) : JSON.stringify([]));
+    localStorage.setItem(dataKey, schoolsData ? JSON.stringify(schoolsData) : JSON.stringify([]));
     this.updateStats();
 
-    // Background mein Google Sheet par session ke sath data bhejna
     let payload = {
       session: activeSession,
       data: schoolsData
@@ -232,7 +231,7 @@ export const SessionManager = {
       let schoolListTab = document.querySelector("[data-target='records']") || document.getElementById("recordsSection");
       
       if(dataEntryTab) dataEntryTab.style.display = "none";
-      if(schoolListTab) dataEntryTab.style.display = "none";
+      if(schoolListTab) schoolListTab.style.display = "none";
     }
     else if(role === "school") {
       let compilationTab = document.querySelector("[data-target='compilation']") || document.getElementById("compilationSection");
