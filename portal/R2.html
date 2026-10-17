@@ -25,7 +25,7 @@
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
   <!-- School login par yeh buttons hide ho jayenge -->
-  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
+  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_E</button>
   <label class="button hide-for-school" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
@@ -113,51 +113,49 @@
     <div class="tablewrap"><table id="compileTable"></table></div>
   </section>
 </main>
-
 <!-- Load Main Modular Controller & Direct In-Page Security Guard -->
+<script type="module" src="app.js"></script>
 <script type="module">
   window.addEventListener('DOMContentLoaded', () => {
-    try {
-      let userStr = localStorage.getItem("brc_logged_user");
-      if (userStr) {
-        let user = JSON.parse(userStr);
-        
-        // Agar login karne wala School user hai
-        if (user && user.role === 'school') {
-          console.log("🔒 Strict School Isolation Active");
+    setTimeout(() => {
+      try {
+        let userStr = localStorage.getItem("brc_logged_user");
+        if (userStr) {
+          let user = JSON.parse(userStr);
+          
+          if (user && user.role === 'school') {
+            console.log("🔒 Strict School Isolation Active for:", user.udise);
 
-          // 1. Template aur Upload buttons hide karna
-          setTimeout(() => {
+            // 1. Template aur Upload buttons hide karna
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
-          }, 300);
 
-          // 2. Academic Session ko sirf 2026-27 par lock karna
-          let sessionSelect = document.getElementById("sessionSelect");
-          if (sessionSelect) {
-            sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
-            sessionSelect.disabled = true;
-          }
-
-          // 3. Data Entry dropdown mein sirf usi school ko rakhna aur load karna
-          let checkInterval = setInterval(() => {
-            let schoolSelect = document.getElementById("schoolSelect");
-            if (schoolSelect) {
-              // Dropdown ko saaf karke sirf usi school ka option daal do
-              schoolSelect.innerHTML = `<option value="${user.udise}" selected>${user.name || 'My School'} (${user.udise})</option>`;
-              schoolSelect.disabled = true; // Koi doosri school select na kar paye
-              
-              // Form load function ko turant call karo taaki usi school ka data khule
-              if (window.EntryModule && typeof EntryModule.loadForm === 'function') {
-                EntryModule.loadForm();
-              }
-              clearInterval(checkInterval);
+            // 2. Academic Session ko sirf 2026-27 par lock karna
+            let sessionSelect = document.getElementById("sessionSelect");
+            if (sessionSelect) {
+              sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
+              sessionSelect.disabled = true;
             }
-          }, 300);
+
+            // 3. Data Entry dropdown mein sirf usi school ko lock karna aur form load karna
+            let checkInterval = setInterval(() => {
+              let schoolSelect = document.getElementById("schoolSelect");
+              if (schoolSelect) {
+                schoolSelect.innerHTML = `<option value="${user.udise}" selected>${user.name || 'My School'} (${user.udise})</option>`;
+                schoolSelect.disabled = true;
+                
+                // Form load trigger karo
+                if (window.EntryModule && typeof EntryModule.loadForm === 'function') {
+                  EntryModule.loadForm();
+                }
+                clearInterval(checkInterval);
+              }
+            }, 500);
+          }
         }
+      } catch(e) {
+        console.error("School Security Error:", e);
       }
-    } catch(e) {
-      console.error("School Security Error:", e);
-    }
+    }, 800); // 0.8 second ka delay taaki app.js pehle load ho jaye
   });
 
   function showTab(id){
@@ -165,5 +163,6 @@
     document.getElementById(id).classList.add("active");
   }
 </script>
+  
 </body>
 </html>
