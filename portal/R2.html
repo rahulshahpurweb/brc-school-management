@@ -85,7 +85,7 @@
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
   
   <!-- School login par yeh buttons hide ho jayenge -->
-  <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_E</button>
+  <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
   <label class="button hide-for-school hide-for-jsk" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
@@ -244,11 +244,17 @@
               }
             }, 300);
           }
-          else if (user.role === 'jsk') {
-            console.log("👁️ JSK Mode Active: Hiding Data Entry & School List");
-            document.querySelectorAll('.hide-for-jsk').forEach(el => el.style.display = 'none');
+             else if (user.role === 'jsk') {
+            console.log("👁️ JSK Mode Active: Allowing School List & Compilation");
+            
+            // Sirf Data Entry hide rahegi, School List ab JSK ko dikhegi
+            let navEntryBtn = document.getElementById("navEntryBtn");
+            if(navEntryBtn) navEntryBtn.style.display = 'none';
+            
+            // JSK login par by default Compilation ya School List dikha sakte hain
             showTab('compilation');
-          }
+                    }
+          
         } else {
           let nameEl = document.getElementById("loggedInUserName");
           if(nameEl) nameEl.innerText = "Guest Mode";
