@@ -14,7 +14,6 @@
   <div style="display:flex;align-items:center;gap:10px;">
     <label style="font-size:13px;font-weight:bold;">Academic Session:</label>
     <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8;"></select>
-    <button onclick="SchoolLogin.logout()" style="background:#d93025; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">🔒 Logout</button>
   </div>
 </header>
 
@@ -116,13 +115,16 @@
   </section>
 </main>
 
-<!-- Load Main Modular Controller & School Login Module -->
+<!-- Load Main Modular Controller & Role Restricter -->
 <script type="module" src="app.js"></script>
 <script type="module" src="school-login.js"></script>
 <script type="module">
   import { SchoolLogin } from './school-login.js';
   window.addEventListener('DOMContentLoaded', () => {
-    SchoolLogin.init();
+    // Sirf role check karke buttons hide karega agar school logged-in hai
+    if (SchoolLogin.isSchoolUser()) {
+      document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
+    }
   });
 </script>
 <script>
