@@ -41,9 +41,9 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
-    <p>Enter Admin password or School UDISE Code.</p>
+    <p>BRC, JSKs, SCHOOLs Login</p>
     <div id="authErr" class="auth-err">Wrong Password Or UDISE Code!</div>
-    <input type="text" id="authUserInput" class="auth-input" placeholder="Admin Pass / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
+    <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User Id" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Enter password)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login</button>
     
