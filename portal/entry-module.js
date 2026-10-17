@@ -67,6 +67,10 @@ export const EntryModule = {
 
     this.attachListeners();
     this.calculateAllRows();
+
+    // Check freeze status and apply lock
+    let isFrozen = s.isFrozen || false;
+    this.setFormLockStatus(isFrozen);
   },
 
   attachListeners() {
@@ -153,6 +157,40 @@ export const EntryModule = {
     </tr>`);
   },
 
+  setFormLockStatus(isFrozen) {
+    let inputs = document.querySelectorAll("#entryTableBody input");
+    inputs.forEach(input => {
+      input.disabled = isFrozen;
+    });
+
+    let editBtn = document.getElementById("editToggleBtn");
+    if(editBtn) {
+      if(isFrozen) {
+        editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
+        editBtn.style.background = "#1d4ed8";
+      } else {
+        editBtn.innerHTML = "🔒 Lock / Editing Active";
+        editBtn.style.background = "#dc2626";
+      }
+    }
+  },
+
+  toggleEdit() {
+    let sel = document.getElementById("schoolSelect");
+    if(!sel || sel.value === "") return;
+
+    let schools = SessionManager.getData();
+    let s = schools[sel.value];
+    if(!s) return;
+
+    // Toggle freeze status
+    s.isFrozen = !s.isFrozen;
+    SessionManager.saveData(schools);
+
+    this.setFormLockStatus(s.isFrozen);
+    alert(s.isFrozen ? "Data lock kar diya gaya hai!" : "Data unlock ho gaya hai, ab aap edit kar sakte hain.");
+  },
+
   saveData() {
     let sel = document.getElementById("schoolSelect");
     if(!sel || sel.value === "") {
@@ -188,11 +226,16 @@ export const EntryModule = {
       }
     });
 
+    // Save & Freeze on save click
+    s.isFrozen = true;
+
     SessionManager.saveData(schools);
     SessionManager.updateStats();
     SchoolRecords.render();
     CompilationModule.render();
-    alert("School ka data safaltapurvak save aur cloud par sync ho gaya hai!");
+
+    this.setFormLockStatus(true);
+    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
   }
 };
 
