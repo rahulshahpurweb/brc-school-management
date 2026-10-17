@@ -25,6 +25,27 @@ export const EntryModule = {
     this.loadForm();
   },
 
+  // School ki category aur hamare 1-8 scope ke hisab से classes tay karna
+  getClassesForSchool(category) {
+    let cat = (category || "").toLowerCase();
+    
+    let hasMiddle = cat.includes("6") || cat.includes("middle") || cat.includes("high") || cat.includes("sec") || cat.includes("hr");
+    let hasPrimary = cat.includes("1") || cat.includes("primary");
+
+    // Agar sirf middle classes hain (jaise 6-8, 6-10, 6-12 bina primary ke)
+    if (hasMiddle && !hasPrimary && (cat.includes("6") || cat.includes("middle"))) {
+      return ["Class 6", "Class 7", "Class 8"];
+    }
+    // Agar sirf primary classes hain (jaise 1-5)
+    else if (hasPrimary && !hasMiddle) {
+      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
+    }
+    // Default / Primary + Middle dono (jaise 1-8, 1-10, 1-12 ya standard schools)
+    else {
+      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    }
+  },
+
   loadForm() {
     let sel = document.getElementById("schoolSelect");
     let tbody = document.getElementById("entryTableBody");
@@ -39,9 +60,10 @@ export const EntryModule = {
     if(!s) return;
 
     tbody.innerHTML = "";
-    const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     
-    classes.forEach(c => {
+    const applicableClasses = this.getClassesForSchool(s.category);
+    
+    applicableClasses.forEach(c => {
       if(!s.classes) s.classes = {};
       if(!s.classes[c]) {
         s.classes[c] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0};
@@ -68,9 +90,11 @@ export const EntryModule = {
     this.attachListeners();
     this.calculateAllRows();
 
-    // Check freeze status and apply lock
-    let isFrozen = s.isFrozen || false;
-    this.setFormLockStatus(isFrozen);
+    // By default data freeze/locked rahega
+    if (s.isFrozen === undefined) {
+      s.isFrozen = true; 
+    }
+    this.setFormLockStatus(s.isFrozen);
   },
 
   attachListeners() {
@@ -161,6 +185,14 @@ export const EntryModule = {
     let inputs = document.querySelectorAll("#entryTableBody input");
     inputs.forEach(input => {
       input.disabled = isFrozen;
+      // Freeze hone par halka gray background aur active hone par white background
+      if (isFrozen) {
+        input.style.background = "#e2e8f0";
+        input.style.color = "#475569";
+      } else {
+        input.style.background = "#ffffff";
+        input.style.color = "#000000";
+      }
     });
 
     let editBtn = document.getElementById("editToggleBtn");
@@ -183,7 +215,6 @@ export const EntryModule = {
     let s = schools[sel.value];
     if(!s) return;
 
-    // Toggle freeze status
     s.isFrozen = !s.isFrozen;
     SessionManager.saveData(schools);
 
@@ -205,11 +236,11 @@ export const EntryModule = {
     if(!s.classes) s.classes = {};
 
     let rows = document.querySelectorAll("#entryTableBody tr");
-    const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    const applicableClasses = this.getClassesForSchool(s.category);
     
     rows.forEach((row, idx) => {
-      if(idx < classes.length) {
-        let cName = classes[idx];
+      if(idx < applicableClasses.length) {
+        let cName = applicableClasses[idx];
         let inputs = row.querySelectorAll("input");
         if(inputs.length >= 8) {
           s.classes[cName] = {
@@ -226,7 +257,7 @@ export const EntryModule = {
       }
     });
 
-    // Save & Freeze on save click
+    // Save karne par data automatic freeze ho jayega
     s.isFrozen = true;
 
     SessionManager.saveData(schools);
