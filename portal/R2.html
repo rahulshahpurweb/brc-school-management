@@ -6,27 +6,48 @@
 <title>True Modular Portal - BRC Shahpur</title>
 <link rel="stylesheet" href="r2-styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  /* Modals aur Extra Styling for Auth & Password */
+  .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
+  .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+  .modal-box h3 { margin-top:0; color:#1d4ed8; }
+  .modal-box input { width:100%; padding:10px; margin:8px 0 15px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }
+  .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
+  .modal-box button.secondary { background:#64748b; margin-top:8px; }
+</style>
 </head>
 <body>
 
 <header>
   <h1>BRC Shahpur - True Modular Portal (R2)</h1>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <label style="font-size:13px;font-weight:bold;">Academic Session:</label>
-    <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8;"></select>
+  <div style="display:flex;align-items:center;gap:15px; flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="font-size:13px;font-weight:bold;color:#fff;">Academic Session:</label>
+      <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
+    </div>
+    <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
+      <span id="loggedInUserName" style="font-weight:bold;">Guest</span>
+      <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Change Password</button>
+      <button onclick="logoutUser()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🚪 Logout</button>
+    </div>
   </div>
 </header>
 
 <nav>
-  <button onclick="showTab('dash')">📊 Summary</button>
-  <button onclick="showTab('records')">📋 School List</button>
-  <button onclick="showTab('entry')">✍️ Data Entry</button>
-  <button onclick="showTab('compilation')">📑 JSK Compilation</button>
+  <!-- Admin / General Tabs -->
+  <button class="hide-for-jsk" onclick="showTab('dash')">📊 Summary</button>
+  <button class="hide-for-jsk hide-for-school" onclick="showTab('records')">📋 School List</button>
+  <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')">✍️ Data Entry</button>
+  
+  <!-- JSK aur Admin ke liye Compilation visible rahega -->
+  <button class="hide-for-school" onclick="showTab('compilation')">📑 JSK Compilation</button>
+  
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
+  
   <!-- School login par yeh buttons hide ho jayenge -->
-  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
-  <label class="button hide-for-school" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
+  <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
+  <label class="button hide-for-school hide-for-jsk" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
 </nav>
@@ -113,36 +134,53 @@
     <div class="tablewrap"><table id="compileTable"></table></div>
   </section>
 </main>
-<!-- Load Main Modular Controller & Strict School Matcher -->
+
+<!-- CHANGE PASSWORD MODAL -->
+<div id="changePasswordModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>🔑 Password Badlein</h3>
+    <label>Username / ID:</label>
+    <input type="text" id="cpUsername" placeholder="Apna Username dalein">
+    <label>Purana Password:</label>
+    <input type="password" id="cpOldPass" placeholder="Purana password">
+    <label>Naya Password:</label>
+    <input type="password" id="cpNewPass" placeholder="Naya password">
+    <button onclick="submitChangePassword()">Password Update Karein</button>
+    <button class="secondary" onclick="closeChangePasswordModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- Load Main Modular Controller & Strict Role / School Matcher -->
 <script type="module" src="app.js"></script>
 <script type="module">
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       try {
-        let userStr = localStorage.getItem("brc_logged_user");
+        // Dono keys (brc_logged_user aur brc_current_user) support karne ke liye
+        let userStr = localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user");
         if (userStr) {
           let user = JSON.parse(userStr);
           
-          if (user && user.role === 'school') {
+          // Display Logged In User Name
+          let nameEl = document.getElementById("loggedInUserName");
+          if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role ? user.role.toUpperCase() : ''})`;
+
+          // 1. SCHOOL ROLE HANDLING
+          if (user.role === 'school') {
             console.log("🔒 Strict School Matcher Active for UDISE:", user.udise);
 
-            // 1. Template aur Upload buttons hide karna
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
 
-            // 2. Academic Session ko sirf 2026-27 par lock karna
             let sessionSelect = document.getElementById("sessionSelect");
             if (sessionSelect) {
               sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
               sessionSelect.disabled = true;
             }
 
-            // 3. app.js dwara load kiye gaye dropdown mein se exact UDISE match karna
             let checkInterval = setInterval(() => {
               let schoolSelect = document.getElementById("schoolSelect");
               if (schoolSelect && schoolSelect.options.length > 0) {
                 let foundIndex = -1;
-                
-                // Dropdown ke har option ko check karo ki kismein yeh UDISE hai
                 for (let i = 0; i < schoolSelect.options.length; i++) {
                   let optText = schoolSelect.options[i].text;
                   let optVal = schoolSelect.options[i].value;
@@ -155,7 +193,6 @@
                 if (foundIndex !== -1) {
                   schoolSelect.selectedIndex = foundIndex;
                 } else {
-                  // Agar list mein na mile toh naya jod do
                   let newOpt = document.createElement('option');
                   newOpt.value = user.udise;
                   newOpt.text = `${user.name || 'My School'} (${user.udise})`;
@@ -163,28 +200,77 @@
                   schoolSelect.value = user.udise;
                 }
 
-                // Dropdown ko lock kar do taaki koi doosri school select na ho sake
                 schoolSelect.disabled = true;
-
-                // Form load trigger karo taaki 100% usi school ka data khule
                 if (window.EntryModule && typeof EntryModule.loadForm === 'function') {
                   EntryModule.loadForm();
                 }
-
                 clearInterval(checkInterval);
               }
             }, 300);
           }
+          // 2. JSK ROLE HANDLING (Only Report & Download)
+          else if (user.role === 'jsk') {
+            console.log("👁️ JSK Mode Active: Hiding Data Entry & School List");
+            document.querySelectorAll('.hide-for-jsk').forEach(el => el.style.display = 'none');
+            
+            // Auto open compilation tab for JSK
+            showTab('compilation');
+          }
+        } else {
+          // Agar login nahi hai toh guest name dikhao
+          let nameEl = document.getElementById("loggedInUserName");
+          if(nameEl) nameEl.innerText = "Guest Mode";
         }
       } catch(e) {
-        console.error("School Matching Error:", e);
+        console.error("Role Handling Error:", e);
       }
-    }, 700); // Thoda delay taaki app.js list poori load kar de
+    }, 500);
   });
 
   function showTab(id){
     document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+    let target = document.getElementById(id);
+    if(target) target.classList.add("active");
+  }
+
+  // Password Modal Functions
+  window.openChangePasswordModal = function() {
+    let modal = document.getElementById("changePasswordModal");
+    if(modal) modal.style.display = "flex";
+  }
+
+  window.closeChangePasswordModal = function() {
+    let modal = document.getElementById("changePasswordModal");
+    if(modal) modal.style.display = "none";
+  }
+
+  window.submitChangePassword = function() {
+    let uname = document.getElementById("cpUsername").value.trim();
+    let oldP = document.getElementById("cpOldPass").value;
+    let newP = document.getElementById("cpNewPass").value;
+
+    if(!uname || !oldP || !newP) {
+      alert("Kripya sabhi fields bharein!");
+      return;
+    }
+
+    if(window.SessionManager && typeof SessionManager.changePassword === 'function') {
+      let res = SessionManager.changePassword(uname, oldP, newP);
+      alert(res.message);
+      if(res.success) {
+        closeChangePasswordModal();
+      }
+    } else {
+      alert("SessionManager load nahi hua hai!");
+    }
+  }
+
+  window.logoutUser = function() {
+    if(confirm("Kya aap logout karna chahte hain?")) {
+      localStorage.removeItem("brc_current_user");
+      localStorage.removeItem("brc_logged_user");
+      window.location.reload();
+    }
   }
 </script>
   
