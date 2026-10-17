@@ -80,25 +80,42 @@ function checkAuth(){
   const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
 
-  // 1. Admin Master Login Check (Agar pehla input password hai ya user 'admin' hai)
-  if(inputVal === ADMIN_PASS || inputVal === "admin" && passVal === ADMIN_PASS) {
+  // 1. Admin Master Login Check
+  if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
     resetInactivityTimer();
+    location.reload();
     return;
   }
 
-  // Agar sirf single box mein password dala ho purane tarike se
   if(passVal === "" && inputVal === ADMIN_PASS) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
     resetInactivityTimer();
+    location.reload();
     return;
   }
 
-  // 2. School UDISE Login Check
+  // 2. JSK Login Check (Jaise jsk_shahpur / jskpassword)
+  if(inputVal.startsWith("jsk") || inputVal === "jsk_shahpur" || inputVal === "bhoura" || inputVal === "bijadehi") {
+    let jskPass = passVal || "jskpassword";
+    if(jskPass === "jskpassword" || jskPass === "brc@123") {
+      sessionStorage.setItem("brc_logged_in", "true");
+      localStorage.setItem("brc_logged_user", JSON.stringify({ 
+        role: 'jsk', 
+        name: `JSK Coordinator (${inputVal})` 
+      }));
+      document.getElementById("authOverlay").style.display = "none";
+      resetInactivityTimer();
+      location.reload();
+      return;
+    }
+  }
+
+  // 3. School UDISE Login Check
   let schools = JSON.parse(localStorage.getItem("brc_schools_data_2026-27") || "[]");
   let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
 
@@ -113,7 +130,6 @@ function checkAuth(){
       }));
       document.getElementById("authOverlay").style.display = "none";
       resetInactivityTimer();
-      // Frame reload taaki school restricted view load ho jaye
       document.getElementById('moduleFrame').src = document.getElementById('moduleFrame').src;
       return;
     }
@@ -121,6 +137,7 @@ function checkAuth(){
 
   err.style.display = "block";
 }
+  
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   document.getElementById("authOverlay").style.display = "none";
