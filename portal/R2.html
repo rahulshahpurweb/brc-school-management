@@ -26,9 +26,8 @@
       <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
     </div>
     <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
-      <span id="loggedInUserName" style="font-weight:bold;">Guest</span>
+      <span id="loggedInUserName" style="font-weight:bold;">Admin Mode</span>
       <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Change Password</button>
-      <button onclick="logoutUser()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🚪 Logout</button>
     </div>
   </div>
 </header>
@@ -46,7 +45,7 @@
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
   
   <!-- School login par yeh buttons hide ho jayenge -->
-  <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
+  <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_E</button>
   <label class="button hide-for-school hide-for-jsk" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
