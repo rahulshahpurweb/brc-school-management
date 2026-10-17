@@ -37,13 +37,14 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 </head>
 <body>
 
-<!-- Login Lock Screen with SNA Check Option -->
+<!-- Login Lock Screen supporting Admin Master Password or School UDISE Code -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
-    <p>Please enter the password.</p>
-    <div id="authErr" class="auth-err">Wrong Password.</div>
-    <input type="password" id="authPass" class="auth-input" placeholder="Password (Enter password)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <p>Admin password ya School UDISE Code dalein.</p>
+    <div id="authErr" class="auth-err">Galat Password ya UDISE Code!</div>
+    <input type="text" id="authUserInput" class="auth-input" placeholder="Admin Pass / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
+    <input type="password" id="authPass" class="auth-input" placeholder="Password (School ke liye 12345)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login</button>
     
     <div style="margin:12px 0 8px;font-size:12px;color:#94a3b8;font-weight:bold;">--- Or---</div>
@@ -71,19 +72,54 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 </div>
 
 <script>
-const BRC_PASS = "brc@shahpur";
+const ADMIN_PASS = "brc@shahpur";
 let inactivityTimer;
 
 function checkAuth(){
-  const val = document.getElementById("authPass").value.trim();
+  const inputVal = document.getElementById("authUserInput").value.trim();
+  const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
-  if(val === BRC_PASS){
-    document.getElementById("authOverlay").style.display = "none";
+
+  // 1. Admin Master Login Check (Agar pehla input password hai ya user 'admin' hai)
+  if(inputVal === ADMIN_PASS || inputVal === "admin" && passVal === ADMIN_PASS) {
     sessionStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
+    document.getElementById("authOverlay").style.display = "none";
     resetInactivityTimer();
-  } else {
-    err.style.display = "block";
+    return;
   }
+
+  // Agar sirf single box mein password dala ho purane tarike se
+  if(passVal === "" && inputVal === ADMIN_PASS) {
+    sessionStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
+    document.getElementById("authOverlay").style.display = "none";
+    resetInactivityTimer();
+    return;
+  }
+
+  // 2. School UDISE Login Check
+  let schools = JSON.parse(localStorage.getItem("brc_schools_data_2026-27") || "[]");
+  let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
+
+  if(foundSchool) {
+    let p = passVal || "12345";
+    if(p === "12345" || p === String(foundSchool.udise).trim()) {
+      sessionStorage.setItem("brc_logged_in", "true");
+      localStorage.setItem("brc_logged_user", JSON.stringify({ 
+        role: 'school', 
+        udise: foundSchool.udise, 
+        name: foundSchool.name 
+      }));
+      document.getElementById("authOverlay").style.display = "none";
+      resetInactivityTimer();
+      // Frame reload taaki school restricted view load ho jaye
+      document.getElementById('moduleFrame').src = document.getElementById('moduleFrame').src;
+      return;
+    }
+  }
+
+  err.style.display = "block";
 }
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
@@ -95,7 +131,9 @@ if(sessionStorage.getItem("brc_logged_in") === "true"){
 
 function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
+  localStorage.removeItem("brc_logged_user");
   document.getElementById("authOverlay").style.display = "flex";
+  document.getElementById("authUserInput").value = "";
   document.getElementById("authPass").value = "";
 }
 
