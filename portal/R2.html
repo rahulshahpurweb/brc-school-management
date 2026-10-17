@@ -25,7 +25,7 @@
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
   <!-- School login par yeh buttons hide ho jayenge -->
-  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_E</button>
+  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
   <label class="button hide-for-school" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
@@ -115,7 +115,6 @@
 </main>
 
 <!-- Load Main Modular Controller & Direct In-Page Security Guard -->
-<script type="module" src="app.js"></script>
 <script type="module">
   window.addEventListener('DOMContentLoaded', () => {
     try {
@@ -125,43 +124,39 @@
         
         // Agar login karne wala School user hai
         if (user && user.role === 'school') {
-          console.log("🔒 School Security Guard Active inside R2.html");
+          console.log("🔒 Strict School Isolation Active");
 
           // 1. Template aur Upload buttons hide karna
           setTimeout(() => {
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
           }, 300);
 
-          // 2. Academic Session ko sirf 2026-27 par lock karna (Future sessions hide)
+          // 2. Academic Session ko sirf 2026-27 par lock karna
           let sessionSelect = document.getElementById("sessionSelect");
           if (sessionSelect) {
             sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
             sessionSelect.disabled = true;
           }
 
-          // 3. Data Entry mein sirf usi school ko select karke lock karna taaki doosri school na dikhe
+          // 3. Data Entry dropdown mein sirf usi school ko rakhna aur load karna
           let checkInterval = setInterval(() => {
             let schoolSelect = document.getElementById("schoolSelect");
-            if (schoolSelect && schoolSelect.options.length > 1) {
-              for (let opt of schoolSelect.options) {
-                if (String(opt.value).trim() === String(user.udise).trim() || opt.text.includes(user.udise)) {
-                  schoolSelect.value = opt.value;
-                  break;
-                }
+            if (schoolSelect) {
+              // Dropdown ko saaf karke sirf usi school ka option daal do
+              schoolSelect.innerHTML = `<option value="${user.udise}" selected>${user.name || 'My School'} (${user.udise})</option>`;
+              schoolSelect.disabled = true; // Koi doosri school select na kar paye
+              
+              // Form load function ko turant call karo taaki usi school ka data khule
+              if (window.EntryModule && typeof EntryModule.loadForm === 'function') {
+                EntryModule.loadForm();
               }
-              // Agar match na ho toh sirf wahi school dikhao
-              if (schoolSelect.value !== String(user.udise)) {
-                schoolSelect.innerHTML = `<option value="${user.udise}">${user.name || 'My School'} (${user.udise})</option>`;
-                schoolSelect.value = user.udise;
-              }
-              schoolSelect.disabled = true; // Lock dropdown
               clearInterval(checkInterval);
             }
           }, 300);
         }
       }
     } catch(e) {
-      console.error("Security Guard Error:", e);
+      console.error("School Security Error:", e);
     }
   });
 
