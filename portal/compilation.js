@@ -47,22 +47,22 @@ export const CompilationModule = {
           
           if (cat.includes("12") || cat.includes("higher secondary") || cat.includes("hr.sec") || cat.includes("higher")) {
             if (cat.includes("primary") || cat.includes("1 to 12") || cat.includes("1-12")) {
-              c7++; // Primary to Higher Sec (1 to 12)
+              c7++; 
             } else {
-              c5++; // Middle to Higher Sec (6 to 12)
+              c5++; 
             }
           } else if (cat.includes("10") || cat.includes("high school") || cat.includes("high") || cat.includes("secondary")) {
             if (cat.includes("primary") || cat.includes("1 to 10") || cat.includes("1-10")) {
-              c6++; // Primary to High School (1 to 10)
+              c6++; 
             } else {
-              c4++; // Middle to High School (6 to 10)
+              c4++; 
             }
           } else if (cat.includes("primary") && cat.includes("middle")) {
-            c3++; // Primary with Middle (1 to 8)
+            c3++; 
           } else if (cat.includes("middle")) {
-            c2++; // Middle School (6 to 8)
+            c2++; 
           } else if (cat.includes("primary")) {
-            c1++; // Primary School (1 to 5)
+            c1++; 
           } else {
             let classesObj = s.classes || {};
             let has1_5 = false, has6_8 = false, has9_10 = false, has11_12 = false;
@@ -166,6 +166,17 @@ export const CompilationModule = {
         </tr>`;
       });
 
+      // Format 2 Grand Total Row
+      html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
+        <td style="${cellStyle} color:#fff; text-align:left;">Grand Total</td>
+        <td style="${cellStyle}">${gTot.scB}</td><td style="${cellStyle}">${gTot.scG}</td>
+        <td style="${cellStyle}">${gTot.stB}</td><td style="${cellStyle}">${gTot.stG}</td>
+        <td style="${cellStyle}">${gTot.obcB}</td><td style="${cellStyle}">${gTot.obcG}</td>
+        <td style="${cellStyle}">${gTot.genB}</td><td style="${cellStyle}">${gTot.genG}</td>
+        <td style="${cellStyle}">${gTot.totB}</td><td style="${cellStyle}">${gTot.totG}</td>
+        <td style="${cellStyle} background:#15803d; color:#fff;">${gTot.final}</td>
+      </tr>`;
+
     } else if (viewMode === "format3") {
       html += `<thead>
         <tr>
@@ -185,6 +196,8 @@ export const CompilationModule = {
       </thead><tbody>`;
 
       let jskList = ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"];
+      let f3Tot = { c1:0, c2:0, c3:0, c4:0, c5:0, sub1_5:0, c6:0, c7:0, c8:0, sub6_8:0, grand:0 };
+
       jskList.forEach(jsk => {
         let jskSchools = schools.filter(s => s.jsk === jsk);
         let t = { c1:0, c2:0, c3:0, c4:0, c5:0, c6:0, c7:0, c8:0 };
@@ -208,6 +221,10 @@ export const CompilationModule = {
         let sub6_8 = t.c6 + t.c7 + t.c8;
         let rowTotal = sub1_5 + sub6_8;
 
+        f3Tot.c1 += t.c1; f3Tot.c2 += t.c2; f3Tot.c3 += t.c3; f3Tot.c4 += t.c4; f3Tot.c5 += t.c5;
+        f3Tot.sub1_5 += sub1_5; f3Tot.c6 += t.c6; f3Tot.c7 += t.c7; f3Tot.c8 += t.c8;
+        f3Tot.sub6_8 += sub6_8; f3Tot.grand += rowTotal;
+
         html += `<tr>
           <td style="${cellStyle} font-weight:bold; color:#1e3a8a; text-align:left;">${jsk}</td>
           <td style="${cellStyle}">${t.c1}</td><td style="${cellStyle}">${t.c2}</td>
@@ -220,6 +237,19 @@ export const CompilationModule = {
           <td style="${cellStyle} font-weight:bold; background:#dcfce7; color:#14532d;">${rowTotal}</td>
         </tr>`;
       });
+
+      // Format 3 Grand Total Row
+      html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
+        <td style="${cellStyle} color:#fff; text-align:left;">Grand Total</td>
+        <td style="${cellStyle}">${f3Tot.c1}</td><td style="${cellStyle}">${f3Tot.c2}</td>
+        <td style="${cellStyle}">${f3Tot.c3}</td><td style="${cellStyle}">${f3Tot.c4}</td>
+        <td style="${cellStyle}">${f3Tot.c5}</td>
+        <td style="${cellStyle} background:#312e81;">${f3Tot.sub1_5}</td>
+        <td style="${cellStyle}">${f3Tot.c6}</td><td style="${cellStyle}">${f3Tot.c7}</td>
+        <td style="${cellStyle}">${f3Tot.c8}</td>
+        <td style="${cellStyle} background:#312e81;">${f3Tot.sub6_8}</td>
+        <td style="${cellStyle} background:#15803d; color:#fff;">${f3Tot.grand}</td>
+      </tr>`;
 
     } else if (viewMode === "format4") {
       html += `<thead>
@@ -242,6 +272,8 @@ export const CompilationModule = {
       </thead><tbody>`;
 
       let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
+      let f4Tot = { t1:0, t2:0, t3:0, t4:0, t5:0, t6:0, t7:0, t8:0, grand:0 };
+
       filteredSchools.forEach((s, idx) => {
         let t1=0,t2=0,t3=0,t4=0,t5=0,t6=0,t7=0,t8=0;
         if(s.classes) {
@@ -252,6 +284,9 @@ export const CompilationModule = {
           t7 = getSum(s.classes["Class 7"]); t8 = getSum(s.classes["Class 8"]);
         }
         let rowTot = t1+t2+t3+t4+t5+t6+t7+t8;
+
+        f4Tot.t1 += t1; f4Tot.t2 += t2; f4Tot.t3 += t3; f4Tot.t4 += t4;
+        f4Tot.t5 += t5; f4Tot.t6 += t6; f4Tot.t7 += t7; f4Tot.t8 += t8; f4Tot.grand += rowTot;
 
         html += `<tr>
           <td style="${cellStyle} font-weight:bold;">${idx + 1}</td>
@@ -266,6 +301,16 @@ export const CompilationModule = {
           <td style="${cellStyle} font-weight:bold; background:#dcfce7; color:#14532d;">${rowTot}</td>
         </tr>`;
       });
+
+      // Format 4 Grand Total Row
+      html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
+        <td colspan="5" style="${cellStyle} color:#fff; text-align:right;">Grand Total:</td>
+        <td style="${cellStyle}">${f4Tot.t1}</td><td style="${cellStyle}">${f4Tot.t2}</td>
+        <td style="${cellStyle}">${f4Tot.t3}</td><td style="${cellStyle}">${f4Tot.t4}</td>
+        <td style="${cellStyle}">${f4Tot.t5}</td><td style="${cellStyle}">${f4Tot.t6}</td>
+        <td style="${cellStyle}">${f4Tot.t7}</td><td style="${cellStyle}">${f4Tot.t8}</td>
+        <td style="${cellStyle} background:#15803d; color:#fff;">${f4Tot.grand}</td>
+      </tr>`;
 
     } else if (viewMode === "format5") {
       html += `<thead>
@@ -295,6 +340,12 @@ export const CompilationModule = {
       html += `</tr></thead><tbody>`;
 
       let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
+      let f5Totals = {};
+      for(let i=1; i<=8; i++) {
+        f5Totals[i] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0, tot:0};
+      }
+      let overallGrandTotal = 0;
+
       filteredSchools.forEach((s, idx) => {
         html += `<tr>
           <td style="${cellStyle} font-weight:bold;">${idx + 1}</td>
@@ -303,10 +354,18 @@ export const CompilationModule = {
           <td style="${cellStyle}">${s.category || ''}</td>
           <td style="${cellStyle}">${s.jsk}</td>`;
 
-        ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach(c => {
+        ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"].forEach((c, cIdx) => {
           let cl = s.classes && s.classes[c] ? s.classes[c] : {scB:0,scG:0,stB:0,stG:0,obcB:0,obcG:0,genB:0,genG:0};
           let cTot = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
           
+          let clsNum = cIdx + 1;
+          f5Totals[clsNum].scB += (cl.scB||0); f5Totals[clsNum].scG += (cl.scG||0);
+          f5Totals[clsNum].stB += (cl.stB||0); f5Totals[clsNum].stG += (cl.stG||0);
+          f5Totals[clsNum].obcB += (cl.obcB||0); f5Totals[clsNum].obcG += (cl.obcG||0);
+          f5Totals[clsNum].genB += (cl.genB||0); f5Totals[clsNum].genG += (cl.genG||0);
+          f5Totals[clsNum].tot += cTot;
+          overallGrandTotal += cTot;
+
           html += `<td style="${cellStyle}">${cl.scB||''}</td><td style="${cellStyle}">${cl.scG||''}</td>
                    <td style="${cellStyle}">${cl.stB||''}</td><td style="${cellStyle}">${cl.stG||''}</td>
                    <td style="${cellStyle}">${cl.obcB||''}</td><td style="${cellStyle}">${cl.obcG||''}</td>
@@ -315,6 +374,19 @@ export const CompilationModule = {
         });
         html += `</tr>`;
       });
+
+      // Format 5 Grand Total Row
+      html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
+        <td colspan="5" style="${cellStyle} color:#fff; text-align:right;">Grand Total:</td>`;
+      for(let i=1; i<=8; i++) {
+        let t = f5Totals[i];
+        html += `<td style="${cellStyle}">${t.scB}</td><td style="${cellStyle}">${t.scG}</td>
+                 <td style="${cellStyle}">${t.stB}</td><td style="${cellStyle}">${t.stG}</td>
+                 <td style="${cellStyle}">${t.obcB}</td><td style="${cellStyle}">${t.obcG}</td>
+                 <td style="${cellStyle}">${t.genB}</td><td style="${cellStyle}">${t.genG}</td>
+                 <td style="${cellStyle} background:#15803d; color:#fff;">${t.tot}</td>`;
+      }
+      html += `</tr>`;
     }
 
     html += `</tbody>`;
