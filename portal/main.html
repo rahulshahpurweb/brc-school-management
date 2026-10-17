@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BRC Shahpur - Master Portal</title>
+<!-- Maintenance Script Integration -->
+<script src="maintenance.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;overflow:hidden;height:100vh;display:flex;flex-direction:column}
@@ -59,10 +61,17 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
     <span>🏛️ Janpad Shiksha Kendra Shahpur | BRC Portal</span>
   </div>
 
-  <div class="module-tabs">
+  <div class="module-tabs" style="display:flex; align-items:center; gap:8px;">
     <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Enrollment</button>
     <button class="mod-tab" onclick="loadModule('R3.html', this)">♿ CWSN</button>
     <a href="../index.html" class="mod-tab" style="background:#0d9488;border-color:#0d9488;color:#fff;">🔍 SNA Account Check</a>
+    
+    <!-- Admin Maintenance Toggle Button in Master Header -->
+    <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:4px 8px; border-radius:6px;">
+      <span style="font-size:11px; font-weight:bold;">🛠️ Maint:</span>
+      <button id="maintToggleBtn" onclick="MaintenanceModule.toggle()" style="padding:3px 8px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
+    </div>
+
     <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Logout</button>
   </div>
 </header>
@@ -74,6 +83,12 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 <script>
 const ADMIN_PASS = "brc@shahpur";
 let inactivityTimer;
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.MaintenanceModule) {
+    MaintenanceModule.renderAdminToggle("adminMaintenancePanel");
+  }
+});
 
 function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
@@ -99,7 +114,7 @@ function checkAuth(){
     return;
   }
 
-    // 2. JSK Login Check (Ab ID 'jsk_login' hogi aur password 'jskpassword')
+  // 2. JSK Login Check
   if(inputVal === "jsk_login") {
     let jskPass = passVal || "jskpassword";
     if(jskPass === "jskpassword" || jskPass === "brc@123") {
@@ -114,7 +129,6 @@ function checkAuth(){
       return;
     }
   }
-  
 
   // 3. School UDISE Login Check
   let schools = JSON.parse(localStorage.getItem("brc_schools_data_2026-27") || "[]");
@@ -138,7 +152,6 @@ function checkAuth(){
 
   err.style.display = "block";
 }
-  
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   document.getElementById("authOverlay").style.display = "none";
