@@ -95,7 +95,10 @@
   <button id="navRecordsBtn" onclick="showTab('records')">📋 School List</button>
   <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')">✍️ Data Entry</button>
   <button class="hide-for-school" onclick="showTab('compilation')">📑 JSK Compilation</button>
-  <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
+  
+  <!-- Smart Excel Download Button -->
+  <button class="success" onclick="handleSmartDownload()" style="margin-left:auto; background:#16a34a; color:#fff; font-weight:bold; border:none; padding:9px 14px; border-radius:8px; cursor:pointer;">📥 Excel Download</button>
+  
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
   <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
   <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
@@ -263,6 +266,43 @@
     closePermissionModal();
     location.reload();
   }
+
+  // Universal Smart Excel Export for any active table/report
+  window.ExportAnyTable = function(filename = "BRC_Report.xlsx") {
+    try {
+      let activeSection = document.querySelector("main section.active");
+      let table = activeSection ? activeSection.querySelector("table") : null;
+      if (!table) {
+        alert("Download karne ke liye koi table data nahi mila!");
+        return;
+      }
+      let wb = XLSX.utils.table_to_book(table, { raw: true });
+      XLSX.writeFile(wb, filename);
+    } catch (e) {
+      console.error("Excel Export Error:", e.message);
+      alert("Excel download karne mein samasya aayi: " + e.message);
+    }
+  };
+
+  window.handleSmartDownload = function() {
+    let activeSection = document.querySelector("main section.active");
+    if (!activeSection) return;
+    let sectionId = activeSection.id;
+    
+    if (sectionId === 'compilation') {
+      let formatSelect = document.getElementById("compViewMode");
+      let formatName = formatSelect ? formatSelect.options[formatSelect.selectedIndex].text : "Compilation_Report";
+      ExportAnyTable(`BRC_${formatName.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);
+    } else if (sectionId === 'records') {
+      ExportAnyTable("BRC_School_List.xlsx");
+    } else {
+      if (window.ExcelHandler && typeof ExcelHandler.exportExcel === 'function') {
+        ExcelHandler.exportExcel();
+      } else {
+        ExportAnyTable("BRC_Portal_Data.xlsx");
+      }
+    }
+  };
 
   window.addEventListener('DOMContentLoaded', () => {
     let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
