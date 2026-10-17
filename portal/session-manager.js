@@ -8,6 +8,7 @@ export const SessionManager = {
     this.renderDropdown();
     await this.loadCloudData();
     this.updateStats();
+    this.applyRoleAccess();
     
     window.addEventListener('storage', (e) => {
       if (e.key && e.key.includes('brc_schools_data')) {
@@ -81,11 +82,9 @@ export const SessionManager = {
     let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
     let dataKey = `brc_schools_data_${activeSession}`;
     
-    // 1. LocalStorage par turant save karo taaki UI fast chale
     localStorage.setItem(dataKey, JSON.stringify(schoolsData));
     this.updateStats();
 
-    // 2. Background mein Google Sheet par data bhejo (POST)
     fetch(WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
@@ -144,6 +143,86 @@ export const SessionManager = {
     if(statBoysGirls) statBoysGirls.innerText = `Boys: ${boys} | Girls: ${girls}`;
     if(statFilled) statFilled.innerText = filled;
     if(statPending) statPending.innerText = totalSchools - filled;
+  },
+
+  // --- NEW: Authentication & Role Management ---
+  getCurrentUser() {
+    let session = localStorage.getItem("brc_current_user");
+    return session ? JSON.parse(session) : null;
+  },
+
+  login(username, password) {
+    let users = this.getUsers();
+    let user = users.find(u => u.username === username && u.password === password);
+    
+    if(user) {
+      localStorage.setItem("brc_current_user", JSON.stringify(user));
+      return { success: true, role: user.role, name: user.name };
+    }
+    return { success: false, message: "Galat Username ya Password!" };
+  },
+
+  logout() {
+    localStorage.removeItem("brc_current_user");
+    window.location.reload();
+  },
+
+  getUsers() {
+    let storedUsers = localStorage.getItem("brc_users");
+    if(storedUsers) {
+      return JSON.parse(storedUsers);
+    }
+    let defaultUsers = [
+      { username: "admin", password: "adminpassword", role: "admin", name: "BRC Admin" },
+      { username: "jsk_shahpur", password: "jskpassword", role: "jsk", name: "JSK Coordinator" },
+      { username: "school", password: "schoolpassword", role: "school", name: "School Login" }
+    ];
+    localStorage.setItem("brc_users", JSON.stringify(defaultUsers));
+    return defaultUsers;
+  },
+
+  changePassword(username, oldPassword, newPassword) {
+    let users = this.getUsers();
+    let user = users.find(u => u.username === username);
+    
+    if(!user) return { success: false, message: "User nahi mila!" };
+    if(user.password !== oldPassword) return { success: false, message: "Purana password galat hai!" };
+    
+    user.password = newPassword;
+    localStorage.setItem("brc_users", JSON.stringify(users));
+    return { success: true, message: "Password safaltapurvak badal diya gaya hai!" };
+  },
+
+  resetPassword(username, newPassword) {
+    let users = this.getUsers();
+    let user = users.find(u => u.username === username);
+    
+    if(!user) return { success: false, message: "Invalid Username / ID!" };
+    
+    user.password = newPassword;
+    localStorage.setItem("brc_users", JSON.stringify(users));
+    return { success: true, message: "Password reset ho gaya hai. Naye password se login karein." };
+  },
+
+  applyRoleAccess() {
+    let currentUser = this.getCurrentUser();
+    if(!currentUser) return;
+
+    let role = currentUser.role;
+
+    // Agar JSK login hai toh sirf Compilation & Download option dikhega, baki sab hide ho jayega
+    if(role === "jsk") {
+      let dataEntryTab = document.querySelector("[data-target='entry']") || document.getElementById("entrySection");
+      let schoolListTab = document.querySelector("[data-target='records']") || document.getElementById("recordsSection");
+      
+      if(dataEntryTab) dataEntryTab.style.display = "none";
+      if(schoolListTab) dataEntryTab.style.display = "none";
+    }
+    // Agar School login hai toh compilation hide rahega
+    else if(role === "school") {
+      let compilationTab = document.querySelector("[data-target='compilation']") || document.getElementById("compilationSection");
+      if(compilationTab) compilationTab.style.display = "none";
+    }
   }
 };
 
