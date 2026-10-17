@@ -14,6 +14,46 @@
   .modal-box input { width:100%; padding:10px; margin:8px 0 15px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
+
+  /* PRINT & PDF AUTOMATIC PAGE SETUP STYLES */
+  @media print {
+    header, nav, .filter-bar, button, label, .modal-overlay, #editToggleBtn, [onclick], input, select {
+      display: none !important;
+    }
+    body, html, main, section {
+      background: #ffffff !important;
+      color: #000000 !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+    }
+    section {
+      display: block !important;
+    }
+    section:not(.active) {
+      display: none !important;
+    }
+    .tablewrap {
+      max-height: none !important;
+      overflow: visible !important;
+      box-shadow: none !important;
+    }
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      font-size: 10px !important;
+    }
+    th, td {
+      border: 1px solid #000 !important;
+      padding: 4px !important;
+      color: #000 !important;
+    }
+    @page {
+      size: landscape;
+      margin: 8mm;
+    }
+  }
 </style>
 </head>
 <body>
@@ -155,16 +195,13 @@
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       try {
-        // Dono keys (brc_logged_user aur brc_current_user) support karne ke liye
         let userStr = localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user");
         if (userStr) {
           let user = JSON.parse(userStr);
           
-          // Display Logged In User Name
           let nameEl = document.getElementById("loggedInUserName");
           if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role ? user.role.toUpperCase() : ''})`;
 
-          // 1. SCHOOL ROLE HANDLING
           if (user.role === 'school') {
             console.log("🔒 Strict School Matcher Active for UDISE:", user.udise);
 
@@ -207,16 +244,12 @@
               }
             }, 300);
           }
-          // 2. JSK ROLE HANDLING (Only Report & Download)
           else if (user.role === 'jsk') {
             console.log("👁️ JSK Mode Active: Hiding Data Entry & School List");
             document.querySelectorAll('.hide-for-jsk').forEach(el => el.style.display = 'none');
-            
-            // Auto open compilation tab for JSK
             showTab('compilation');
           }
         } else {
-          // Agar login nahi hai toh guest name dikhao
           let nameEl = document.getElementById("loggedInUserName");
           if(nameEl) nameEl.innerText = "Guest Mode";
         }
@@ -232,7 +265,6 @@
     if(target) target.classList.add("active");
   }
 
-  // Password Modal Functions
   window.openChangePasswordModal = function() {
     let modal = document.getElementById("changePasswordModal");
     if(modal) modal.style.display = "flex";
