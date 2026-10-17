@@ -113,7 +113,7 @@
     <div class="tablewrap"><table id="compileTable"></table></div>
   </section>
 </main>
-<!-- Load Main Modular Controller & Direct In-Page Security Guard -->
+<!-- Load Main Modular Controller & Strict School Matcher -->
 <script type="module" src="app.js"></script>
 <script type="module">
   window.addEventListener('DOMContentLoaded', () => {
@@ -124,7 +124,7 @@
           let user = JSON.parse(userStr);
           
           if (user && user.role === 'school') {
-            console.log("🔒 Strict School Isolation Active for:", user.udise);
+            console.log("🔒 Strict School Matcher Active for UDISE:", user.udise);
 
             // 1. Template aur Upload buttons hide karna
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
@@ -136,26 +136,50 @@
               sessionSelect.disabled = true;
             }
 
-            // 3. Data Entry dropdown mein sirf usi school ko lock karna aur form load karna
+            // 3. app.js dwara load kiye gaye dropdown mein se exact UDISE match karna
             let checkInterval = setInterval(() => {
               let schoolSelect = document.getElementById("schoolSelect");
-              if (schoolSelect) {
-                schoolSelect.innerHTML = `<option value="${user.udise}" selected>${user.name || 'My School'} (${user.udise})</option>`;
-                schoolSelect.disabled = true;
+              if (schoolSelect && schoolSelect.options.length > 0) {
+                let foundIndex = -1;
                 
-                // Form load trigger karo
+                // Dropdown ke har option ko check karo ki kismein yeh UDISE hai
+                for (let i = 0; i < schoolSelect.options.length; i++) {
+                  let optText = schoolSelect.options[i].text;
+                  let optVal = schoolSelect.options[i].value;
+                  if (optText.includes(user.udise) || optVal.includes(user.udise)) {
+                    foundIndex = i;
+                    break;
+                  }
+                }
+
+                if (foundIndex !== -1) {
+                  schoolSelect.selectedIndex = foundIndex;
+                } else {
+                  // Agar list mein na mile toh naya jod do
+                  let newOpt = document.createElement('option');
+                  newOpt.value = user.udise;
+                  newOpt.text = `${user.name || 'My School'} (${user.udise})`;
+                  schoolSelect.add(newOpt);
+                  schoolSelect.value = user.udise;
+                }
+
+                // Dropdown ko lock kar do taaki koi doosri school select na ho sake
+                schoolSelect.disabled = true;
+
+                // Form load trigger karo taaki 100% usi school ka data khule
                 if (window.EntryModule && typeof EntryModule.loadForm === 'function') {
                   EntryModule.loadForm();
                 }
+
                 clearInterval(checkInterval);
               }
-            }, 500);
+            }, 300);
           }
         }
       } catch(e) {
-        console.error("School Security Error:", e);
+        console.error("School Matching Error:", e);
       }
-    }, 800); // 0.8 second ka delay taaki app.js pehle load ho jaye
+    }, 700); // Thoda delay taaki app.js list poori load kar de
   });
 
   function showTab(id){
