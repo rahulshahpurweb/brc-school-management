@@ -6,11 +6,12 @@
 <title>True Modular Portal - BRC Shahpur</title>
 <link rel="stylesheet" href="r2-styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="permissions.js"></script>
 <style>
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
-  .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+  .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:450px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
   .modal-box h3 { margin-top:0; color:#1d4ed8; }
-  .modal-box input { width:100%; padding:10px; margin:8px 0 15px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }
+  .modal-box input[type="text"], .modal-box input[type="password"] { width:100%; padding:10px; margin:8px 0 15px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
 
@@ -37,17 +38,8 @@
     text-align: center;
     box-shadow: 0 15px 35px rgba(0,0,0,0.5);
   }
-  .maint-card h1 {
-    color: #f4b400;
-    font-size: 26px;
-    margin-bottom: 15px;
-  }
-  .maint-card p {
-    color: #e2e8f0;
-    font-size: 16px;
-    line-height: 1.6;
-    margin: 0;
-  }
+  .maint-card h1 { color: #f4b400; font-size: 26px; margin-bottom: 15px; }
+  .maint-card p { color: #e2e8f0; font-size: 16px; line-height: 1.6; margin: 0; }
 
   @media print {
     header, nav, .filter-bar, button, label, .modal-overlay, #editToggleBtn, [onclick], input, select {
@@ -88,6 +80,9 @@
       <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
     </div>
     
+    <!-- Admin Feature Control Button -->
+    <button onclick="openPermissionModal()" id="adminControlBtn" style="display:none; background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold;">⚙️ Feature Control</button>
+
     <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
       <span id="loggedInUserName" style="font-weight:bold;">Admin Mode</span>
       <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Change Password</button>
@@ -97,13 +92,13 @@
 
 <nav>
   <button class="hide-for-jsk" onclick="showTab('dash')">📊 Summary</button>
-  <button onclick="showTab('records')">📋 School List</button>
+  <button id="navRecordsBtn" onclick="showTab('records')">📋 School List</button>
   <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')">✍️ Data Entry</button>
   <button class="hide-for-school" onclick="showTab('compilation')">📑 JSK Compilation</button>
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
-  <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
-  <label class="button hide-for-school hide-for-jsk" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
+  <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
+  <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
 </nav>
@@ -191,6 +186,21 @@
   </section>
 </main>
 
+<!-- DYNAMIC FEATURE CONTROL MODAL -->
+<div id="permissionModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:450px;">
+    <h3>⚙️ Master Feature Control Center</h3>
+    <p style="font-size:13px; color:#64748b;">Sabhi modules ke liye JSK aur Schools ke permissions yahan se control honge.</p>
+    
+    <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;">
+      <!-- Dynamic checkboxes -->
+    </div>
+
+    <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Settings Save Karein</button>
+    <button class="secondary" onclick="closePermissionModal()">Cancel</button>
+  </div>
+</div>
+
 <div id="changePasswordModal" class="modal-overlay">
   <div class="modal-box">
     <h3>🔑 Password Badlein</h3>
@@ -207,8 +217,54 @@
 
 <script type="module" src="app.js"></script>
 <script type="module">
+  const featureLabels = {
+    r2_jsk_upload_excel: "📊 [R2 Enrollment] JSK: Excel Upload",
+    r2_jsk_template_download: "📊 [R2 Enrollment] JSK: Template Download",
+    r2_jsk_school_list: "📊 [R2 Enrollment] JSK: School List View",
+    r3_jsk_upload_excel: "♿ [R3 CWSN] JSK: Excel Upload",
+    r3_jsk_template_download: "♿ [R3 CWSN] JSK: Template Download",
+    r3_jsk_cwsn_list: "♿ [R3 CWSN] JSK: CWSN List View"
+  };
+
+  window.openPermissionModal = function() {
+    let settings = FeaturePermissions.getSettings();
+    let container = document.getElementById("permissionListContainer");
+    container.innerHTML = "";
+
+    for (let key in settings) {
+      let isChecked = settings[key] ? "checked" : "";
+      let labelText = featureLabels[key] || key;
+
+      container.innerHTML += `
+        <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+          <span>${labelText}</span>
+          <input type="checkbox" id="p_${key}" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>
+        </label>
+      `;
+    }
+    document.getElementById("permissionModal").style.display = "flex";
+  }
+
+  window.closePermissionModal = function() {
+    document.getElementById("permissionModal").style.display = "none";
+  }
+
+  window.savePermissions = function() {
+    let settings = FeaturePermissions.getSettings();
+    let checkboxes = document.querySelectorAll("#permissionListContainer input[type='checkbox']");
+    
+    checkboxes.forEach(cb => {
+      let key = cb.getAttribute("data-key");
+      settings[key] = cb.checked;
+    });
+
+    FeaturePermissions.saveSettings(settings);
+    alert("Sabhi permissions safaltapurvak update ho gayi hain!");
+    closePermissionModal();
+    location.reload();
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
-    // Check maintenance mode on load for R2
     let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     
@@ -219,11 +275,14 @@
 
     setTimeout(() => {
       try {
-        let userStr = localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user");
-        if (userStr) {
-          let user = JSON.parse(userStr);
+        if (user && user.role) {
           let nameEl = document.getElementById("loggedInUserName");
-          if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role ? user.role.toUpperCase() : ''})`;
+          if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role.toUpperCase()})`;
+
+          if (user.role === 'admin') {
+            let adminBtn = document.getElementById("adminControlBtn");
+            if(adminBtn) adminBtn.style.display = "inline-block";
+          }
 
           if (user.role === 'school') {
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
@@ -255,6 +314,21 @@
           } else if (user.role === 'jsk') {
             let navEntryBtn = document.getElementById("navEntryBtn");
             if(navEntryBtn) navEntryBtn.style.display = 'none';
+            
+            let settings = FeaturePermissions.getSettings();
+            if (!settings.r2_jsk_upload_excel) {
+              let upBtn = document.getElementById("uploadLabelBtn");
+              if(upBtn) upBtn.style.display = 'none';
+            }
+            if (!settings.r2_jsk_template_download) {
+              let tempBtn = document.getElementById("templateBtn");
+              if(tempBtn) tempBtn.style.display = 'none';
+            }
+            if (!settings.r2_jsk_school_list) {
+              let recBtn = document.getElementById("navRecordsBtn");
+              if(recBtn) recBtn.style.display = 'none';
+            }
+
             showTab('compilation');
           }
         }
