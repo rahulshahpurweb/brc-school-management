@@ -25,9 +25,9 @@
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
   <!-- School login par yeh buttons hide ho jayenge -->
-  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template</button>
+  <button class="success hide-for-school" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥 Download Template</button>
   <label class="button hide-for-school" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
-    📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
+    📤 Upload <input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
 </nav>
 
@@ -114,23 +114,61 @@
   </section>
 </main>
 
-<!-- Load Main Modular Controller & Role Restricter -->
+<!-- Load Main Modular Controller & Direct In-Page Security Guard -->
 <script type="module" src="app.js"></script>
-<script type="module" src="school-login.js"></script>
 <script type="module">
-  import { SchoolLogin } from './school-login.js';
   window.addEventListener('DOMContentLoaded', () => {
-    // Sirf role check karke buttons hide karega agar school logged-in hai
-    if (SchoolLogin.isSchoolUser()) {
-      document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
+    try {
+      let userStr = localStorage.getItem("brc_logged_user");
+      if (userStr) {
+        let user = JSON.parse(userStr);
+        
+        // Agar login karne wala School user hai
+        if (user && user.role === 'school') {
+          console.log("🔒 School Security Guard Active inside R2.html");
+
+          // 1. Template aur Upload buttons hide karna
+          setTimeout(() => {
+            document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
+          }, 300);
+
+          // 2. Academic Session ko sirf 2026-27 par lock karna (Future sessions hide)
+          let sessionSelect = document.getElementById("sessionSelect");
+          if (sessionSelect) {
+            sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
+            sessionSelect.disabled = true;
+          }
+
+          // 3. Data Entry mein sirf usi school ko select karke lock karna taaki doosri school na dikhe
+          let checkInterval = setInterval(() => {
+            let schoolSelect = document.getElementById("schoolSelect");
+            if (schoolSelect && schoolSelect.options.length > 1) {
+              for (let opt of schoolSelect.options) {
+                if (String(opt.value).trim() === String(user.udise).trim() || opt.text.includes(user.udise)) {
+                  schoolSelect.value = opt.value;
+                  break;
+                }
+              }
+              // Agar match na ho toh sirf wahi school dikhao
+              if (schoolSelect.value !== String(user.udise)) {
+                schoolSelect.innerHTML = `<option value="${user.udise}">${user.name || 'My School'} (${user.udise})</option>`;
+                schoolSelect.value = user.udise;
+              }
+              schoolSelect.disabled = true; // Lock dropdown
+              clearInterval(checkInterval);
+            }
+          }, 300);
+        }
+      }
+    } catch(e) {
+      console.error("Security Guard Error:", e);
     }
   });
-</script>
-<script>
-function showTab(id){
-  document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
+
+  function showTab(id){
+    document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
 </script>
 </body>
 </html>
