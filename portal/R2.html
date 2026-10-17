@@ -6,10 +6,40 @@
 <title>True Modular Portal - BRC Shahpur</title>
 <link rel="stylesheet" href="r2-styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- Maintenance Script Integration -->
-<script src="maintenance.js"></script>
+<script>
+  // Inline Maintenance Check for R2
+  (function() {
+    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    if (isMaintenance && user.role !== "admin") {
+      document.open();
+      document.write(`
+        <!DOCTYPE html>
+        <html lang="hi">
+        <head>
+          <meta charset="utf-8">
+          <title>Portal Under Maintenance</title>
+          <style>
+            body { background: #0b2854; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 20px; }
+            .box { background: #ffffff10; padding: 40px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid #ffffff22; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+            h1 { color: #f4b400; font-size: 24px; margin-bottom: 15px; }
+            p { font-size: 15px; color: #cbd5e1; line-height: 1.6; }
+          </style>
+        </head>
+        <body>
+          <div class="box">
+            <h1>🚧 Portal Under Maintenance</h1>
+            <p>Kripya asuvidha ke liye khed hai!<br>Abhi portal par naye updates aur maintenance ka kaam chal raha hai. Jaldi hi portal wapas live hoga.</p>
+          </div>
+        </body>
+        </html>
+      `);
+      document.close();
+      throw new Error("Portal under maintenance");
+    }
+  })();
+</script>
 <style>
-  /* Modals aur Extra Styling for Auth & Password */
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }
   .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:400px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
   .modal-box h3 { margin-top:0; color:#1d4ed8; }
@@ -17,7 +47,6 @@
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
 
-  /* PRINT & PDF AUTOMATIC PAGE SETUP STYLES */
   @media print {
     header, nav, .filter-bar, button, label, .modal-overlay, #editToggleBtn, [onclick], input, select {
       display: none !important;
@@ -30,31 +59,12 @@
       padding: 0 !important;
       overflow: visible !important;
     }
-    section {
-      display: block !important;
-    }
-    section:not(.active) {
-      display: none !important;
-    }
-    .tablewrap {
-      max-height: none !important;
-      overflow: visible !important;
-      box-shadow: none !important;
-    }
-    table {
-      width: 100% !important;
-      border-collapse: collapse !important;
-      font-size: 10px !important;
-    }
-    th, td {
-      border: 1px solid #000 !important;
-      padding: 4px !important;
-      color: #000 !important;
-    }
-    @page {
-      size: landscape;
-      margin: 8mm;
-    }
+    section { display: block !important; }
+    section:not(.active) { display: none !important; }
+    .tablewrap { max-height: none !important; overflow: visible !important; box-shadow: none !important; }
+    table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
+    th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; }
+    @page { size: landscape; margin: 8mm; }
   }
 </style>
 </head>
@@ -68,12 +78,6 @@
       <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
     </div>
     
-    <!-- Admin Maintenance Toggle Button Container -->
-    <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:6px;">
-      <span style="font-size:11px; font-weight:bold;">🛠️ Maint:</span>
-      <button id="maintToggleBtn" onclick="MaintenanceModule.toggle()" style="padding:3px 8px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
-    </div>
-
     <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
       <span id="loggedInUserName" style="font-weight:bold;">Admin Mode</span>
       <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Change Password</button>
@@ -82,18 +86,12 @@
 </header>
 
 <nav>
-  <!-- Admin / General Tabs -->
   <button class="hide-for-jsk" onclick="showTab('dash')">📊 Summary</button>
   <button onclick="showTab('records')">📋 School List</button>
   <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')">✍️ Data Entry</button>
-  
-  <!-- JSK aur Admin ke liye Compilation visible rahega -->
   <button class="hide-for-school" onclick="showTab('compilation')">📑 JSK Compilation</button>
-  
   <button class="success" onclick="ExcelHandler.exportExcel()" style="margin-left:auto">📥 Download</button>
   <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
-  
-  <!-- School login par yeh buttons hide ho jayenge -->
   <button class="success hide-for-school hide-for-jsk" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EF</button>
   <label class="button hide-for-school hide-for-jsk" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
@@ -183,7 +181,6 @@
   </section>
 </main>
 
-<!-- CHANGE PASSWORD MODAL -->
 <div id="changePasswordModal" class="modal-overlay">
   <div class="modal-box">
     <h3>🔑 Password Badlein</h3>
@@ -198,79 +195,51 @@
   </div>
 </div>
 
-<!-- Load Main Modular Controller & Strict Role / School Matcher -->
 <script type="module" src="app.js"></script>
 <script type="module">
   window.addEventListener('DOMContentLoaded', () => {
-    // Render Maintenance button if admin
-    if (window.MaintenanceModule) {
-      MaintenanceModule.renderAdminToggle("adminMaintenancePanel");
-    }
-
     setTimeout(() => {
       try {
         let userStr = localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user");
         if (userStr) {
           let user = JSON.parse(userStr);
-          
           let nameEl = document.getElementById("loggedInUserName");
           if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role ? user.role.toUpperCase() : ''})`;
 
           if (user.role === 'school') {
-            console.log("🔒 Strict School Matcher Active for UDISE:", user.udise);
-
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
-
             let sessionSelect = document.getElementById("sessionSelect");
             if (sessionSelect) {
               sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
               sessionSelect.disabled = true;
             }
-
             let checkInterval = setInterval(() => {
               let schoolSelect = document.getElementById("schoolSelect");
               if (schoolSelect && schoolSelect.options.length > 0) {
                 let foundIndex = -1;
                 for (let i = 0; i < schoolSelect.options.length; i++) {
-                  let optText = schoolSelect.options[i].text;
-                  let optVal = schoolSelect.options[i].value;
-                  if (optText.includes(user.udise) || optVal.includes(user.udise)) {
-                    foundIndex = i;
-                    break;
+                  if (schoolSelect.options[i].text.includes(user.udise) || schoolSelect.options[i].value.includes(user.udise)) {
+                    foundIndex = i; break;
                   }
                 }
-
-                if (foundIndex !== -1) {
-                  schoolSelect.selectedIndex = foundIndex;
-                } else {
+                if (foundIndex !== -1) schoolSelect.selectedIndex = foundIndex;
+                else {
                   let newOpt = document.createElement('option');
-                  newOpt.value = user.udise;
-                  newOpt.text = `${user.name || 'My School'} (${user.udise})`;
-                  schoolSelect.add(newOpt);
-                  schoolSelect.value = user.udise;
+                  newOpt.value = user.udise; newOpt.text = `${user.name || 'My School'} (${user.udise})`;
+                  schoolSelect.add(newOpt); schoolSelect.value = user.udise;
                 }
-
                 schoolSelect.disabled = true;
-                if (window.EntryModule && typeof EntryModule.loadForm === 'function') {
-                  EntryModule.loadForm();
-                }
+                if (window.EntryModule && typeof EntryModule.loadForm === 'function') EntryModule.loadForm();
                 clearInterval(checkInterval);
               }
             }, 300);
-          }
-          else if (user.role === 'jsk') {
-            console.log("👁️ JSK Mode Active: Allowing School List & Compilation");
+          } else if (user.role === 'jsk') {
             let navEntryBtn = document.getElementById("navEntryBtn");
             if(navEntryBtn) navEntryBtn.style.display = 'none';
             showTab('compilation');
           }
-        } else {
-          let nameEl = document.getElementById("loggedInUserName");
-          if(nameEl) nameEl.innerText = "Guest Mode";
         }
-      } catch(e) {
-        console.error("Role Handling Error:", e);
-      }
+      } catch(e) { console.error("Role Error:", e); }
     }, 500);
   });
 
@@ -280,34 +249,18 @@
     if(target) target.classList.add("active");
   }
 
-  window.openChangePasswordModal = function() {
-    let modal = document.getElementById("changePasswordModal");
-    if(modal) modal.style.display = "flex";
-  }
-
-  window.closeChangePasswordModal = function() {
-    let modal = document.getElementById("changePasswordModal");
-    if(modal) modal.style.display = "none";
-  }
+  window.openChangePasswordModal = () => document.getElementById("changePasswordModal").style.display = "flex";
+  window.closeChangePasswordModal = () => document.getElementById("changePasswordModal").style.display = "none";
 
   window.submitChangePassword = function() {
     let uname = document.getElementById("cpUsername").value.trim();
     let oldP = document.getElementById("cpOldPass").value;
     let newP = document.getElementById("cpNewPass").value;
-
-    if(!uname || !oldP || !newP) {
-      alert("Kripya sabhi fields bharein!");
-      return;
-    }
-
+    if(!uname || !oldP || !newP) { alert("Kripya sabhi fields bharein!"); return; }
     if(window.SessionManager && typeof SessionManager.changePassword === 'function') {
       let res = SessionManager.changePassword(uname, oldP, newP);
       alert(res.message);
-      if(res.success) {
-        closeChangePasswordModal();
-      }
-    } else {
-      alert("SessionManager load nahi hua hai!");
+      if(res.success) closeChangePasswordModal();
     }
   }
 
@@ -319,6 +272,5 @@
     }
   }
 </script>
-  
 </body>
 </html>
