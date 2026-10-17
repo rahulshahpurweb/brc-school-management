@@ -29,7 +29,8 @@ export const SessionManager = {
     sessions.forEach(s => {
       let opt = document.createElement("option");
       opt.value = s.id;
-      opt.textContent = s.locked ? `🔒 ${s.name} (Locked)` : `🔓 ${s.name}`;
+      // Agar purana session hai toh locked icon dikhayega
+      opt.textContent = s.locked ? `🔒 ${s.name} (Locked)` : `🔓 ${s.name} (Active)`;
       if(s.id === current) opt.selected = true;
       select.appendChild(opt);
     });
@@ -50,7 +51,21 @@ export const SessionManager = {
     let saved = localStorage.getItem(dataKey);
 
     if (!saved) {
-      return window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+      // Naye ya future session ke liye fresh blank data (0 enrollment) generate karna
+      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+      let freshSchools = JSON.parse(JSON.stringify(baseSchools));
+      
+      freshSchools.forEach(s => {
+        if (s.classes) {
+          Object.keys(s.classes).forEach(cName => {
+            let c = s.classes[cName];
+            Object.keys(c).forEach(k => c[k] = 0);
+          });
+        }
+      });
+
+      localStorage.setItem(dataKey, JSON.stringify(freshSchools));
+      return freshSchools;
     }
     try {
       return JSON.parse(saved);
@@ -64,8 +79,8 @@ export const SessionManager = {
     let dataKey = `brc_schools_data_${activeSession}`;
     
     try {
-      console.log("Google Sheet Cloud se data laya ja raha hai...");
-      let response = await fetch(WEB_APP_URL);
+      console.log(`Google Sheet se ${activeSession} ka data laya ja raha hai...`);
+      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);
       let cloudData = await response.json();
       
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
@@ -80,18 +95,32 @@ export const SessionManager = {
 
   saveData(schoolsData) {
     let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
-    let dataKey = `brc_schools_data_${activeSession}`;
     
-    localStorage.setItem(dataKey, JSON.stringify(schoolsData));
+    // Check karein ki session locked toh nahi hai (Purane saal read-only rahenge)
+    let sessions = AdminLocks.getSessions();
+    let currentSessionObj = sessions.find(s => s.id === activeSession);
+    if (currentSessionObj && currentSessionObj.locked) {
+      alert("⚠️ Yeh academic session locked (freeze) hai! Isme naya data save nahi kiya ja sakta.");
+      return;
+    }
+
+    let dataKey = `brc_schools_data_${activeSession}`;
+    localStorage.setItem(dataKey, JSON.stringifyschoolsData ? JSON.stringify(schoolsData) : JSON.stringify([]));
     this.updateStats();
+
+    // Background mein Google Sheet par session ke sath data bhejna
+    let payload = {
+      session: activeSession,
+      data: schoolsData
+    };
 
     fetch(WEB_APP_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(schoolsData)
+      body: JSON.stringify(payload)
     }).then(() => {
-      console.log("Data Google Sheet par safaltapurvak save ho gaya!");
+      console.log(`Data (${activeSession}) Google Sheet par safaltapurvak save ho gaya!`);
     }).catch(err => {
       console.error("Google Sheet Save Error:", err);
     });
@@ -145,7 +174,6 @@ export const SessionManager = {
     if(statPending) statPending.innerText = totalSchools - filled;
   },
 
-  // --- NEW: Authentication & Role Management ---
   getCurrentUser() {
     let session = localStorage.getItem("brc_current_user");
     return session ? JSON.parse(session) : null;
@@ -174,7 +202,7 @@ export const SessionManager = {
     }
     let defaultUsers = [
       { username: "admin", password: "adminpassword", role: "admin", name: "BRC Admin" },
-      { username: "jsk_shahpur", password: "jskpassword", role: "jsk", name: "JSK Coordinator" },
+      { username: "jsk_login", password: "jskpassword", role: "jsk", name: "JSK Coordinator" },
       { username: "school", password: "schoolpassword", role: "school", name: "School Login" }
     ];
     localStorage.setItem("brc_users", JSON.stringify(defaultUsers));
@@ -193,24 +221,12 @@ export const SessionManager = {
     return { success: true, message: "Password safaltapurvak badal diya gaya hai!" };
   },
 
-  resetPassword(username, newPassword) {
-    let users = this.getUsers();
-    let user = users.find(u => u.username === username);
-    
-    if(!user) return { success: false, message: "Invalid Username / ID!" };
-    
-    user.password = newPassword;
-    localStorage.setItem("brc_users", JSON.stringify(users));
-    return { success: true, message: "Password reset ho gaya hai. Naye password se login karein." };
-  },
-
   applyRoleAccess() {
     let currentUser = this.getCurrentUser();
     if(!currentUser) return;
 
     let role = currentUser.role;
 
-    // Agar JSK login hai toh sirf Compilation & Download option dikhega, baki sab hide ho jayega
     if(role === "jsk") {
       let dataEntryTab = document.querySelector("[data-target='entry']") || document.getElementById("entrySection");
       let schoolListTab = document.querySelector("[data-target='records']") || document.getElementById("recordsSection");
@@ -218,7 +234,6 @@ export const SessionManager = {
       if(dataEntryTab) dataEntryTab.style.display = "none";
       if(schoolListTab) dataEntryTab.style.display = "none";
     }
-    // Agar School login hai toh compilation hide rahega
     else if(role === "school") {
       let compilationTab = document.querySelector("[data-target='compilation']") || document.getElementById("compilationSection");
       if(compilationTab) compilationTab.style.display = "none";
