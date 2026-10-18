@@ -34,14 +34,14 @@ export const SessionManager = {
     let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     let isAdmin = (currentUser.role === 'admin');
 
-    // 🛑 AGAR USER ADMIN NAHI HAI, TOH LOCKED SESSIONS DROP-DOWN SE HATA DO (Sirf Active dikhega)
     if (!isAdmin) {
       sessions = sessions.filter(s => !s.locked);
     }
 
-    let current = localStorage.getItem("brc_active_session") || "2026-27";
+    let current = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
+                  FeaturePermissions.getActiveSession() : 
+                  (localStorage.getItem("brc_active_session") || "2026-27");
 
-    // Agar select element maujud hai (Admin ke liye)
     if(select) {
       select.innerHTML = "";
       sessions.forEach(s => {
@@ -52,22 +52,24 @@ export const SessionManager = {
         select.appendChild(opt);
       });
 
-      // Agar non-admin ke liye active session list mein nahi bacha, toh pehla set kar do
       if (!isAdmin && !sessions.some(s => s.id === current)) {
         if (sessions.length > 0) {
-          localStorage.setItem("brc_active_session", sessions[0].id);
-          select.value = sessions[0].id;
-          current = sessions[0].id;
+          let newSess = sessions[0].id;
+          if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.setActiveSession) {
+            FeaturePermissions.setActiveSession(newSess);
+          } else {
+            localStorage.setItem("brc_active_session", newSess);
+          }
+          select.value = newSess;
+          current = newSess;
         }
       }
 
-      // Agar user non-admin hai aur dropdown hai, toh disable/freeze kar do
       if (!isAdmin) {
         select.disabled = true;
       }
     }
 
-    // JSK ya School ke liye header badge ko turant active session se update karo
     let sessionBadge = document.getElementById("sessionBadge");
     if (sessionBadge) {
       sessionBadge.innerText = current;
@@ -78,13 +80,22 @@ export const SessionManager = {
     let select = document.getElementById("sessionSelect");
     if(!select) return;
     let targetSession = select.value;
-    localStorage.setItem("brc_active_session", targetSession);
+
+    if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.setActiveSession) {
+      FeaturePermissions.setActiveSession(targetSession);
+    } else {
+      localStorage.setItem("brc_active_session", targetSession);
+    }
+    
     this.renderDropdown();
     location.reload(); 
   },
 
   getData() {
-    let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
+    let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
+                        FeaturePermissions.getActiveSession() : 
+                        (localStorage.getItem("brc_active_session") || "2026-27");
+                        
     let dataKey = `brc_schools_data_${activeSession}`;
     let saved = localStorage.getItem(dataKey);
 
@@ -112,7 +123,10 @@ export const SessionManager = {
   },
 
   async loadCloudData() {
-    let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
+    let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
+                        FeaturePermissions.getActiveSession() : 
+                        (localStorage.getItem("brc_active_session") || "2026-27");
+                        
     let dataKey = `brc_schools_data_${activeSession}`;
     
     try {
@@ -132,7 +146,9 @@ export const SessionManager = {
   },
 
   saveData(schoolsData) {
-    let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
+    let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
+                        FeaturePermissions.getActiveSession() : 
+                        (localStorage.getItem("brc_active_session") || "2026-27");
     
     let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     let isAdmin = (currentUser.role === 'admin');
@@ -149,7 +165,6 @@ export const SessionManager = {
     let hasSpecialPermission = (currentUser.role === 'school' && settings.school_can_edit_locked_session) || 
                                (currentUser.role === 'jsk' && settings.jsk_can_edit_locked_session);
     
-    // 🛑 AGAR SESSION LOCKED HAI, ADMIN NAHI HAI, AUR FEATURE MODAL SE SPECIAL PERMISSION BHI NAHI MILI, TOH SAVE ROK DO!
     if (currentSessionObj && currentSessionObj.locked && !isAdmin && !hasSpecialPermission) {
       alert("⚠️ Yeh academic session locked hai! Admin ne isme entry ki permission nahi di hai.");
       return;
