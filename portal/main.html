@@ -51,12 +51,12 @@ body{
   letter-spacing: .3px;
 }
 
-/* Side Drawer Menu (Hidden by default) */
+/* Side Drawer Menu */
 .side-drawer {
   position: fixed;
   top: 0;
-  left: -280px;
-  width: 280px;
+  left: -300px;
+  width: 300px;
   height: 100%;
   background: #071b38;
   z-index: 9999;
@@ -71,23 +71,23 @@ body{
 }
 .drawer-header {
   background: #041022;
-  padding: 25px 20px;
+  padding: 20px;
   color: white;
   border-bottom: 2px solid #f4b400;
 }
 .drawer-header h3 {
-  margin: 0 0 5px 0;
-  font-size: 18px;
+  margin: 0 0 4px 0;
+  font-size: 17px;
   color: #ffd21c;
 }
 .drawer-header p {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: #94a3b8;
 }
 .drawer-links {
   flex: 1;
-  padding: 15px 10px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -97,27 +97,34 @@ body{
   background: rgba(255,255,255,0.05);
   color: #e2e8f0;
   border: 1px solid rgba(255,255,255,0.1);
-  padding: 12px 15px;
+  padding: 10px 14px;
   border-radius: 8px;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
+  text-align: left;
 }
 .drawer-link:hover, .drawer-link.active {
   background: #ffd21c;
   color: #082a63;
   border-color: #ffd21c;
 }
-.drawer-link span.icon {
-  font-size: 18px;
+.drawer-section-title {
+  font-size: 11px;
+  color: #f4b400;
+  text-transform: uppercase;
+  margin: 8px 0 2px 4px;
+  font-weight: bold;
+  letter-spacing: .5px;
 }
 
-/* Backdrop Overlay when menu is open */
+/* Backdrop Overlay */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -197,42 +204,59 @@ body{
 <!-- Backdrop Overlay -->
 <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer()"></div>
 
-<!-- Slide-out Side Drawer Menu -->
+<!-- Slide-out Side Drawer Menu containing all controls -->
 <div id="sideDrawer" class="side-drawer">
   <div class="drawer-header">
     <h3>🏛️ BRC Shahpur</h3>
-    <p>Master Navigation Portal</p>
+    <p>Master Control & Navigation</p>
   </div>
   <div class="drawer-links">
+    
+    <div class="drawer-section-title">Modules</div>
     <button class="drawer-link active" onclick="loadModule('R2.html', this)">
-      <span class="icon">📊</span> Enrollment Module
+      <span>📊</span> Enrollment Module (R2)
     </button>
     <button class="drawer-link" onclick="loadModule('R3.html', this)">
-      <span class="icon">♿</span> CWSN Module
+      <span>♿</span> CWSN Module (R3)
     </button>
     <a href="../index.html" class="drawer-link" style="background:rgba(16,185,129,0.15); border-color:#10b981;">
-      <span class="icon">🔍</span> SNA Account Check
+      <span>🔍</span> SNA Account Check
     </a>
+
+    <div class="drawer-section-title" style="margin-top: 10px;">Admin & Controls</div>
     
-    <!-- Admin Maintenance Panel inside Menu -->
-    <div id="adminMaintenancePanel" style="display:none; flex-direction:column; gap:5px; background:rgba(255,255,255,0.08); padding:10px; border-radius:8px; margin-top:10px;">
-      <span style="font-size:12px; font-weight:bold; color:#ffd21c;">🛠️ Maintenance Mode:</span>
+    <!-- Admin Info / Change Password Menu Item -->
+    <div id="adminRoleIndicator" style="background:rgba(255,255,255,0.08); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);">
+      <div style="font-size:12px; color:#ffd21c; font-weight:bold; margin-bottom:6px;">👤 BRC Admin (ADMIN)</div>
+      <button onclick="triggerAdminPasswordChange()" class="drawer-link" style="background:#1769df; border-color:#1769df; color:#fff; padding:8px 12px; font-size:12px; margin:0;">
+        <span>🔑</span> Change Password
+      </button>
+    </div>
+
+    <!-- Feature Control option -->
+    <button onclick="triggerFeatureControl()" class="drawer-link" style="background:rgba(14,61,126,0.5); border-color:#3b82f6;">
+      <span>⚙️</span> Feature Control Panel
+    </button>
+
+    <!-- Admin Maintenance Toggle Panel -->
+    <div id="adminMaintenancePanel" style="display:none; flex-direction:column; gap:5px; background:rgba(255,255,255,0.08); padding:10px; border-radius:8px;">
+      <span style="font-size:11px; font-weight:bold; color:#ffd21c;">🛠️ Maintenance Mode:</span>
       <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:6px; border-radius:6px; font-weight:bold; border:0; cursor:pointer; font-size:12px;"></button>
     </div>
 
-    <button class="drawer-link" onclick="logoutSession()" style="background:rgba(220,38,38,0.15); border-color:#dc2626; color:#f87171; margin-top:auto;">
-      <span class="icon">🚪</span> Logout Portal
+    <button class="drawer-link" onclick="logoutSession()" style="background:rgba(220,38,38,0.15); border-color:#dc2626; color:#f87171; margin-top:15px;">
+      <span>🚪</span> Logout Portal
     </button>
   </div>
 </div>
 
-<!-- Top App Bar with Hamburger Menu Button -->
+<!-- Top App Bar -->
 <header class="master-header">
   <div class="header-left">
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
     <div class="brand-title">BRC Shahpur Portal</div>
   </div>
-  <div style="font-size: 13px; color: #ffd21c; font-weight: bold;">Menu ➔</div>
+  <div style="font-size: 13px; color: #ffd21c; font-weight: bold; cursor:pointer;" onclick="toggleDrawer()">Menu ➔</div>
 </header>
 
 <!-- Main Data Display Iframe -->
@@ -265,6 +289,27 @@ function toggleDrawer() {
   const backdrop = document.getElementById('drawerBackdrop');
   drawer.classList.toggle('open');
   backdrop.classList.toggle('open');
+}
+
+/* Helper functions to interact with iframe content if needed */
+function triggerAdminPasswordChange() {
+  toggleDrawer();
+  const iframeWin = document.getElementById('moduleFrame').contentWindow;
+  if(iframeWin && typeof iframeWin.changePassword === 'function') {
+    iframeWin.changePassword();
+  } else {
+    alert("Please open Enrollment module to change password or use its interface.");
+  }
+}
+
+function triggerFeatureControl() {
+  toggleDrawer();
+  const iframeWin = document.getElementById('moduleFrame').contentWindow;
+  if(iframeWin && typeof iframeWin.openFeatureControl === 'function') {
+    iframeWin.openFeatureControl();
+  } else {
+    alert("Feature control settings are available inside the modules.");
+  }
 }
 
 function updateMaintUI() {
@@ -316,7 +361,7 @@ function checkAuth(){
     if(jskPass === "jskpassword" || jskPass === "brc@123") {
       sessionStorage.setItem("brc_logged_in", "true");
       localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-      document.getElementById("authOverlay").style.display = "none";
+      document.getElementById("authOverlay'].style.display = "none";
       location.reload();
       return;
     }
@@ -366,7 +411,7 @@ function loadModule(fileName, btnElement){
   document.getElementById('moduleFrame').src = fileName;
   document.querySelectorAll('.drawer-link').forEach(b => b.classList.remove('active'));
   if(btnElement) btnElement.classList.add('active');
-  toggleDrawer(); // Close drawer after clicking
+  toggleDrawer();
 }
 </script>
 
