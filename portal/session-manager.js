@@ -97,9 +97,15 @@ export const SessionManager = {
   saveData(schoolsData) {
     let activeSession = localStorage.getItem("brc_active_session") || "2026-27";
     
+    // Check karo ki current user admin hai ya nahi
+    let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    let isAdmin = (currentUser.role === 'admin');
+
     let sessions = AdminLocks.getSessions();
     let currentSessionObj = sessions.find(s => s.id === activeSession);
-    if (currentSessionObj && currentSessionObj.locked) {
+    
+    // Agar session locked hai AUR user admin NAHI hai, tabhi roko
+    if (currentSessionObj && currentSessionObj.locked && !isAdmin) {
       alert("⚠️ Yeh academic session locked (freeze) hai! Isme naya data save nahi kiya ja sakta.");
       return;
     }
@@ -161,83 +167,4 @@ export const SessionManager = {
     });
 
     let statSchools = document.getElementById("statSchools");
-    let statTotal = document.getElementById("statTotal");
-    let statBoysGirls = document.getElementById("statBoysGirls");
-    let statFilled = document.getElementById("statFilled");
-    let statPending = document.getElementById("statPending");
-
-    if(statSchools) statSchools.innerText = totalSchools;
-    if(statTotal) statTotal.innerText = totalEnroll;
-    if(statBoysGirls) statBoysGirls.innerText = `Boys: ${boys} | Girls: ${girls}`;
-    if(statFilled) statFilled.innerText = filled;
-    if(statPending) statPending.innerText = totalSchools - filled;
-  },
-
-  getCurrentUser() {
-    let session = localStorage.getItem("brc_current_user");
-    return session ? JSON.parse(session) : null;
-  },
-
-  login(username, password) {
-    let users = this.getUsers();
-    let user = users.find(u => u.username === username && u.password === password);
-    
-    if(user) {
-      localStorage.setItem("brc_current_user", JSON.stringify(user));
-      return { success: true, role: user.role, name: user.name };
-    }
-    return { success: false, message: "Galat Username ya Password!" };
-  },
-
-  logout() {
-    localStorage.removeItem("brc_current_user");
-    window.location.reload();
-  },
-
-  getUsers() {
-    let storedUsers = localStorage.getItem("brc_users");
-    if(storedUsers) {
-      return JSON.parse(storedUsers);
-    }
-    let defaultUsers = [
-      { username: "admin", password: "adminpassword", role: "admin", name: "BRC Admin" },
-      { username: "jsk_login", password: "jskpassword", role: "jsk", name: "JSK Coordinator" },
-      { username: "school", password: "schoolpassword", role: "school", name: "School Login" }
-    ];
-    localStorage.setItem("brc_users", JSON.stringify(defaultUsers));
-    return defaultUsers;
-  },
-
-  changePassword(username, oldPassword, newPassword) {
-    let users = this.getUsers();
-    let user = users.find(u => u.username === username);
-    
-    if(!user) return { success: false, message: "User nahi mila!" };
-    if(user.password !== oldPassword) return { success: false, message: "Purana password galat hai!" };
-    
-    user.password = newPassword;
-    localStorage.setItem("brc_users", JSON.stringify(users));
-    return { success: true, message: "Password safaltapurvak badal diya gaya hai!" };
-  },
-
-  applyRoleAccess() {
-    let currentUser = this.getCurrentUser();
-    if(!currentUser) return;
-
-    let role = currentUser.role;
-
-    if(role === "jsk") {
-      let dataEntryTab = document.querySelector("[data-target='entry']") || document.getElementById("entrySection");
-      let schoolListTab = document.querySelector("[data-target='records']") || document.getElementById("recordsSection");
-      
-      if(dataEntryTab) dataEntryTab.style.display = "none";
-      if(schoolListTab) schoolListTab.style.display = "none";
-    }
-    else if(role === "school") {
-      let compilationTab = document.querySelector("[data-target='compilation']") || document.getElementById("compilationSection");
-      if(compilationTab) compilationTab.style.display = "none";
-    }
-  }
-};
-
-window.SessionManager = SessionManager;
+    let statTotal = document
