@@ -2,11 +2,21 @@
 <html lang="hi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>BRC Shahpur - Master Portal</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+body{
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0b2854;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Mobile notch aur top cut hone ki samasya ko door karne ke liye */
+  padding-top: env(safe-area-inset-top, 15px);
+}
 
 /* Top Master Portal Bar */
 .master-header{background:linear-gradient(135deg,#071b38,#0e3d7e);color:white;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #f4b400;flex-shrink:0;flex-wrap:wrap;gap:10px}
@@ -119,14 +129,12 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 
 <script>
 const ADMIN_PASS = "brc@shahpur";
-let inactivityTimer;
 
 window.addEventListener('DOMContentLoaded', () => {
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  // Agar maintenance ON hai, user logged in hai, aur woh ADMIN NAHI hai, tabhi maintenance overlay dikhao
   if (isMaintenance && isLoggedIn && user.role !== "admin") {
     let overlay = document.getElementById("maintenanceOverlay");
     if (overlay) overlay.style.display = "flex";
@@ -217,12 +225,11 @@ if(sessionStorage.getItem("brc_logged_in") === "true"){
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   if (isMaintenance && user.role !== "admin") {
-    // Non-admin logged in during maintenance -> overlay will show
+    // Non-admin logged in during maintenance
   } else {
     document.getElementById("authOverlay").style.display = "none";
   }
 } else {
-  // Not logged in -> always show login screen first
   document.getElementById("authOverlay").style.display = "flex";
 }
 
