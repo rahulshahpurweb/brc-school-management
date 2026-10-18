@@ -294,3 +294,164 @@
     }
   }
 
+  window.savePermissions = function() {
+    let settings = FeaturePermissions.getSettings();
+    let checkboxes = document.querySelectorAll("#permissionListContainer input.perm-checkbox");
+    
+    checkboxes.forEach(cb => {
+      let key = cb.getAttribute("data-key");
+      settings[key] = cb.checked;
+    });
+
+    FeaturePermissions.saveSettings(settings);
+    alert("Sabhi permissions aur session settings safaltapurvak update ho gayi hain!");
+    document.getElementById("permissionModal").style.display = "none";
+    location.reload();
+  }
+
+  window.ExportAnyTable = function(filename = "BRC_Report.xlsx") {
+    try {
+      let activeSection = document.querySelector("main section.active");
+      let table = activeSection ? activeSection.querySelector("table") : null;
+      if (!table) {
+        alert("Download karne ke liye koi table data nahi mila!");
+        return;
+      }
+      let wb = XLSX.utils.table_to_book(table, { raw: true });
+      XLSX.writeFile(wb, filename);
+    } catch (e) {
+      console.error("Excel Export Error:", e.message);
+      alert("Excel download karne mein samasya aayi: " + e.message);
+    }
+  };
+
+  window.handleSmartDownload = function() {
+    let activeSection = document.querySelector("main section.active");
+    if (!activeSection) return;
+    let sectionId = activeSection.id;
+    
+    if (sectionId === 'compilation') {
+      let formatSelect = document.getElementById("compViewMode");
+      let formatName = formatSelect ? formatSelect.options[formatSelect.selectedIndex].text : "Compilation_Report";
+      ExportAnyTable(`BRC_${formatName.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);
+    } else if (sectionId === 'records') {
+      ExportAnyTable("BRC_School_List.xlsx");
+    } else {
+      if (window.ExcelHandler && typeof ExcelHandler.exportExcel === 'function') {
+        ExcelHandler.exportExcel();
+      } else {
+        ExportAnyTable("BRC_Portal_Data.xlsx");
+      }
+    }
+  };
+
+  window.addEventListener('DOMContentLoaded', () => {
+    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    
+    if (isMaintenance && user.role !== "admin") {
+      let overlay = document.getElementById("maintenanceOverlay");
+      if (overlay) overlay.style.display = "flex";
+    }
+
+    setTimeout(() => {
+      try {
+        if (user && user.role) {
+          let nameEl = document.getElementById("loggedInUserName");
+          if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role.toUpperCase()})`;
+
+          if (user.role === 'admin') {
+            let adminBtn = document.getElementById("adminControlBtn");
+            if(adminBtn) adminBtn.style.display = "inline-block";
+          } else {
+            // JSK aur School ke liye dropdown hide karke badge mein active session dikhayenge
+            let sessionSelect = document.getElementById("sessionSelect");
+            let sessionBadge = document.getElementById("sessionBadge");
+            let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+            
+            if (sessionSelect) sessionSelect.style.display = 'none';
+            if (sessionBadge) {
+              sessionBadge.innerText = activeSess;
+              sessionBadge.style.display = 'inline-block';
+            }
+          }
+
+          if (user.role === 'school') {
+            document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
+            
+            let checkInterval = setInterval(() => {
+              let schoolSelect = document.getElementById("schoolSelect");
+              if (schoolSelect && schoolSelect.options.length > 0) {
+                let foundIndex = -1;
+                for (let i = 0; i < schoolSelect.options.length; i++) {
+                  if (schoolSelect.options[i].text.includes(user.udise) || schoolSelect.options[i].value.includes(user.udise)) {
+                    foundIndex = i; break;
+                  }
+                }
+                if (foundIndex !== -1) schoolSelect.selectedIndex = foundIndex;
+                else {
+                  let newOpt = document.createElement('option');
+                  newOpt.value = user.udise; newOpt.text = `${user.name || 'My School'} (${user.udise})`;
+                  schoolSelect.add(newOpt); schoolSelect.value = user.udise;
+                }
+                schoolSelect.disabled = true;
+                if (window.EntryModule && typeof EntryModule.loadForm === 'function') EntryModule.loadForm();
+                clearInterval(checkInterval);
+              }
+            }, 300);
+          } else if (user.role === 'jsk') {
+            let navEntryBtn = document.getElementById("navEntryBtn");
+            if(navEntryBtn) navEntryBtn.style.display = 'none';
+            
+            let settings = FeaturePermissions.getSettings();
+            if (!settings.r2_jsk_upload_excel) {
+              let upBtn = document.getElementById("uploadLabelBtn");
+              if(upBtn) upBtn.style.display = 'none';
+            }
+            if (!settings.r2_jsk_template_download) {
+              let tempBtn = document.getElementById("templateBtn");
+              if(tempBtn) tempBtn.style.display = 'none';
+            }
+            if (!settings.r2_jsk_school_list) {
+              let recBtn = document.getElementById("navRecordsBtn");
+              if(recBtn) recBtn.style.display = 'none';
+            }
+
+            showTab('compilation');
+          }
+        }
+      } catch(e) { console.error("Role Error:", e); }
+    }, 500);
+  });
+
+  function showTab(id){
+    document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
+    let target = document.getElementById(id);
+    if(target) target.classList.add("active");
+  }
+
+  window.openChangePasswordModal = () => document.getElementById("changePasswordModal").style.display = "flex";
+  window.closeChangePasswordModal = () => document.getElementById("changePasswordModal").style.display = "none";
+
+  window.submitChangePassword = function() {
+    let uname = document.getElementById("cpUsername").value.trim();
+    let oldP = document.getElementById("cpOldPass").value;
+    let newP = document.getElementById("cpNewPass").value;
+    if(!uname || !oldP || !newP) { alert("Kripya sabhi fields bharein!"); return; }
+    if(window.SessionManager && typeof SessionManager.changePassword === 'function') {
+      let res = SessionManager.changePassword(uname, oldP, newP);
+      alert(res.message);
+      if(res.success) closeChangePasswordModal();
+    }
+  }
+
+  window.logoutUser = function() {
+    if(confirm("Kya aap logout karna chahte hain?")) {
+      localStorage.removeItem("brc_current_user");
+      localStorage.removeItem("brc_logged_user");
+      window.location.reload();
+    }
+  }
+</script>
+</body>
+</html>
