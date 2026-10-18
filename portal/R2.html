@@ -364,7 +364,7 @@
             let adminBtn = document.getElementById("adminControlBtn");
             if(adminBtn) adminBtn.style.display = "inline-block";
           } else {
-            // JSK aur School ke liye dropdown hide karke badge mein active session dikhayenge
+            // JSK aur School ke liye dropdown hide karke badge mein current active session dikhayenge
             let sessionSelect = document.getElementById("sessionSelect");
             let sessionBadge = document.getElementById("sessionBadge");
             let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
