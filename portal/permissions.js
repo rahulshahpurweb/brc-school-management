@@ -7,14 +7,14 @@ const FeaturePermissions = {
       r2_jsk_template_download: false,
       r2_jsk_school_list: true,
       
-      // School / JSK Next Year Edit Permission (Feature Control se control hoga)
+      // School / JSK Next Year Edit Permission
       school_can_edit_locked_session: false,
       jsk_can_edit_locked_session: false,
 
       // --- Academic Sessions Lock Control (True = Locked, False = Active) ---
-      session_2026_27: false, // Active
-      session_2027_28: true,  // Locked
-      session_2028_29: true   // Locked
+      session_2026_27: false, // Default Active
+      session_2027_28: true,  // Default Locked
+      session_2028_29: true   // Default Locked
     };
   },
 
@@ -37,7 +37,8 @@ const FeaturePermissions = {
   isSessionLocked(sessionId) {
     let settings = this.getSettings();
     let key = "session_" + sessionId.replace("-", "_");
-    return settings[key] !== undefined ? settings[key] : true;
+    // Agar setting maujud hai toh wahi return karo, nahi toh default false (active) rakho
+    return settings[key] !== undefined ? settings[key] : false;
   },
 
   getSessions() {
@@ -52,10 +53,15 @@ const FeaturePermissions = {
   toggleSessionLock(sessionId) {
     let settings = this.getSettings();
     let key = "session_" + sessionId.replace("-", "_");
+    
+    // Agar key pehle se defined hai toh uska ulta (true/false) kar do, nahi toh true kar do
     if (settings[key] !== undefined) {
       settings[key] = !settings[key];
-      this.saveSettings(settings);
+    } else {
+      settings[key] = true;
     }
+    
+    this.saveSettings(settings);
     return this.getSessions();
   }
 };
