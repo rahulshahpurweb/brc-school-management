@@ -125,7 +125,8 @@ export const SessionManager = {
     this.updateStats();
   },
 
-    saveData(schoolsData) {
+    
+  saveData(schoolsData) {
     let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
                         FeaturePermissions.getActiveSession() : 
                         (localStorage.getItem("brc_active_session") || "2026-27");
@@ -145,7 +146,6 @@ export const SessionManager = {
     let hasSpecialPermission = (currentUser.role === 'school' && settings.school_can_edit_locked_session) || 
                                (currentUser.role === 'jsk' && settings.jsk_can_edit_locked_session);
     
-    // Agar session locked hai aur permission nahi hai toh rok do
     if (currentSessionObj && currentSessionObj.locked && !isAdmin && !hasSpecialPermission) {
       alert("⚠️ Yeh academic session locked hai! Admin ne isme entry ki permission nahi di hai.");
       return;
@@ -153,28 +153,43 @@ export const SessionManager = {
 
     let dataKey = `brc_schools_data_${activeSession}`;
     
-    // 1. Pehle local storage mein poori tarah se data update aur save karo
-    let allSchools = this.getData(); // Current session ka data uthao
-    
-    // Agar schoolsData mein sirf ek school ka data hai ya poora array hai, toh use merge/update karo
-    if (Array.isArray(schoolsData)) {
-      localStorage.setItem(dataKey, JSON.stringify(schoolsData));
-    } else {
-      // Agar single school update hai, toh usko existing array mein update karo
-      let index = allSchools.findIndex(s => s.udise === schoolsData.udise || s.id === schoolsData.id);
-      if (index !== -1) {
-        allSchools[index] = schoolsData;
+    // Purana data uthao ya fresh master schools load karo
+    let allSchools = [];
+    try {
+      let saved = localStorage.getItem(dataKey);
+      if (saved) {
+        allSchools = JSON.parse(saved);
+      } else {
+        let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+        allSchools = JSON.parse(JSON.stringify(baseSchools));
       }
-      localStorage.setItem(dataKey, JSON.stringify(allSchools));
+    } catch (e) {
+      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+      allSchools = JSON.parse(JSON.stringify(baseSchools));
     }
 
+    // Agar schoolsData ek single school ka object hai ya poora array hai
+    if (Array.isArray(schoolsData)) {
+      allSchools = schoolsData;
+    } else if (schoolsData && schoolsData.udise) {
+      let index = allSchools.findIndex(s => s.udise === schoolsData.udise);
+      if (index !== -1) {
+        allSchools[index] = schoolsData;
+      } else {
+        allSchools.push(schoolsData);
+      }
+    }
+
+    // Local storage mein turant save karo taaki refresh par zero na ho
+    localStorage.setItem(dataKey, JSON.stringify(allSchools));
     this.updateStats();
+    
     alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
 
-    // 2. Phir background mein cloud par bhejo
+    // Cloud par asynchronous bhej do
     let payload = {
       session: activeSession,
-      data: Array.isArray(schoolsData) ? schoolsData : allSchools
+      data: allSchools
     };
 
     fetch(WEB_APP_URL, {
@@ -183,12 +198,11 @@ export const SessionManager = {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).then(() => {
-      console.log(`Data (${activeSession}) successfully synced to cloud!`);
+      console.log(`Data (${activeSession}) synced to cloud successfully!`);
     }).catch(err => {
       console.error("Cloud Save Error:", err);
     });
   },
-  
 
   updateStats() {
     let schools = this.getData();
