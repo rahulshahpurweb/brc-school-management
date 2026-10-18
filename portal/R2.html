@@ -15,6 +15,30 @@
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
 
+  /* Professional Organized Navigation Bar */
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    background: #071b38;
+    padding: 10px 15px;
+    border-bottom: 2px solid #f4b400;
+  }
+  nav button, nav label {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  nav button:hover, nav label:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
   /* Full Screen Professional Maintenance Overlay */
   #maintenanceOverlay {
     position: fixed;
@@ -75,15 +99,12 @@
 <header>
   <h1>BRC Shahpur - True Modular Portal (R2)</h1>
   <div style="display:flex;align-items:center;gap:15px; flex-wrap:wrap;">
-    <!-- Academic Session Dropdown (Admin) / Badge (JSK/School) -->
     <div id="sessionContainer" style="display:flex;align-items:center;gap:8px;">
       <label style="font-size:13px;font-weight:bold;color:#fff;">Academic Session:</label>
       <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
-      <!-- JSK aur School ke liye saaf session name badge -->
       <span id="sessionBadge" style="display:none; background:#f59e0b; color:#fff; padding:4px 10px; border-radius:4px; font-weight:bold; font-size:13px;"></span>
     </div>
     
-    <!-- Admin Feature Control Button -->
     <button onclick="openPermissionModal()" id="adminControlBtn" style="display:none; background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold;">⚙️ Feature Control</button>
 
     <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
@@ -94,17 +115,15 @@
 </header>
 
 <nav>
-  <button class="hide-for-jsk" onclick="showTab('dash')">📊 Summary</button>
-  <button id="navRecordsBtn" onclick="showTab('records')">📋 School List</button>
-  <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')">✍️ Data Entry</button>
-  <button class="hide-for-school" onclick="showTab('compilation')">📑 JSK Compilation</button>
+  <button class="hide-for-jsk" onclick="showTab('dash')" style="background:#1d4ed8; color:#fff;">📊 Summary</button>
+  <button id="navRecordsBtn" onclick="showTab('records')" style="background:#1d4ed8; color:#fff;">📋 School List</button>
+  <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')" style="background:#1d4ed8; color:#fff;">✍️ Data Entry</button>
+  <button class="hide-for-school" onclick="showTab('compilation')" style="background:#1d4ed8; color:#fff;">📑 JSK Compilation</button>
   
-  <!-- Smart Excel Download Button -->
-  <button class="success" onclick="handleSmartDownload()" style="margin-left:auto; background:#16a34a; color:#fff; font-weight:bold; border:none; padding:9px 14px; border-radius:8px; cursor:pointer;">📥 Excel Download</button>
-  
-  <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706;color:#fff;">🖨️ Print / PDF</button>
-  <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;border:none;">📥Template_EFG</button>
-  <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706;color:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:bold;">
+  <button class="success" onclick="handleSmartDownload()" style="background:#16a34a; color:#fff;">📥 Excel Download</button>
+  <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706; color:#fff;">🖨️ Print / PDF</button>
+  <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a; color:#fff;">📥 Template_EFG</button>
+  <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706; color:#fff; display:inline-block;">
     📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
   </label>
 </nav>
@@ -192,16 +211,11 @@
   </section>
 </main>
 
-<!-- DYNAMIC FEATURE CONTROL MODAL -->
 <div id="permissionModal" class="modal-overlay">
   <div class="modal-box" style="max-width:450px;">
     <h3>⚙️ Master Feature Control Center</h3>
     <p style="font-size:13px; color:#64748b;">Sabhi modules ke liye JSK aur Schools ke permissions yahan se control honge.</p>
-    
-    <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;">
-      <!-- Dynamic checkboxes -->
-    </div>
-
+    <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;"></div>
     <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Settings Save Karein</button>
     <button class="secondary" onclick="closePermissionModal()">Cancel</button>
   </div>
@@ -237,50 +251,39 @@
     let container = document.getElementById("permissionListContainer");
     container.innerHTML = "";
 
-    // Section 1: JSK Permissions
     container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:5px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">📊 JSK Suvidhaen Control</div>`;
     for (let key in settings) {
       if (key.includes('jsk') && !key.includes('session')) {
         let isChecked = settings[key] ? "checked" : "";
-        let labelText = featureLabels[key] || key;
         container.innerHTML += `
           <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
-            <span>${labelText}</span>
+            <span>${featureLabels[key] || key}</span>
             <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>
-          </label>
-        `;
+          </label>`;
       }
     }
 
-    // Section 2: School Permissions
     container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Suvidhaen Control</div>`;
     for (let key in settings) {
       if (key.includes('school')) {
         let isChecked = settings[key] ? "checked" : "";
-        let labelText = featureLabels[key] || key;
         container.innerHTML += `
           <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
-            <span>${labelText}</span>
+            <span>${featureLabels[key] || key}</span>
             <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>
-          </label>
-        `;
+          </label>`;
       }
     }
 
-    // Section 3: Academic Sessions Lock / Unlock Control
     container.innerHTML += `<div style="font-weight:bold; color:#b45309; margin-top:10px; border-bottom:2px solid #b45309; padding-bottom:3px;">🔒 Academic Session Lock / Unlock</div>`;
     sessions.forEach(s => {
       let lockStatusText = s.locked ? "🔒 Locked (Band)" : "🔓 Active (Chalu)";
       let btnBg = s.locked ? "#dc2626" : "#16a34a";
-      
       container.innerHTML += `
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; background:#fffbeb; padding:8px 12px; border-radius:6px; border:1px solid #fde68a;">
           <span>📅 Session: ${s.name}</span>
-          <button type="button" onclick="toggleSession('${s.id}')" style="background:${btnBg}; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; width:auto;">
-            ${lockStatusText}
-          </button>
-        </div>
-      `;
+          <button type="button" onclick="toggleSession('${s.id}')" style="background:${btnBg}; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; width:auto;">${lockStatusText}</button>
+        </div>`;
     });
 
     document.getElementById("permissionModal").style.display = "flex";
@@ -296,15 +299,11 @@
 
   window.savePermissions = function() {
     let settings = FeaturePermissions.getSettings();
-    let checkboxes = document.querySelectorAll("#permissionListContainer input.perm-checkbox");
-    
-    checkboxes.forEach(cb => {
-      let key = cb.getAttribute("data-key");
-      settings[key] = cb.checked;
+    document.querySelectorAll("#permissionListContainer input.perm-checkbox").forEach(cb => {
+      settings[cb.getAttribute("data-key")] = cb.checked;
     });
-
     FeaturePermissions.saveSettings(settings);
-    alert("Sabhi permissions aur session settings safaltapurvak update ho gayi hain!");
+    alert("Sabhi permissions safaltapurvak update ho gayi hain!");
     document.getElementById("permissionModal").style.display = "none";
     location.reload();
   }
@@ -313,14 +312,9 @@
     try {
       let activeSection = document.querySelector("main section.active");
       let table = activeSection ? activeSection.querySelector("table") : null;
-      if (!table) {
-        alert("Download karne ke liye koi table data nahi mila!");
-        return;
-      }
-      let wb = XLSX.utils.table_to_book(table, { raw: true });
-      XLSX.writeFile(wb, filename);
+      if (!table) { alert("Download karne ke liye koi table data nahi mila!"); return; }
+      XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), filename);
     } catch (e) {
-      console.error("Excel Export Error:", e.message);
       alert("Excel download karne mein samasya aayi: " + e.message);
     }
   };
@@ -329,7 +323,6 @@
     let activeSection = document.querySelector("main section.active");
     if (!activeSection) return;
     let sectionId = activeSection.id;
-    
     if (sectionId === 'compilation') {
       let formatSelect = document.getElementById("compViewMode");
       let formatName = formatSelect ? formatSelect.options[formatSelect.selectedIndex].text : "Compilation_Report";
@@ -364,7 +357,6 @@
             let adminBtn = document.getElementById("adminControlBtn");
             if(adminBtn) adminBtn.style.display = "inline-block";
           } else {
-            // JSK aur School ke liye dropdown hide karke badge mein current active session dikhayenge
             let sessionSelect = document.getElementById("sessionSelect");
             let sessionBadge = document.getElementById("sessionBadge");
             let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -378,7 +370,6 @@
 
           if (user.role === 'school') {
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
-            
             let checkInterval = setInterval(() => {
               let schoolSelect = document.getElementById("schoolSelect");
               if (schoolSelect && schoolSelect.options.length > 0) {
@@ -404,18 +395,9 @@
             if(navEntryBtn) navEntryBtn.style.display = 'none';
             
             let settings = FeaturePermissions.getSettings();
-            if (!settings.r2_jsk_upload_excel) {
-              let upBtn = document.getElementById("uploadLabelBtn");
-              if(upBtn) upBtn.style.display = 'none';
-            }
-            if (!settings.r2_jsk_template_download) {
-              let tempBtn = document.getElementById("templateBtn");
-              if(tempBtn) tempBtn.style.display = 'none';
-            }
-            if (!settings.r2_jsk_school_list) {
-              let recBtn = document.getElementById("navRecordsBtn");
-              if(recBtn) recBtn.style.display = 'none';
-            }
+            if (!settings.r2_jsk_upload_excel) document.getElementById("uploadLabelBtn").style.display = 'none';
+            if (!settings.r2_jsk_template_download) document.getElementById("templateBtn").style.display = 'none';
+            if (!settings.r2_jsk_school_list) document.getElementById("navRecordsBtn").style.display = 'none';
 
             showTab('compilation');
           }
@@ -442,14 +424,6 @@
       let res = SessionManager.changePassword(uname, oldP, newP);
       alert(res.message);
       if(res.success) closeChangePasswordModal();
-    }
-  }
-
-  window.logoutUser = function() {
-    if(confirm("Kya aap logout karna chahte hain?")) {
-      localStorage.removeItem("brc_current_user");
-      localStorage.removeItem("brc_logged_user");
-      window.location.reload();
     }
   }
 </script>
