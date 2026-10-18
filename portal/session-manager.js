@@ -21,7 +21,6 @@ export const SessionManager = {
 
   renderDropdown() {
     let select = document.getElementById("sessionSelect");
-    if(!select) return;
     
     let sessions = [];
     try {
@@ -42,26 +41,36 @@ export const SessionManager = {
 
     let current = localStorage.getItem("brc_active_session") || "2026-27";
 
-    select.innerHTML = "";
-    sessions.forEach(s => {
-      let opt = document.createElement("option");
-      opt.value = s.id;
-      opt.textContent = s.name;
-      if(s.id === current) opt.selected = true;
-      select.appendChild(opt);
-    });
+    // Agar select element maujud hai (Admin ke liye)
+    if(select) {
+      select.innerHTML = "";
+      sessions.forEach(s => {
+        let opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.name;
+        if(s.id === current) opt.selected = true;
+        select.appendChild(opt);
+      });
 
-    // Agar non-admin ke liye active session list mein nahi bacha, toh pehla set kar do
-    if (!isAdmin && !sessions.some(s => s.id === current)) {
-      if (sessions.length > 0) {
-        localStorage.setItem("brc_active_session", sessions[0].id);
-        select.value = sessions[0].id;
+      // Agar non-admin ke liye active session list mein nahi bacha, toh pehla set kar do
+      if (!isAdmin && !sessions.some(s => s.id === current)) {
+        if (sessions.length > 0) {
+          localStorage.setItem("brc_active_session", sessions[0].id);
+          select.value = sessions[0].id;
+          current = sessions[0].id;
+        }
+      }
+
+      // Agar user non-admin hai aur dropdown hai, toh disable/freeze kar do
+      if (!isAdmin) {
+        select.disabled = true;
       }
     }
 
-    // Agar user non-admin hai aur dropdown mein sirf 1 hi session hai, toh dropdown ko disable/freeze kar do taaki vo change na kar sake
-    if (!isAdmin) {
-      select.disabled = true;
+    // JSK ya School ke liye header badge ko turant active session se update karo
+    let sessionBadge = document.getElementById("sessionBadge");
+    if (sessionBadge) {
+      sessionBadge.innerText = current;
     }
   },
 
