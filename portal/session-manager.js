@@ -125,7 +125,7 @@ export const SessionManager = {
     this.updateStats();
   },
 
-  saveData(schoolsData) {
+    saveData(schoolsData) {
     let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
                         FeaturePermissions.getActiveSession() : 
                         (localStorage.getItem("brc_active_session") || "2026-27");
@@ -145,18 +145,36 @@ export const SessionManager = {
     let hasSpecialPermission = (currentUser.role === 'school' && settings.school_can_edit_locked_session) || 
                                (currentUser.role === 'jsk' && settings.jsk_can_edit_locked_session);
     
+    // Agar session locked hai aur permission nahi hai toh rok do
     if (currentSessionObj && currentSessionObj.locked && !isAdmin && !hasSpecialPermission) {
       alert("⚠️ Yeh academic session locked hai! Admin ne isme entry ki permission nahi di hai.");
       return;
     }
 
     let dataKey = `brc_schools_data_${activeSession}`;
-    localStorage.setItem(dataKey, schoolsData ? JSON.stringify(schoolsData) : JSON.stringify([]));
-    this.updateStats();
+    
+    // 1. Pehle local storage mein poori tarah se data update aur save karo
+    let allSchools = this.getData(); // Current session ka data uthao
+    
+    // Agar schoolsData mein sirf ek school ka data hai ya poora array hai, toh use merge/update karo
+    if (Array.isArray(schoolsData)) {
+      localStorage.setItem(dataKey, JSON.stringify(schoolsData));
+    } else {
+      // Agar single school update hai, toh usko existing array mein update karo
+      let index = allSchools.findIndex(s => s.udise === schoolsData.udise || s.id === schoolsData.id);
+      if (index !== -1) {
+        allSchools[index] = schoolsData;
+      }
+      localStorage.setItem(dataKey, JSON.stringify(allSchools));
+    }
 
+    this.updateStats();
+    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
+
+    // 2. Phir background mein cloud par bhejo
     let payload = {
       session: activeSession,
-      data: schoolsData
+      data: Array.isArray(schoolsData) ? schoolsData : allSchools
     };
 
     fetch(WEB_APP_URL, {
@@ -165,11 +183,12 @@ export const SessionManager = {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).then(() => {
-      console.log(`Data (${activeSession}) saved!`);
+      console.log(`Data (${activeSession}) successfully synced to cloud!`);
     }).catch(err => {
-      console.error("Save Error:", err);
+      console.error("Cloud Save Error:", err);
     });
   },
+  
 
   updateStats() {
     let schools = this.getData();
