@@ -284,23 +284,11 @@
     <p style="font-size:13px; color:#64748b;">Sabhi modules ke liye JSK aur Schools ke permissions yahan se control honge.</p>
     <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;"></div>
     <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Settings Save Karein</button>
+    <!-- Yahan niche cancel button mein onclick="closePermissionModal()" jodna hai -->
     <button class="secondary" onclick="closePermissionModal()">Cancel</button>
   </div>
 </div>
 
-<div id="changePasswordModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3>🔑 Password Badlein</h3>
-    <label>Username / ID:</label>
-    <input type="text" id="cpUsername" placeholder="Apna Username dalein">
-    <label>Purana Password:</label>
-    <input type="password" id="cpOldPass" placeholder="Purana password">
-    <label>Naya Password:</label>
-    <input type="password" id="cpNewPass" placeholder="Naya password">
-    <button onclick="submitChangePassword()">Password Update Karein</button>
-    <button class="secondary" onclick="closeChangePasswordModal()">Cancel</button>
-  </div>
-</div>
 
 <script type="module" src="app.js"></script>
 <script type="module">
