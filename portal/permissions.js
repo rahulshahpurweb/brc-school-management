@@ -6,13 +6,10 @@ const FeaturePermissions = {
       r2_jsk_upload_excel: false,
       r2_jsk_template_download: false,
       r2_jsk_school_list: true,
-      r2_school_can_edit: true,
-
-      // --- R3 CWSN Module Features ---
-      r3_jsk_upload_excel: false,
-      r3_jsk_template_download: false,
-      r3_jsk_cwsn_list: true,
-      r3_school_can_edit: true,
+      
+      // School / JSK Next Year Edit Permission (Feature Control se control hoga)
+      school_can_edit_locked_session: false,
+      jsk_can_edit_locked_session: false,
 
       // --- Academic Sessions Lock Control (True = Locked, False = Active) ---
       session_2026_27: false, // Active
@@ -40,7 +37,7 @@ const FeaturePermissions = {
   isSessionLocked(sessionId) {
     let settings = this.getSettings();
     let key = "session_" + sessionId.replace("-", "_");
-    return settings[key] !== undefined ? settings[key] : false;
+    return settings[key] !== undefined ? settings[key] : true;
   },
 
   getSessions() {
