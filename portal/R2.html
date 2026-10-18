@@ -75,7 +75,8 @@
 <header>
   <h1>BRC Shahpur - True Modular Portal (R2)</h1>
   <div style="display:flex;align-items:center;gap:15px; flex-wrap:wrap;">
-    <div style="display:flex;align-items:center;gap:8px;">
+    <!-- Academic Session Dropdown (Sirf Admin ko dikhega) -->
+    <div id="sessionContainer" style="display:flex;align-items:center;gap:8px;">
       <label style="font-size:13px;font-weight:bold;color:#fff;">Academic Session:</label>
       <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
     </div>
@@ -220,14 +221,12 @@
 
 <script type="module" src="app.js"></script>
 <script type="module">
-    const featureLabels = {
-    // JSK Features
-    r2_jsk_upload_excel: "📊 [JSK] Excel Upload",
-    r2_jsk_template_download: "📊 [JSK] Template Download",
-    r2_jsk_school_list: "📊 [JSK] School List View",
-    
-    // School Features
-    school_can_edit_anytime: "🏫 [School] Unlock Session Edit Permission"
+  const featureLabels = {
+    r2_jsk_upload_excel: "📊 [JSK] Excel Upload Permission",
+    r2_jsk_template_download: "📊 [JSK] Template Download Permission",
+    r2_jsk_school_list: "📊 [JSK] School List View Permission",
+    school_can_edit_locked_session: "🏫 [School] Unlock Locked Session Data Entry",
+    jsk_can_edit_locked_session: "📊 [JSK] Unlock Locked Session Data Entry"
   };
 
   window.openPermissionModal = function() {
@@ -239,7 +238,7 @@
     // Section 1: JSK Permissions
     container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:5px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">📊 JSK Suvidhaen Control</div>`;
     for (let key in settings) {
-      if (key.includes('jsk')) {
+      if (key.includes('jsk') && !key.includes('session')) {
         let isChecked = settings[key] ? "checked" : "";
         let labelText = featureLabels[key] || key;
         container.innerHTML += `
@@ -287,8 +286,7 @@
 
   window.toggleSession = function(sessionId) {
     AdminLocks.toggleSessionLock(sessionId);
-    window.openPermissionModal(); // Modal ko refresh karega taaki status turant badla hua dikhe
-    // Session dropdown bhi update kar do agar khula ho
+    window.openPermissionModal(); 
     if(typeof SessionManager !== 'undefined' && SessionManager.renderDropdown) {
       SessionManager.renderDropdown();
     }
@@ -309,8 +307,6 @@
     location.reload();
   }
 
-
-  // Universal Smart Excel Export for any active table/report
   window.ExportAnyTable = function(filename = "BRC_Report.xlsx") {
     try {
       let activeSection = document.querySelector("main section.active");
@@ -370,11 +366,9 @@
           if (user.role === 'school') {
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
             
-            // Session ko hardcode nahi kiya hai, jo active session admin ne set kiya hai wahi dikhega
-            let sessionSelect = document.getElementById("sessionSelect");
-            if (sessionSelect) {
-              sessionSelect.disabled = true;
-            }
+            // School ke liye session dropdown ko hide kar do
+            let sessionContainer = document.getElementById("sessionContainer");
+            if (sessionContainer) sessionContainer.style.display = 'none';
 
             let checkInterval = setInterval(() => {
               let schoolSelect = document.getElementById("schoolSelect");
@@ -399,6 +393,10 @@
           } else if (user.role === 'jsk') {
             let navEntryBtn = document.getElementById("navEntryBtn");
             if(navEntryBtn) navEntryBtn.style.display = 'none';
+            
+            // JSK ke liye session dropdown ko hide kar do
+            let sessionContainer = document.getElementById("sessionContainer");
+            if (sessionContainer) sessionContainer.style.display = 'none';
             
             let settings = FeaturePermissions.getSettings();
             if (!settings.r2_jsk_upload_excel) {
