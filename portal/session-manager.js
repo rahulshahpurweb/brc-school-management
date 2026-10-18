@@ -19,7 +19,7 @@ export const SessionManager = {
     });
   },
 
-  renderDropdown() {
+    renderDropdown() {
     let select = document.getElementById("sessionSelect");
     
     let sessions = [];
@@ -34,45 +34,32 @@ export const SessionManager = {
     let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     let isAdmin = (currentUser.role === 'admin');
 
-    if (!isAdmin) {
-      sessions = sessions.filter(s => !s.locked);
-    }
-
+    // Global active session jo Admin ne set kiya hai
     let current = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
                   FeaturePermissions.getActiveSession() : 
                   (localStorage.getItem("brc_active_session") || "2026-27");
 
-    if(select) {
+    // Agar Admin hai toh dropdown dikhega aur sabhi sessions select kar sakega
+    if(select && isAdmin) {
       select.innerHTML = "";
       sessions.forEach(s => {
         let opt = document.createElement("option");
         opt.value = s.id;
-        opt.textContent = s.name;
+        opt.textContent = s.locked ? `${s.name} 🔒 (Locked)` : `${s.name} 🔓 (Active)`;
         if(s.id === current) opt.selected = true;
         select.appendChild(opt);
       });
-
-      if (!isAdmin && !sessions.some(s => s.id === current)) {
-        if (sessions.length > 0) {
-          let newSess = sessions[0].id;
-          if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.setActiveSession) {
-            FeaturePermissions.setActiveSession(newSess);
-          } else {
-            localStorage.setItem("brc_active_session", newSess);
-          }
-          select.value = newSess;
-          current = newSess;
-        }
-      }
-
-      if (!isAdmin) {
-        select.disabled = true;
-      }
+      select.disabled = false;
+    } else if (select && !isAdmin) {
+      // Agar non-admin hai toh dropdown hide rahega
+      select.style.display = 'none';
     }
 
+    // JSK aur School ke header badge par hamesha Admin ka set kiya hua active session dikhega
     let sessionBadge = document.getElementById("sessionBadge");
     if (sessionBadge) {
       sessionBadge.innerText = current;
+      sessionBadge.style.display = 'inline-block';
     }
   },
 
