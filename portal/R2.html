@@ -158,11 +158,6 @@
     </div>
     
     <button onclick="openPermissionModal()" id="adminControlBtn" style="display:none; background:#0284c7; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">⚙️ Feature Control</button>
-
-    <div id="userProfileArea" style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:4px 8px; border-radius:6px; font-size:12px;">
-      <span id="loggedInUserName" style="font-weight:bold;">Admin Mode</span>
-      <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:3px 6px; border-radius:4px; cursor:pointer; font-size:11px;">🔑 Password</button>
-    </div>
   </div>
 </header>
 
@@ -284,11 +279,9 @@
     <p style="font-size:13px; color:#64748b;">Sabhi modules ke liye JSK aur Schools ke permissions yahan se control honge.</p>
     <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;"></div>
     <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Settings Save Karein</button>
-    <!-- Yahan niche cancel button mein onclick="closePermissionModal()" jodna hai -->
     <button class="secondary" onclick="closePermissionModal()">Cancel</button>
   </div>
 </div>
-
 
 <script type="module" src="app.js"></script>
 <script type="module">
@@ -347,6 +340,11 @@
     });
 
     document.getElementById("permissionModal").style.display = "flex";
+  }
+
+  window.closePermissionModal = function() {
+    let modal = document.getElementById("permissionModal");
+    if(modal) modal.style.display = "none";
   }
 
   window.toggleSession = function(sessionId) {
@@ -410,9 +408,6 @@
     setTimeout(() => {
       try {
         if (user && user.role) {
-          let nameEl = document.getElementById("loggedInUserName");
-          if(nameEl) nameEl.innerText = `${user.name || user.username || 'User'} (${user.role.toUpperCase()})`;
-
           if (user.role === 'admin') {
             let adminBtn = document.getElementById("adminControlBtn");
             if(adminBtn) adminBtn.style.display = "inline-block";
@@ -470,21 +465,6 @@
     document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
     let target = document.getElementById(id);
     if(target) target.classList.add("active");
-  }
-
-  window.openChangePasswordModal = () => document.getElementById("changePasswordModal").style.display = "flex";
-  window.closeChangePasswordModal = () => document.getElementById("changePasswordModal").style.display = "none";
-
-  window.submitChangePassword = function() {
-    let uname = document.getElementById("cpUsername").value.trim();
-    let oldP = document.getElementById("cpOldPass").value;
-    let newP = document.getElementById("cpNewPass").value;
-    if(!uname || !oldP || !newP) { alert("Kripya sabhi fields bharein!"); return; }
-    if(window.SessionManager && typeof SessionManager.changePassword === 'function') {
-      let res = SessionManager.changePassword(uname, oldP, newP);
-      alert(res.message);
-      if(res.success) closeChangePasswordModal();
-    }
   }
 </script>
 </body>
