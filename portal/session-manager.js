@@ -18,44 +18,37 @@ export const SessionManager = {
       }
     });
   },
-
-    renderDropdown() {
+  renderDropdown() {
     let select = document.getElementById("sessionSelect");
     
-    let sessions = [];
-    try {
-      if (typeof AdminLocks !== 'undefined' && AdminLocks.getSessions) {
-        sessions = AdminLocks.getSessions();
-      } else if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getSessions) {
-        sessions = FeaturePermissions.getSessions();
-      }
-    } catch(e) {}
+    // Sirf saaf-saaf years rakhe hain, koi extra tags nahi
+    let sessions = [
+      { id: "2026-27", name: "2026-27" },
+      { id: "2027-28", name: "2027-28" },
+      { id: "2028-29", name: "2028-29" }
+    ];
 
-    let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-    let isAdmin = (currentUser.role === 'admin');
-
-    // Global active session jo Admin ne set kiya hai
     let current = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
                   FeaturePermissions.getActiveSession() : 
                   (localStorage.getItem("brc_active_session") || "2026-27");
 
-    // Agar Admin hai toh dropdown dikhega aur sabhi sessions select kar sakega
+    let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    let isAdmin = (currentUser.role === 'admin');
+
     if(select && isAdmin) {
       select.innerHTML = "";
       sessions.forEach(s => {
         let opt = document.createElement("option");
         opt.value = s.id;
-        opt.textContent = s.locked ? `${s.name} 🔒 (Locked)` : `${s.name} 🔓 (Active)`;
+        opt.textContent = s.name; // Sirf year ka naam dikhega
         if(s.id === current) opt.selected = true;
         select.appendChild(opt);
       });
       select.disabled = false;
     } else if (select && !isAdmin) {
-      // Agar non-admin hai toh dropdown hide rahega
       select.style.display = 'none';
     }
 
-    // JSK aur School ke header badge par hamesha Admin ka set kiya hua active session dikhega
     let sessionBadge = document.getElementById("sessionBadge");
     if (sessionBadge) {
       sessionBadge.innerText = current;
