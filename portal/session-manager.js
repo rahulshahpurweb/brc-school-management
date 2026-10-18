@@ -1,37 +1,63 @@
 import { AdminLocks } from './admin-locks.js';
 import { MASTER_SCHOOLS } from './schools-data.js';
 
-const WEB_APP_URL = "Https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
 
 export const SessionManager = {
+  // Cloud se active session mangwayein
+  getActiveSession() {
+    try {
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET", WEB_APP_URL + "?action=getSession", false);
+      xhr.send();
+      if (xhr.status === 200) {
+        let res = JSON.parse(xhr.responseText);
+        if (res && res.activeSession) {
+          return res.activeSession;
+        }
+      }
+    } catch (e) {
+      console.error("Cloud Session Error:", e);
+    }
+    return "2026-27";
+  },
+
+  // Cloud par active session update karein
+  setActiveSession(sessionName) {
+    let payload = {
+      action: "setSession",
+      session: sessionName
+    };
+
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    }).then(() => {
+      console.log("Cloud session changed to:", sessionName);
+      location.reload();
+    }).catch(err => {
+      console.error("Session Update Error:", err);
+    });
+  },
+
   async init() {
     this.renderDropdown();
     await this.loadCloudData();
     this.updateStats();
     this.applyRoleAccess();
-    
-    window.addEventListener('storage', (e) => {
-      if (e.key && e.key.includes('brc_schools_data')) {
-        this.updateStats();
-        if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();
-        if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
-      }
-    });
   },
+
   renderDropdown() {
     let select = document.getElementById("sessionSelect");
-    
-    // Sirf saaf-saaf years rakhe hain, koi extra tags nahi
     let sessions = [
       { id: "2026-27", name: "2026-27" },
       { id: "2027-28", name: "2027-28" },
       { id: "2028-29", name: "2028-29" }
     ];
 
-    let current = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
-                  FeaturePermissions.getActiveSession() : 
-                  (localStorage.getItem("brc_active_session") || "2026-27");
-
+    let current = this.getActiveSession();
     let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     let isAdmin = (currentUser.role === 'admin');
 
@@ -40,7 +66,7 @@ export const SessionManager = {
       sessions.forEach(s => {
         let opt = document.createElement("option");
         opt.value = s.id;
-        opt.textContent = s.name; // Sirf year ka naam dikhega
+        opt.textContent = s.name;
         if(s.id === current) opt.selected = true;
         select.appendChild(opt);
       });
@@ -60,77 +86,47 @@ export const SessionManager = {
     let select = document.getElementById("sessionSelect");
     if(!select) return;
     let targetSession = select.value;
-
-    if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.setActiveSession) {
-      FeaturePermissions.setActiveSession(targetSession);
-    } else {
-      localStorage.setItem("brc_active_session", targetSession);
-    }
-    
-    this.renderDropdown();
-    location.reload(); 
+    this.setActiveSession(targetSession);
   },
 
+  // 100% Cloud se data fetch karega, koi local storage nahi
   getData() {
-    let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
-                        FeaturePermissions.getActiveSession() : 
-                        (localStorage.getItem("brc_active_session") || "2026-27");
-                        
-    let dataKey = `brc_schools_data_${activeSession}`;
-    let saved = localStorage.getItem(dataKey);
-
-    if (!saved) {
-      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
-      let freshSchools = JSON.parse(JSON.stringify(baseSchools));
-      
-      freshSchools.forEach(s => {
-        if (s.classes) {
-          Object.keys(s.classes).forEach(cName => {
-            let c = s.classes[cName];
-            Object.keys(c).forEach(k => c[k] = 0);
-          });
-        }
-      });
-
-      localStorage.setItem(dataKey, JSON.stringify(freshSchools));
-      return freshSchools;
-    }
+    let activeSession = this.getActiveSession();
     try {
-      return JSON.parse(saved);
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET", WEB_APP_URL + "?session=" + activeSession, false);
+      xhr.send();
+      if (xhr.status === 200) {
+        let data = JSON.parse(xhr.responseText);
+        if (Array.isArray(data) && data.length > 0) {
+          return data;
+        }
+      }
     } catch (e) {
-      return window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+      console.error("Data Fetch Error:", e);
     }
+
+    // Agar cloud par data na ho toh fresh master schools return karega
+    let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+    let freshSchools = JSON.parse(JSON.stringify(baseSchools));
+    freshSchools.forEach(s => {
+      if (s.classes) {
+        Object.keys(s.classes).forEach(cName => {
+          let c = s.classes[cName];
+          Object.keys(c).forEach(k => c[k] = 0);
+        });
+      }
+    });
+    return freshSchools;
   },
 
   async loadCloudData() {
-    let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
-                        FeaturePermissions.getActiveSession() : 
-                        (localStorage.getItem("brc_active_session") || "2026-27");
-                        
-    let dataKey = `brc_schools_data_${activeSession}`;
-    
-    try {
-      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);
-      let cloudData = await response.json();
-      
-      if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
-        localStorage.setItem(dataKey, JSON.stringify(cloudData));
-        this.updateStats();
-        if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();
-        if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
-      }
-    } catch (err) {
-      console.error("Cloud Load Error:", err);
-    }
     this.updateStats();
   },
 
-    
+  // Data seedha Google Sheet (Cloud) par bhejega
   saveData(schoolsData) {
-    let activeSession = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getActiveSession) ? 
-                        FeaturePermissions.getActiveSession() : 
-                        (localStorage.getItem("brc_active_session") || "2026-27");
-    
+    let activeSession = this.getActiveSession();
     let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     let isAdmin = (currentUser.role === 'admin');
 
@@ -142,7 +138,7 @@ export const SessionManager = {
     } catch(e) {}
 
     let currentSessionObj = sessions.find(s => s.id === activeSession);
-    let settings = FeaturePermissions.getSettings();
+    let settings = (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getSettings) ? FeaturePermissions.getSettings() : {};
     let hasSpecialPermission = (currentUser.role === 'school' && settings.school_can_edit_locked_session) || 
                                (currentUser.role === 'jsk' && settings.jsk_can_edit_locked_session);
     
@@ -151,24 +147,9 @@ export const SessionManager = {
       return;
     }
 
-    let dataKey = `brc_schools_data_${activeSession}`;
-    
-    // Purana data uthao ya fresh master schools load karo
-    let allSchools = [];
-    try {
-      let saved = localStorage.getItem(dataKey);
-      if (saved) {
-        allSchools = JSON.parse(saved);
-      } else {
-        let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
-        allSchools = JSON.parse(JSON.stringify(baseSchools));
-      }
-    } catch (e) {
-      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
-      allSchools = JSON.parse(JSON.stringify(baseSchools));
-    }
+    // Pehle ka saara data laakar update karo
+    let allSchools = this.getData();
 
-    // Agar schoolsData ek single school ka object hai ya poora array hai
     if (Array.isArray(schoolsData)) {
       allSchools = schoolsData;
     } else if (schoolsData && schoolsData.udise) {
@@ -180,13 +161,8 @@ export const SessionManager = {
       }
     }
 
-    // Local storage mein turant save karo taaki refresh par zero na ho
-    localStorage.setItem(dataKey, JSON.stringify(allSchools));
-    this.updateStats();
-    
-    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
+    alert("Data cloud par save ho raha hai, kripya pratiksha karein...");
 
-    // Cloud par asynchronous bhej do
     let payload = {
       session: activeSession,
       data: allSchools
@@ -198,16 +174,18 @@ export const SessionManager = {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).then(() => {
-      console.log(`Data (${activeSession}) synced to cloud successfully!`);
+      alert("Data safaltapurvak cloud par save ho gaya!");
+      location.reload();
     }).catch(err => {
       console.error("Cloud Save Error:", err);
+      alert("Data save karne mein samasya aayi.");
     });
   },
 
   updateStats() {
     let schools = this.getData();
     let totalSchools = schools.length;
-    let totalEnroll = 0, boys = 0, girls = 0, filled = 0;
+    let totalEnroll = 0, filled = 0;
 
     schools.forEach(s => {
       let hasData = false;
@@ -226,7 +204,6 @@ export const SessionManager = {
 
     let statSchools = document.getElementById("statSchools");
     let statTotal = document.getElementById("statTotal");
-    let statBoysGirls = document.getElementById("statBoysGirls");
     let statFilled = document.getElementById("statFilled");
     let statPending = document.getElementById("statPending");
 
