@@ -179,7 +179,6 @@ function toggleMaintenance() {
   updateMaintUI();
   location.reload();
 }
-
 function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -204,7 +203,15 @@ function checkAuth(){
     }
   }
 
-  let schools = JSON.parse(localStorage.getItem("brc_schools_data_2026-27") || "[]");
+  // SessionManager se schools data lene ke liye safe check
+  let schools = [];
+  if (typeof SessionManager !== 'undefined' && SessionManager.getData) {
+    schools = SessionManager.getData();
+  } else {
+    let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+    schools = JSON.parse(localStorage.getItem(`brc_schools_data_${activeSess}`) || "[]");
+  }
+
   let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
 
   if(foundSchool) {
@@ -213,13 +220,16 @@ function checkAuth(){
       sessionStorage.setItem("brc_logged_in", "true");
       localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
       document.getElementById("authOverlay").style.display = "none";
-      document.getElementById('moduleFrame').src = document.getElementById('moduleFrame').src;
+      // Page reload ya frame refresh karein
+      location.reload();
       return;
     }
   }
 
   err.style.display = "block";
 }
+  
+
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
