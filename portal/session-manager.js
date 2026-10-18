@@ -4,10 +4,12 @@ import { MASTER_SCHOOLS } from './schools-data.js';
 const WEB_APP_URL = "Https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
 
 export const SessionManager = {
-  getActiveSession() {
+    getActiveSession() {
+    // 1. Pehle local storage se turant uthao taaki speed fast rahe
     let cached = localStorage.getItem("brc_active_session");
     if (cached) return cached;
     
+    // 2. Agar local mein na ho, tabhi cloud se mango (fallback)
     try {
       let xhr = new XMLHttpRequest();
       xhr.open("GET", WEB_APP_URL + "?action=getSession", false);
@@ -22,6 +24,7 @@ export const SessionManager = {
     } catch (e) {}
     return "2026-27";
   },
+  
 
   setActiveSession(sessionName) {
     localStorage.setItem("brc_active_session", sessionName);
