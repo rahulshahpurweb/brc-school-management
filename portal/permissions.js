@@ -2,19 +2,21 @@
 const FeaturePermissions = {
   getDefaults() {
     return {
-      // --- R2 Enrollment Module Features ---
       r2_jsk_upload_excel: false,
       r2_jsk_template_download: false,
       r2_jsk_school_list: true,
       
-      // School / JSK Next Year Edit Permission
+      // Feature Control se locked session data entry permission
       school_can_edit_locked_session: false,
       jsk_can_edit_locked_session: false,
 
-      // --- Academic Sessions Lock Control (True = Locked, False = Active) ---
-      session_2026_27: false, // Default Active
-      session_2027_28: true,  // Default Locked
-      session_2028_29: true   // Default Locked
+      // Global Active Session jo admin change karega aur sabhi ko dikhega
+      global_active_session: "2026-27",
+
+      // Academic Sessions Lock Control (True = Locked, False = Active)
+      session_2026_27: false,
+      session_2027_28: true,
+      session_2028_29: true
     };
   },
 
@@ -25,6 +27,20 @@ const FeaturePermissions = {
 
   saveSettings(settings) {
     localStorage.setItem("brc_feature_permissions", JSON.stringify(settings));
+    if (settings.global_active_session) {
+      localStorage.setItem("brc_active_session", settings.global_active_session);
+    }
+  },
+
+  getActiveSession() {
+    let settings = this.getSettings();
+    return settings.global_active_session || localStorage.getItem("brc_active_session") || "2026-27";
+  },
+
+  setActiveSession(sessionId) {
+    let settings = this.getSettings();
+    settings.global_active_session = sessionId;
+    this.saveSettings(settings);
   },
 
   isAllowed(featureKey) {
@@ -37,7 +53,6 @@ const FeaturePermissions = {
   isSessionLocked(sessionId) {
     let settings = this.getSettings();
     let key = "session_" + sessionId.replace("-", "_");
-    // Agar setting maujud hai toh wahi return karo, nahi toh default false (active) rakho
     return settings[key] !== undefined ? settings[key] : false;
   },
 
@@ -53,14 +68,11 @@ const FeaturePermissions = {
   toggleSessionLock(sessionId) {
     let settings = this.getSettings();
     let key = "session_" + sessionId.replace("-", "_");
-    
-    // Agar key pehle se defined hai toh uska ulta (true/false) kar do, nahi toh true kar do
     if (settings[key] !== undefined) {
       settings[key] = !settings[key];
     } else {
       settings[key] = true;
     }
-    
     this.saveSettings(settings);
     return this.getSessions();
   }
