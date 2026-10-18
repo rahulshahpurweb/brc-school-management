@@ -23,12 +23,7 @@ export const SessionManager = {
     let select = document.getElementById("sessionSelect");
     if(!select) return;
     
-    let sessions = [
-      { id: "2026-27", name: "2026-27", locked: false },
-      { id: "2027-28", name: "2027-28", locked: true },
-      { id: "2028-29", name: "2028-29", locked: true }
-    ];
-
+    let sessions = [];
     try {
       if (typeof AdminLocks !== 'undefined' && AdminLocks.getSessions) {
         sessions = AdminLocks.getSessions();
@@ -37,25 +32,43 @@ export const SessionManager = {
       }
     } catch(e) {}
 
+    let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    let isAdmin = (currentUser.role === 'admin');
+
+    // 🛑 AGAR USER ADMIN NAHI HAI, TOH LOCKED SESSIONS DROP-DOWN SE HATA DO (Sirf Active dikhega)
+    if (!isAdmin) {
+      sessions = sessions.filter(s => !s.locked);
+    }
+
     let current = localStorage.getItem("brc_active_session") || "2026-27";
 
     select.innerHTML = "";
     sessions.forEach(s => {
       let opt = document.createElement("option");
       opt.value = s.id;
-      // Ab yahan sirf clean format dikhega, locked par lock icon ke sath
-      opt.textContent = s.locked ? `${s.name} 🔒 (Locked)` : `${s.name} 🔓 (Active)`;
+      opt.textContent = s.name;
       if(s.id === current) opt.selected = true;
       select.appendChild(opt);
     });
+
+    // Agar non-admin ke liye active session list mein nahi bacha, toh pehla set kar do
+    if (!isAdmin && !sessions.some(s => s.id === current)) {
+      if (sessions.length > 0) {
+        localStorage.setItem("brc_active_session", sessions[0].id);
+        select.value = sessions[0].id;
+      }
+    }
+
+    // Agar user non-admin hai aur dropdown mein sirf 1 hi session hai, toh dropdown ko disable/freeze kar do taaki vo change na kar sake
+    if (!isAdmin) {
+      select.disabled = true;
+    }
   },
 
   changeSession() {
     let select = document.getElementById("sessionSelect");
     if(!select) return;
     let targetSession = select.value;
-
-    // Sabhi users dropdown se koi bhi session select karke purana data dekh sakte hain (Read-Only)
     localStorage.setItem("brc_active_session", targetSession);
     this.renderDropdown();
     location.reload(); 
@@ -119,16 +132,17 @@ export const SessionManager = {
     try {
       if (typeof AdminLocks !== 'undefined' && AdminLocks.getSessions) {
         sessions = AdminLocks.getSessions();
-      } else if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getSessions) {
-        sessions = FeaturePermissions.getSessions();
       }
     } catch(e) {}
 
     let currentSessionObj = sessions.find(s => s.id === activeSession);
+    let settings = FeaturePermissions.getSettings();
+    let hasSpecialPermission = (currentUser.role === 'school' && settings.school_can_edit_locked_session) || 
+                               (currentUser.role === 'jsk' && settings.jsk_can_edit_locked_session);
     
-    // 🛑 Yahan check hoga: Agar session locked hai aur user Admin nahi hai, toh save bilkul nahi hoga!
-    if (currentSessionObj && currentSessionObj.locked && !isAdmin) {
-      alert("⚠️ Yeh academic session locked (freeze) hai! Aap is purane session mein naya data save ya edit nahi kar sakte, yeh sirf dekhne ke liye hai.");
+    // 🛑 AGAR SESSION LOCKED HAI, ADMIN NAHI HAI, AUR FEATURE MODAL SE SPECIAL PERMISSION BHI NAHI MILI, TOH SAVE ROK DO!
+    if (currentSessionObj && currentSessionObj.locked && !isAdmin && !hasSpecialPermission) {
+      alert("⚠️ Yeh academic session locked hai! Admin ne isme entry ki permission nahi di hai.");
       return;
     }
 
