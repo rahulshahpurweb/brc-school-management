@@ -9,29 +9,34 @@
 body{
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #0b2854;
+  background: #f4f7fb;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top, 10px);
+  padding-top: env(safe-area-inset-top, 5px);
 }
 
-/* Top Master Portal Bar */
+/* Master Header */
 .master-header{
   background: linear-gradient(135deg,#071b38,#0e3d7e);
   color: white;
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  border-bottom: 3px solid #f4b400;
+  border-bottom: 2px solid #f4b400;
   flex-shrink: 0;
-  gap: 8px;
+  gap: 6px;
+}
+.brand-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 .brand-title{
   font-size: 15px;
   font-weight: 900;
-  letter-spacing: .3px;
+  letter-spacing: .2px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -43,46 +48,47 @@ body{
   gap: 6px;
   overflow-x: auto;
   width: 100%;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 .mod-tab{
   background: #ffffff18;
   color: #e2e8f0;
   border: 1px solid #ffffff33;
-  padding: 5px 10px;
+  padding: 5px 12px;
   border-radius: 6px;
   text-decoration: none;
   font-size: 12px;
   font-weight: bold;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
-.mod-tab:hover{background:#ffffff30;color:#fff}
-.mod-tab.active{background:#ffd21c;color:#082a63;border-color:#ffd21c;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.mod-tab.active{
+  background: #ffd21c;
+  color: #082a63;
+  border-color: #ffd21c;
+}
 
-/* Frame Container */
-.frame-container{
+/* Content Area */
+.content-area{
   flex: 1;
   width: 100%;
-  background: #f4f7fb;
-  padding-bottom: 45px;
+  overflow-y: auto;
+  padding: 10px;
+  padding-bottom: 50px;
 }
-#moduleFrame{width:100%;height:100%;border:0}
+.module-section { display: none; }
+.module-section.active { display: block; }
 
-/* LOGIN OVERLAY WITH SNA BUTTON */
+/* Login Overlay */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
 .auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
 .auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
 .auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px}
 .auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;margin-bottom:10px}
-.auth-btn:hover{background:#145dc6}
-.sna-link-btn{display:block;width:100%;height:44px;background:#10b981;color:#fff;border-radius:10px;font-weight:bold;font-size:14px;text-decoration:none;line-height:44px;box-shadow:0 3px 8px rgba(16,185,129,0.3)}
-.sna-link-btn:hover{background:#059669}
 .auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
 
-/* Full Screen Professional Maintenance Overlay */
+/* Maintenance Overlay */
 #maintenanceOverlay {
   position: fixed;
   inset: 0;
@@ -98,71 +104,73 @@ body{
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 20px;
-  padding: 40px 30px;
-  max-width: 480px;
+  padding: 30px;
+  max-width: 400px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  color: #fff;
 }
-.maint-card h1 {
-  color: #f4b400;
-  font-size: 24px;
-  margin-bottom: 15px;
-}
-.maint-card p {
-  color: #e2e8f0;
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0;
-}
+.maint-card h1 { color: #f4b400; font-size: 22px; margin-bottom: 10px; }
+.maint-card p { color: #e2e8f0; font-size: 14px; line-height: 1.5; margin: 0; }
 </style>
 </head>
 <body>
 
-<!-- Full Screen Maintenance Overlay -->
 <div id="maintenanceOverlay">
   <div class="maint-card">
     <h1>🚧 Portal Under Maintenance</h1>
-    <p>पोर्टल पर अभी मेंटेनेंस का कार्य चल रहा है। कृपया कुछ समय बाद लॉगिन करें, प्रतीक्षा करने के लिए धन्यवाद।</p>
+    <p>पोर्टल पर अभी मेंटेनेंस का कार्य चल रहा है। कृपया कुछ समय बाद लॉगिन करें।</p>
   </div>
 </div>
 
-<!-- Login Lock Screen -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
     <p>BRC, JSKs, SCHOOLs Login</p>
     <div id="authErr" class="auth-err">Wrong Password Or UDISE Code!</div>
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User Id" onkeydown="if(event.key==='Enter')checkAuth()">
-    <input type="password" id="authPass" class="auth-input" placeholder="Password (Enter password)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <input type="password" id="authPass" class="auth-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login</button>
-    <div style="margin:12px 0 8px;font-size:12px;color:#94a3b8;font-weight:bold;">--- Or---</div>
-    <a href="../index.html" class="sna-link-btn">🔍 SNA Account Check </a>
+    <a href="../index.html" style="display:block;margin-top:10px;color:#10b981;font-weight:bold;text-decoration:none;font-size:13px;">🔍 SNA Account Check</a>
   </div>
 </div>
 
 <header class="master-header">
-  <div class="brand-title">
-    <span>🏛️ Janpad Shiksha Kendra Shahpur | BRC Portal</span>
+  <div class="brand-row">
+    <div class="brand-title">🏛️ JSK Shahpur | BRC Portal</div>
+    <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;padding:4px 10px;">Logout</button>
   </div>
 
   <div class="module-tabs">
-    <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Enrollment</button>
-    <button class="mod-tab" onclick="loadModule('R3.html', this)">♿ CWSN</button>
-    <a href="../index.html" class="mod-tab" style="background:#0d9488;border-color:#0d9488;color:#fff;">🔍 SNA Account Check</a>
+    <button class="mod-tab active" onclick="switchModule('enrollment', this)">📊 Enrollment Module</button>
+    <button class="mod-tab" onclick="switchModule('cwsn', this)">♿ CWSN Module</button>
+    <a href="../index.html" class="mod-tab" style="background:#0d9488;border-color:#0d9488;color:#fff;">🔍 SNA Check</a>
     
-    <!-- Admin Maintenance Toggle Button -->
-    <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:3px 6px; border-radius:6px;">
-      <span style="font-size:11px; font-weight:bold;">🛠️ Maint:</span>
+    <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:5px; background:rgba(255,255,255,0.15); padding:3px 8px; border-radius:6px;">
+      <span style="font-size:11px; font-weight:bold;">Maint:</span>
       <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:2px 6px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
     </div>
-
-    <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Logout</button>
   </div>
 </header>
 
-<div class="frame-container">
-  <iframe id="moduleFrame" src="R2.html"></iframe>
+<div class="content-area">
+  <!-- Enrollment Module Section -->
+  <div id="enrollmentSection" class="module-section active">
+    <!-- Yahan aap R2.html ka poora content ya HTML daal sakte hain -->
+    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); text-align:center;">
+      <h3 style="color:#082a63; margin-top:0;">📊 Enrollment Dashboard & Data Entry</h3>
+      <p style="color:#64748b;">Enrollment module yahan load ho raha hai. Aap apna R2.html ka content yahan paste kar sakte hain.</p>
+    </div>
+  </div>
+
+  <!-- CWSN Module Section -->
+  <div id="cwsnSection" class="module-section">
+    <!-- Yahan aap R3.html ka content daal sakte hain -->
+    <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); text-align:center;">
+      <h3 style="color:#082a63; margin-top:0;">♿ CWSN Data Management</h3>
+      <p style="color:#64748b;">CWSN module yahan load ho raha hai.</p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -174,10 +182,8 @@ window.addEventListener('DOMContentLoaded', () => {
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
   if (isMaintenance && isLoggedIn && user.role !== "admin") {
-    let overlay = document.getElementById("maintenanceOverlay");
-    if (overlay) overlay.style.display = "flex";
-    let authOverlay = document.getElementById("authOverlay");
-    if (authOverlay) authOverlay.style.display = "none";
+    document.getElementById("maintenanceOverlay").style.display = "flex";
+    document.getElementById("authOverlay").style.display = "none";
   }
 
   if (user.role === 'admin') {
@@ -186,6 +192,18 @@ window.addEventListener('DOMContentLoaded', () => {
     updateMaintUI();
   }
 });
+
+function switchModule(modName, btn) {
+  document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.mod-tab').forEach(el => el.classList.remove('active'));
+  
+  if(modName === 'enrollment') {
+    document.getElementById('enrollmentSection').classList.add('active');
+  } else if(modName === 'cwsn') {
+    document.getElementById('cwsnSection').classList.add('active');
+  }
+  if(btn) btn.classList.add('active');
+}
 
 function updateMaintUI() {
   let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
@@ -207,11 +225,11 @@ function toggleMaintenance() {
   let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
   if(isMaint) {
     localStorage.setItem("brc_maintenance_mode", "false");
-    alert("Portal ab sabhi users ke liye LIVE kar diya gaya hai!");
+    alert("Portal ab LIVE kar diya gaya hai!");
   } else {
-    if(confirm("Kya aap sach mein portal ko maintenance mode par daalna chahte hain?")) {
+    if(confirm("Maintenance mode par daalna chahte hain?")) {
       localStorage.setItem("brc_maintenance_mode", "true");
-      alert("Portal ab MAINTENANCE mode par chala gaya hai!");
+      alert("Portal MAINTENANCE mode par chala gaya hai!");
     }
   }
   updateMaintUI();
@@ -269,9 +287,7 @@ function checkAuth(){
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  if (isMaintenance && user.role !== "admin") {
-    // Non-admin logged in during maintenance
-  } else {
+  if (!isMaintenance || user.role === "admin") {
     document.getElementById("authOverlay").style.display = "none";
   }
 } else {
@@ -282,12 +298,6 @@ function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
   document.getElementById("authOverlay").style.display = "flex";
-}
-
-function loadModule(fileName, btnElement){
-  document.getElementById('moduleFrame').src = fileName;
-  document.querySelectorAll('.mod-tab').forEach(b => b.classList.remove('active'));
-  if(btnElement) btnElement.classList.add('active');
 }
 </script>
 
