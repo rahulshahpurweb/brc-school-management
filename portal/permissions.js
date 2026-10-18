@@ -6,14 +6,12 @@ const FeaturePermissions = {
       r2_jsk_template_download: false,
       r2_jsk_school_list: true,
       
-      // Feature Control se locked session data entry permission
       school_can_edit_locked_session: false,
       jsk_can_edit_locked_session: false,
 
-      // Global Active Session jo admin change karega aur sabhi ko dikhega
+      // Global Active Session jo kabhi apne aap reset nahi hoga
       global_active_session: "2026-27",
 
-      // Academic Sessions Lock Control (True = Locked, False = Active)
       session_2026_27: false,
       session_2027_28: true,
       session_2028_29: true
@@ -41,6 +39,7 @@ const FeaturePermissions = {
     let settings = this.getSettings();
     settings.global_active_session = sessionId;
     this.saveSettings(settings);
+    localStorage.setItem("brc_active_session", sessionId);
   },
 
   isAllowed(featureKey) {
