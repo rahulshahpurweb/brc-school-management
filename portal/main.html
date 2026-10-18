@@ -10,26 +10,64 @@ body{
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background: #0b2854;
-  overflow: hidden;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  /* Mobile notch aur top cut hone ki samasya ko door karne ke liye */
-  padding-top: env(safe-area-inset-top, 15px);
+  padding-top: env(safe-area-inset-top, 10px);
 }
 
 /* Top Master Portal Bar */
-.master-header{background:linear-gradient(135deg,#071b38,#0e3d7e);color:white;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #f4b400;flex-shrink:0;flex-wrap:wrap;gap:10px}
-.brand-title{font-size:17px;font-weight:900;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.master-header{
+  background: linear-gradient(135deg,#071b38,#0e3d7e);
+  color: white;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-bottom: 3px solid #f4b400;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.brand-title{
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: .3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /* Module Tabs */
-.module-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-.mod-tab{background:#ffffff18;color:#e2e8f0;border:1px solid #ffffff33;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:bold;white-space:nowrap;cursor:pointer;transition:all 0.2s ease}
+.module-tabs{
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  width: 100%;
+  padding-bottom: 4px;
+}
+.mod-tab{
+  background: #ffffff18;
+  color: #e2e8f0;
+  border: 1px solid #ffffff33;
+  padding: 5px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 .mod-tab:hover{background:#ffffff30;color:#fff}
 .mod-tab.active{background:#ffd21c;color:#082a63;border-color:#ffd21c;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
 
 /* Frame Container */
-.frame-container{flex:1;width:100%;height:100%;background:#f4f7fb}
+.frame-container{
+  flex: 1;
+  width: 100%;
+  background: #f4f7fb;
+  padding-bottom: 45px;
+}
 #moduleFrame{width:100%;height:100%;border:0}
 
 /* LOGIN OVERLAY WITH SNA BUTTON */
@@ -68,12 +106,12 @@ body{
 }
 .maint-card h1 {
   color: #f4b400;
-  font-size: 26px;
+  font-size: 24px;
   margin-bottom: 15px;
 }
 .maint-card p {
   color: #e2e8f0;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
   margin: 0;
 }
@@ -108,15 +146,15 @@ body{
     <span>🏛️ Janpad Shiksha Kendra Shahpur | BRC Portal</span>
   </div>
 
-  <div class="module-tabs" style="display:flex; align-items:center; gap:8px;">
+  <div class="module-tabs">
     <button class="mod-tab active" onclick="loadModule('R2.html', this)">📊 Enrollment</button>
     <button class="mod-tab" onclick="loadModule('R3.html', this)">♿ CWSN</button>
     <a href="../index.html" class="mod-tab" style="background:#0d9488;border-color:#0d9488;color:#fff;">🔍 SNA Account Check</a>
     
     <!-- Admin Maintenance Toggle Button -->
-    <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:4px 8px; border-radius:6px;">
+    <div id="adminMaintenancePanel" style="display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:3px 6px; border-radius:6px;">
       <span style="font-size:11px; font-weight:bold;">🛠️ Maint:</span>
-      <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:3px 8px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
+      <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:2px 6px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
     </div>
 
     <button class="mod-tab" onclick="logoutSession()" style="background:#dc2626;border-color:#dc2626;color:#fff;">🚪 Logout</button>
@@ -154,11 +192,11 @@ function updateMaintUI() {
   let btn = document.getElementById("maintToggleBtn");
   if(btn) {
     if(isMaint) {
-      btn.innerText = "🔴 ON (Site Band Hai)";
+      btn.innerText = "🔴 ON";
       btn.style.background = "#dc2626";
       btn.style.color = "#fff";
     } else {
-      btn.innerText = "🟢 OFF (Site Live Hai)";
+      btn.innerText = "🟢 OFF";
       btn.style.background = "#16a34a";
       btn.style.color = "#fff";
     }
@@ -179,6 +217,7 @@ function toggleMaintenance() {
   updateMaintUI();
   location.reload();
 }
+
 function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -203,7 +242,6 @@ function checkAuth(){
     }
   }
 
-  // SessionManager se schools data lene ke liye safe check
   let schools = [];
   if (typeof SessionManager !== 'undefined' && SessionManager.getData) {
     schools = SessionManager.getData();
@@ -220,7 +258,6 @@ function checkAuth(){
       sessionStorage.setItem("brc_logged_in", "true");
       localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
       document.getElementById("authOverlay").style.display = "none";
-      // Page reload ya frame refresh karein
       location.reload();
       return;
     }
@@ -228,8 +265,6 @@ function checkAuth(){
 
   err.style.display = "block";
 }
-  
-
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
