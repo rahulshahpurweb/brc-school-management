@@ -15,48 +15,57 @@
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
 
-  /* Compact Internal Module Nav Bar */
+  /* Compact Nav Bar */
   nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: #071b38;
-    padding: 8px 15px;
+    padding: 8px 12px;
     border-bottom: 2px solid #f4b400;
     position: relative;
+    gap: 6px;
+    flex-wrap: wrap;
   }
   .nav-title {
     color: #ffd21c;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  .internal-menu-btn {
-    background: #1769df;
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
     font-size: 13px;
     font-weight: bold;
+  }
+  .nav-action-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .action-btn-sm {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    border: none;
     cursor: pointer;
+    color: #fff;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
+  .internal-menu-btn { background: #1769df; }
+  .excel-btn { background: #16a34a; }
+  .print-btn { background: #d97706; }
 
   /* Internal Dropdown Menu List */
   .internal-dropdown {
     position: absolute;
-    top: 50px;
-    right: 15px;
+    top: 48px;
+    right: 10px;
     background: #071b38;
     border: 2px solid #f4b400;
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    width: 240px;
+    width: 220px;
     display: none;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     padding: 10px;
     z-index: 999;
   }
@@ -67,10 +76,10 @@
     background: rgba(255,255,255,0.08);
     color: #e2e8f0;
     border: 1px solid rgba(255,255,255,0.15);
-    padding: 10px;
+    padding: 9px;
     border-radius: 6px;
     text-align: left;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: bold;
     cursor: pointer;
     width: 100%;
@@ -132,7 +141,6 @@
 </head>
 <body>
 
-<!-- Full Screen Maintenance Overlay -->
 <div id="maintenanceOverlay">
   <div class="maint-card">
     <h1>🚧 Portal Under Maintenance</h1>
@@ -142,36 +150,44 @@
 
 <header>
   <h1>BRC Shahpur - Enrollment Module (R2)</h1>
-  <div style="display:flex;align-items:center;gap:15px; flex-wrap:wrap;">
-    <div id="sessionContainer" style="display:flex;align-items:center;gap:8px;">
-      <label style="font-size:13px;font-weight:bold;color:#fff;">Session:</label>
-      <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
-      <span id="sessionBadge" style="display:none; background:#f59e0b; color:#fff; padding:4px 10px; border-radius:4px; font-weight:bold; font-size:13px;"></span>
+  <div style="display:flex;align-items:center;gap:12px; flex-wrap:wrap;">
+    <div id="sessionContainer" style="display:flex;align-items:center;gap:6px;">
+      <label style="font-size:12px;font-weight:bold;color:#fff;">Session:</label>
+      <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:3px; border-radius:4px; font-size:12px;"></select>
+      <span id="sessionBadge" style="display:none; background:#f59e0b; color:#fff; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:12px;"></span>
     </div>
     
-    <button onclick="openPermissionModal()" id="adminControlBtn" style="display:none; background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold;">⚙️ Feature Control</button>
+    <button onclick="openPermissionModal()" id="adminControlBtn" style="display:none; background:#0284c7; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">⚙️ Feature Control</button>
 
-    <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
+    <div id="userProfileArea" style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.15); padding:4px 8px; border-radius:6px; font-size:12px;">
       <span id="loggedInUserName" style="font-weight:bold;">Admin Mode</span>
-      <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Password</button>
+      <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:3px 6px; border-radius:4px; cursor:pointer; font-size:11px;">🔑 Password</button>
     </div>
   </div>
 </header>
 
-<!-- Compact Nav with 3-Line Internal Sub-Menu -->
+<!-- Nav Bar with Direct Excel & Print buttons outside -->
 <nav>
   <div class="nav-title">📂 Module Options</div>
-  <button class="internal-menu-btn" onclick="toggleInternalMenu()">☰ Menu Options</button>
   
-  <!-- Sub-Menu List -->
+  <div class="nav-action-group">
+    <!-- Direct Excel Download Button -->
+    <button class="action-btn-sm excel-btn" onclick="handleSmartDownload()" title="Download Excel">📥 Excel</button>
+    
+    <!-- Direct Print / PDF Button -->
+    <button class="action-btn-sm print-btn" onclick="PrintHandler.printPage()" title="Print / PDF">🖨️ Print</button>
+    
+    <!-- 3-Line Sub-Menu for Navigation Tabs -->
+    <button class="action-btn-sm internal-menu-btn" onclick="toggleInternalMenu()">☰ Menu</button>
+  </div>
+
+  <!-- Sub-Menu List (Only Navigation & Upload/Template options) -->
   <div id="internalDropdownMenu" class="internal-dropdown">
     <button class="hide-for-jsk" onclick="showTab('dash'); toggleInternalMenu();">📊 Summary Dashboard</button>
     <button id="navRecordsBtn" onclick="showTab('records'); toggleInternalMenu();">📋 School List & Filters</button>
     <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry'); toggleInternalMenu();">✍️ Data Entry Form</button>
     <button class="hide-for-school" onclick="showTab('compilation'); toggleInternalMenu();">📑 JSK Compilation Report</button>
     <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:4px 0;">
-    <button class="success" onclick="handleSmartDownload(); toggleInternalMenu();" style="background:#16a34a; color:#fff;">📥 Excel Download</button>
-    <button class="warning" onclick="PrintHandler.printPage(); toggleInternalMenu();" style="background:#d97706; color:#fff;">🖨️ Print / PDF</button>
     <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate(); toggleInternalMenu();" style="background:#16a34a; color:#fff;">📥 Template_EFG</button>
     <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706; color:#fff;">
       📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event); toggleInternalMenu();">
@@ -462,7 +478,7 @@
     }, 500);
   });
 
-  function showTab(id){
+  window.showTab = function(id){
     document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));
     let target = document.getElementById(id);
     if(target) target.classList.add("active");
