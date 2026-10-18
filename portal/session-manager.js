@@ -37,32 +37,17 @@ export const SessionManager = {
       }
     } catch(e) {}
 
-    let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-    let isAdmin = (currentUser.role === 'admin');
-
-    // 🛑 AGAR USER ADMIN NAHI HAI (JSK YA SCHOOL), TOH LOCKED SESSIONS DROPDOWN SE HATA DO!
-    if (!isAdmin) {
-      sessions = sessions.filter(s => !s.locked);
-    }
-
     let current = localStorage.getItem("brc_active_session") || "2026-27";
 
     select.innerHTML = "";
     sessions.forEach(s => {
       let opt = document.createElement("option");
       opt.value = s.id;
-      opt.textContent = s.locked ? `🔒 ${s.name} (Locked)` : `🔓 ${s.name} (Active)`;
+      // Ab yahan sirf clean format dikhega, locked par lock icon ke sath
+      opt.textContent = s.locked ? `${s.name} 🔒 (Locked)` : `${s.name} 🔓 (Active)`;
       if(s.id === current) opt.selected = true;
       select.appendChild(opt);
     });
-
-    // Agar JSK ya School ke liye active session list me nahi bacha, toh pehla available set kar do
-    if (!isAdmin && !sessions.some(s => s.id === current)) {
-      if (sessions.length > 0) {
-        localStorage.setItem("brc_active_session", sessions[0].id);
-        select.value = sessions[0].id;
-      }
-    }
   },
 
   changeSession() {
@@ -70,27 +55,7 @@ export const SessionManager = {
     if(!select) return;
     let targetSession = select.value;
 
-    let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-    let isAdmin = (currentUser.role === 'admin');
-
-    let sessions = [];
-    try {
-      if (typeof AdminLocks !== 'undefined' && AdminLocks.getSessions) {
-        sessions = AdminLocks.getSessions();
-      } else if (typeof FeaturePermissions !== 'undefined' && FeaturePermissions.getSessions) {
-        sessions = FeaturePermissions.getSessions();
-      }
-    } catch(e) {}
-
-    let targetObj = sessions.find(s => s.id === targetSession);
-
-    // Agar session locked hai AUR user admin NAHI hai, toh rok do!
-    if (targetObj && targetObj.locked && !isAdmin) {
-      alert("⚠️ Yeh academic session locked (freeze) hai! BRC Admin ki permission ke bina aap is session ko select nahi kar sakte.");
-      this.renderDropdown();
-      return;
-    }
-
+    // Sabhi users dropdown se koi bhi session select karke purana data dekh sakte hain (Read-Only)
     localStorage.setItem("brc_active_session", targetSession);
     this.renderDropdown();
     location.reload(); 
@@ -129,19 +94,17 @@ export const SessionManager = {
     let dataKey = `brc_schools_data_${activeSession}`;
     
     try {
-      console.log(`Google Sheet se ${activeSession} ka data laya ja raha hai...`);
       let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);
       let cloudData = await response.json();
       
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
         localStorage.setItem(dataKey, JSON.stringify(cloudData));
-        console.log("Cloud data successfully load ho gaya!");
         this.updateStats();
         if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();
         if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
       }
     } catch (err) {
-      console.error("Cloud Load Error, local storage use ho raha hai:", err);
+      console.error("Cloud Load Error:", err);
     }
     this.updateStats();
   },
@@ -163,8 +126,9 @@ export const SessionManager = {
 
     let currentSessionObj = sessions.find(s => s.id === activeSession);
     
+    // 🛑 Yahan check hoga: Agar session locked hai aur user Admin nahi hai, toh save bilkul nahi hoga!
     if (currentSessionObj && currentSessionObj.locked && !isAdmin) {
-      alert("⚠️ Yeh academic session locked (freeze) hai! Isme naya data save nahi kiya ja sakta.");
+      alert("⚠️ Yeh academic session locked (freeze) hai! Aap is purane session mein naya data save ya edit nahi kar sakte, yeh sirf dekhne ke liye hai.");
       return;
     }
 
@@ -183,9 +147,9 @@ export const SessionManager = {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).then(() => {
-      console.log(`Data (${activeSession}) Google Sheet par safaltapurvak save ho gaya!`);
+      console.log(`Data (${activeSession}) saved!`);
     }).catch(err => {
-      console.error("Google Sheet Save Error:", err);
+      console.error("Save Error:", err);
     });
   },
 
@@ -200,28 +164,13 @@ export const SessionManager = {
       
       Object.keys(classesObj).forEach(cName => {
         let c = classesObj[cName] || {};
-        let scB = parseInt(c.scB) || 0;
-        let scG = parseInt(c.scG) || 0;
-        let stB = parseInt(c.stB) || 0;
-        let stG = parseInt(c.stG) || 0;
-        let obcB = parseInt(c.obcB) || 0;
-        let obcG = parseInt(c.obcG) || parseInt(c.obg) || 0;
-        let genB = parseInt(c.genB) || 0;
-        let genG = parseInt(c.genG) || parseInt(c.geng) || 0;
-
-        let sum = scB + scG + stB + stG + obcB + obcG + genB + genG;
-        
+        let sum = Object.values(c).reduce((a, b) => a + (parseInt(b) || 0), 0);
         if (sum > 0) {
           hasData = true;
           totalEnroll += sum;
-          boys += (scB + stB + obcB + genB);
-          girls += (scG + stG + obcG + genG);
         }
       });
-      
-      if (hasData) {
-        filled++;
-      }
+      if (hasData) filled++;
     });
 
     let statSchools = document.getElementById("statSchools");
@@ -232,7 +181,6 @@ export const SessionManager = {
 
     if(statSchools) statSchools.innerText = totalSchools;
     if(statTotal) statTotal.innerText = totalEnroll;
-    if(statBoysGirls) statBoysGirls.innerText = `Boys: ${boys} | Girls: ${girls}`;
     if(statFilled) statFilled.innerText = filled;
     if(statPending) statPending.innerText = totalSchools - filled;
   },
@@ -242,58 +190,14 @@ export const SessionManager = {
     return session ? JSON.parse(session) : null;
   },
 
-  login(username, password) {
-    let users = this.getUsers();
-    let user = users.find(u => u.username === username && u.password === password);
-    
-    if(user) {
-      localStorage.setItem("brc_current_user", JSON.stringify(user));
-      return { success: true, role: user.role, name: user.name };
-    }
-    return { success: false, message: "Galat Username ya Password!" };
-  },
-
-  logout() {
-    localStorage.removeItem("brc_current_user");
-    window.location.reload();
-  },
-
-  getUsers() {
-    let storedUsers = localStorage.getItem("brc_users");
-    if(storedUsers) {
-      return JSON.parse(storedUsers);
-    }
-    let defaultUsers = [
-      { username: "admin", password: "adminpassword", role: "admin", name: "BRC Admin" },
-      { username: "jsk_login", password: "jskpassword", role: "jsk", name: "JSK Coordinator" },
-      { username: "school", password: "schoolpassword", role: "school", name: "School Login" }
-    ];
-    localStorage.setItem("brc_users", JSON.stringify(defaultUsers));
-    return defaultUsers;
-  },
-
-  changePassword(username, oldPassword, newPassword) {
-    let users = this.getUsers();
-    let user = users.find(u => u.username === username);
-    
-    if(!user) return { success: false, message: "User nahi mila!" };
-    if(user.password !== oldPassword) return { success: false, message: "Purana password galat hai!" };
-    
-    user.password = newPassword;
-    localStorage.setItem("brc_users", JSON.stringify(users));
-    return { success: true, message: "Password safaltapurvak badal diya gaya hai!" };
-  },
-
   applyRoleAccess() {
     let currentUser = this.getCurrentUser();
     if(!currentUser) return;
-
     let role = currentUser.role;
 
     if(role === "jsk") {
       let dataEntryTab = document.querySelector("[data-target='entry']") || document.getElementById("entrySection");
       let schoolListTab = document.querySelector("[data-target='records']") || document.getElementById("recordsSection");
-      
       if(dataEntryTab) dataEntryTab.style.display = "none";
       if(schoolListTab) schoolListTab.style.display = "none";
     }
