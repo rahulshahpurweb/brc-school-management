@@ -204,7 +204,7 @@ body{
 <!-- Backdrop Overlay -->
 <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer()"></div>
 
-<!-- Slide-out Side Drawer Menu containing all controls -->
+<!-- Slide-out Side Drawer Menu -->
 <div id="sideDrawer" class="side-drawer">
   <div class="drawer-header">
     <h3>🏛️ BRC Shahpur</h3>
@@ -225,7 +225,6 @@ body{
 
     <div class="drawer-section-title" style="margin-top: 10px;">Admin & Controls</div>
     
-    <!-- Admin Info / Change Password Menu Item -->
     <div id="adminRoleIndicator" style="background:rgba(255,255,255,0.08); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.15);">
       <div style="font-size:12px; color:#ffd21c; font-weight:bold; margin-bottom:6px;">👤 BRC Admin (ADMIN)</div>
       <button onclick="triggerAdminPasswordChange()" class="drawer-link" style="background:#1769df; border-color:#1769df; color:#fff; padding:8px 12px; font-size:12px; margin:0;">
@@ -233,12 +232,10 @@ body{
       </button>
     </div>
 
-    <!-- Feature Control option -->
     <button onclick="triggerFeatureControl()" class="drawer-link" style="background:rgba(14,61,126,0.5); border-color:#3b82f6;">
       <span>⚙️</span> Feature Control Panel
     </button>
 
-    <!-- Admin Maintenance Toggle Panel -->
     <div id="adminMaintenancePanel" style="display:none; flex-direction:column; gap:5px; background:rgba(255,255,255,0.08); padding:10px; border-radius:8px;">
       <span style="font-size:11px; font-weight:bold; color:#ffd21c;">🛠️ Maintenance Mode:</span>
       <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:6px; border-radius:6px; font-weight:bold; border:0; cursor:pointer; font-size:12px;"></button>
@@ -291,14 +288,13 @@ function toggleDrawer() {
   backdrop.classList.toggle('open');
 }
 
-/* Helper functions to interact with iframe content if needed */
 function triggerAdminPasswordChange() {
   toggleDrawer();
   const iframeWin = document.getElementById('moduleFrame').contentWindow;
   if(iframeWin && typeof iframeWin.changePassword === 'function') {
     iframeWin.changePassword();
   } else {
-    alert("Please open Enrollment module to change password or use its interface.");
+    alert("Please open Enrollment module to change password.");
   }
 }
 
@@ -361,7 +357,7 @@ function checkAuth(){
     if(jskPass === "jskpassword" || jskPass === "brc@123") {
       sessionStorage.setItem("brc_logged_in", "true");
       localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-      document.getElementById("authOverlay'].style.display = "none";
+      document.getElementById("authOverlay").style.display = "none";
       location.reload();
       return;
     }
