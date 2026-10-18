@@ -326,11 +326,13 @@
 
           if (user.role === 'school') {
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
+            
+            // Session ko hardcode nahi kiya hai, jo active session admin ne set kiya hai wahi dikhega
             let sessionSelect = document.getElementById("sessionSelect");
             if (sessionSelect) {
-              sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
               sessionSelect.disabled = true;
             }
+
             let checkInterval = setInterval(() => {
               let schoolSelect = document.getElementById("schoolSelect");
               if (schoolSelect && schoolSelect.options.length > 0) {
