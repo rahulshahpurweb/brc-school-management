@@ -220,41 +220,83 @@
 
 <script type="module" src="app.js"></script>
 <script type="module">
-  const featureLabels = {
-    r2_jsk_upload_excel: "📊 [R2 Enrollment] JSK: Excel Upload",
-    r2_jsk_template_download: "📊 [R2 Enrollment] JSK: Template Download",
-    r2_jsk_school_list: "📊 [R2 Enrollment] JSK: School List View",
-    r3_jsk_upload_excel: "♿ [R3 CWSN] JSK: Excel Upload",
-    r3_jsk_template_download: "♿ [R3 CWSN] JSK: Template Download",
-    r3_jsk_cwsn_list: "♿ [R3 CWSN] JSK: CWSN List View"
+    const featureLabels = {
+    // JSK Features
+    r2_jsk_upload_excel: "📊 [JSK] Excel Upload",
+    r2_jsk_template_download: "📊 [JSK] Template Download",
+    r2_jsk_school_list: "📊 [JSK] School List View",
+    
+    // School Features
+    school_can_edit_anytime: "🏫 [School] Unlock Session Edit Permission"
   };
 
   window.openPermissionModal = function() {
     let settings = FeaturePermissions.getSettings();
+    let sessions = AdminLocks.getSessions();
     let container = document.getElementById("permissionListContainer");
     container.innerHTML = "";
 
+    // Section 1: JSK Permissions
+    container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:5px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">📊 JSK Suvidhaen Control</div>`;
     for (let key in settings) {
-      let isChecked = settings[key] ? "checked" : "";
-      let labelText = featureLabels[key] || key;
-
-      container.innerHTML += `
-        <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
-          <span>${labelText}</span>
-          <input type="checkbox" id="p_${key}" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>
-        </label>
-      `;
+      if (key.includes('jsk')) {
+        let isChecked = settings[key] ? "checked" : "";
+        let labelText = featureLabels[key] || key;
+        container.innerHTML += `
+          <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+            <span>${labelText}</span>
+            <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>
+          </label>
+        `;
+      }
     }
+
+    // Section 2: School Permissions
+    container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Suvidhaen Control</div>`;
+    for (let key in settings) {
+      if (key.includes('school')) {
+        let isChecked = settings[key] ? "checked" : "";
+        let labelText = featureLabels[key] || key;
+        container.innerHTML += `
+          <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+            <span>${labelText}</span>
+            <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>
+          </label>
+        `;
+      }
+    }
+
+    // Section 3: Academic Sessions Lock / Unlock Control
+    container.innerHTML += `<div style="font-weight:bold; color:#b45309; margin-top:10px; border-bottom:2px solid #b45309; padding-bottom:3px;">🔒 Academic Session Lock / Unlock</div>`;
+    sessions.forEach(s => {
+      let lockStatusText = s.locked ? "🔒 Locked (Band)" : "🔓 Active (Chalu)";
+      let btnBg = s.locked ? "#dc2626" : "#16a34a";
+      
+      container.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; background:#fffbeb; padding:8px 12px; border-radius:6px; border:1px solid #fde68a;">
+          <span>📅 Session: ${s.name}</span>
+          <button type="button" onclick="toggleSession('${s.id}')" style="background:${btnBg}; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; width:auto;">
+            ${lockStatusText}
+          </button>
+        </div>
+      `;
+    });
+
     document.getElementById("permissionModal").style.display = "flex";
   }
 
-  window.closePermissionModal = function() {
-    document.getElementById("permissionModal").style.display = "none";
+  window.toggleSession = function(sessionId) {
+    AdminLocks.toggleSessionLock(sessionId);
+    window.openPermissionModal(); // Modal ko refresh karega taaki status turant badla hua dikhe
+    // Session dropdown bhi update kar do agar khula ho
+    if(typeof SessionManager !== 'undefined' && SessionManager.renderDropdown) {
+      SessionManager.renderDropdown();
+    }
   }
 
   window.savePermissions = function() {
     let settings = FeaturePermissions.getSettings();
-    let checkboxes = document.querySelectorAll("#permissionListContainer input[type='checkbox']");
+    let checkboxes = document.querySelectorAll("#permissionListContainer input.perm-checkbox");
     
     checkboxes.forEach(cb => {
       let key = cb.getAttribute("data-key");
@@ -262,10 +304,11 @@
     });
 
     FeaturePermissions.saveSettings(settings);
-    alert("Sabhi permissions safaltapurvak update ho gayi hain!");
-    closePermissionModal();
+    alert("Sabhi permissions aur session settings safaltapurvak update ho gayi hain!");
+    document.getElementById("permissionModal").style.display = "none";
     location.reload();
   }
+
 
   // Universal Smart Excel Export for any active table/report
   window.ExportAnyTable = function(filename = "BRC_Report.xlsx") {
