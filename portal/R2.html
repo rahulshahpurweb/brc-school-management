@@ -15,28 +15,72 @@
   .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }
   .modal-box button.secondary { background:#64748b; margin-top:8px; }
 
-  /* Professional Organized Navigation Bar */
+  /* Compact Internal Module Nav Bar */
   nav {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: space-between;
     align-items: center;
     background: #071b38;
-    padding: 10px 15px;
+    padding: 8px 15px;
     border-bottom: 2px solid #f4b400;
+    position: relative;
   }
-  nav button, nav label {
-    padding: 8px 14px;
+  .nav-title {
+    color: #ffd21c;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .internal-menu-btn {
+    background: #1769df;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
-    border: none;
-    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  nav button:hover, nav label:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+
+  /* Internal Dropdown Menu List */
+  .internal-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    background: #071b38;
+    border: 2px solid #f4b400;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    width: 240px;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    z-index: 999;
+  }
+  .internal-dropdown.open {
+    display: flex;
+  }
+  .internal-dropdown button, .internal-dropdown label {
+    background: rgba(255,255,255,0.08);
+    color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 10px;
+    border-radius: 6px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .internal-dropdown button:hover, .internal-dropdown label:hover {
+    background: #ffd21c;
+    color: #082a63;
   }
 
   /* Full Screen Professional Maintenance Overlay */
@@ -97,10 +141,10 @@
 </div>
 
 <header>
-  <h1>BRC Shahpur - True Modular Portal (R2)</h1>
+  <h1>BRC Shahpur - Enrollment Module (R2)</h1>
   <div style="display:flex;align-items:center;gap:15px; flex-wrap:wrap;">
     <div id="sessionContainer" style="display:flex;align-items:center;gap:8px;">
-      <label style="font-size:13px;font-weight:bold;color:#fff;">Academic Session:</label>
+      <label style="font-size:13px;font-weight:bold;color:#fff;">Session:</label>
       <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:4px; border-radius:4px;"></select>
       <span id="sessionBadge" style="display:none; background:#f59e0b; color:#fff; padding:4px 10px; border-radius:4px; font-weight:bold; font-size:13px;"></span>
     </div>
@@ -109,23 +153,30 @@
 
     <div id="userProfileArea" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:5px 10px; border-radius:8px; font-size:14px;">
       <span id="loggedInUserName" style="font-weight:bold;">Admin Mode</span>
-      <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Change Password</button>
+      <button onclick="openChangePasswordModal()" style="background:#f59e0b; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">🔑 Password</button>
     </div>
   </div>
 </header>
 
+<!-- Compact Nav with 3-Line Internal Sub-Menu -->
 <nav>
-  <button class="hide-for-jsk" onclick="showTab('dash')" style="background:#1d4ed8; color:#fff;">📊 Summary</button>
-  <button id="navRecordsBtn" onclick="showTab('records')" style="background:#1d4ed8; color:#fff;">📋 School List</button>
-  <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry')" style="background:#1d4ed8; color:#fff;">✍️ Data Entry</button>
-  <button class="hide-for-school" onclick="showTab('compilation')" style="background:#1d4ed8; color:#fff;">📑 JSK Compilation</button>
+  <div class="nav-title">📂 Module Options</div>
+  <button class="internal-menu-btn" onclick="toggleInternalMenu()">☰ Menu Options</button>
   
-  <button class="success" onclick="handleSmartDownload()" style="background:#16a34a; color:#fff;">📥 Excel Download</button>
-  <button class="warning" onclick="PrintHandler.printPage()" style="background:#d97706; color:#fff;">🖨️ Print / PDF</button>
-  <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate()" style="background:#16a34a; color:#fff;">📥 Template_EFG</button>
-  <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706; color:#fff; display:inline-block;">
-    📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event)">
-  </label>
+  <!-- Sub-Menu List -->
+  <div id="internalDropdownMenu" class="internal-dropdown">
+    <button class="hide-for-jsk" onclick="showTab('dash'); toggleInternalMenu();">📊 Summary Dashboard</button>
+    <button id="navRecordsBtn" onclick="showTab('records'); toggleInternalMenu();">📋 School List & Filters</button>
+    <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry'); toggleInternalMenu();">✍️ Data Entry Form</button>
+    <button class="hide-for-school" onclick="showTab('compilation'); toggleInternalMenu();">📑 JSK Compilation Report</button>
+    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:4px 0;">
+    <button class="success" onclick="handleSmartDownload(); toggleInternalMenu();" style="background:#16a34a; color:#fff;">📥 Excel Download</button>
+    <button class="warning" onclick="PrintHandler.printPage(); toggleInternalMenu();" style="background:#d97706; color:#fff;">🖨️ Print / PDF</button>
+    <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate(); toggleInternalMenu();" style="background:#16a34a; color:#fff;">📥 Template_EFG</button>
+    <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706; color:#fff;">
+      📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event); toggleInternalMenu();">
+    </label>
+  </div>
 </nav>
 
 <main>
@@ -244,6 +295,11 @@
     school_can_edit_locked_session: "🏫 [School] Unlock Locked Session Data Entry",
     jsk_can_edit_locked_session: "📊 [JSK] Unlock Locked Session Data Entry"
   };
+
+  window.toggleInternalMenu = function() {
+    let menu = document.getElementById("internalDropdownMenu");
+    if(menu) menu.classList.toggle("open");
+  }
 
   window.openPermissionModal = function() {
     let settings = FeaturePermissions.getSettings();
