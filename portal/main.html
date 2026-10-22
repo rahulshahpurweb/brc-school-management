@@ -278,7 +278,7 @@ async function checkGlobalMaintenance() {
     isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   }
 
-  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true"; // Persistent localStorage session
+  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true"; 
   let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
   
   if (!isLoggedIn) {
@@ -308,7 +308,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await checkGlobalMaintenance();
   
   let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
-  if (user.role === 'admin' || user.name === 'BRC Admin' || user.role === 'admin') {
+  if (user.role === 'admin' || user.name === 'BRC Admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
   }
@@ -370,7 +370,7 @@ async function toggleMaintenance() {
   location.reload();
 }
 
-// 2. Cloud Credentials Based Authentication (Google Sheet Credentials Tab)
+// 2. Cloud Credentials Based Authentication (Handles both Capital & Small keys from Sheet)
 async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -397,15 +397,22 @@ async function checkAuth(){
     let credentials = await response.json();
 
     if (Array.isArray(credentials)) {
-      let matchedUser = credentials.find(c => String(c.userId).trim() === inputVal);
+      // Handles both userID / UserId / userid from Google Sheet
+      let matchedUser = credentials.find(c => {
+        let uId = String(c.userId || c.UserID || c.userid || "").trim();
+        return uId === inputVal;
+      });
       
       if (matchedUser) {
-        if (String(matchedUser.password).trim() === passVal) {
-          localStorage.setItem("brc_logged_in", "true"); // Persistent localStorage
+        let dbPass = String(matchedUser.password || matchedUser.Password || "").trim();
+        let dbRole = String(matchedUser.role || matchedUser.Role || "school").trim();
+
+        if (dbPass === passVal) {
+          localStorage.setItem("brc_logged_in", "true");
           localStorage.setItem("brc_logged_user", JSON.stringify({ 
-            role: matchedUser.role, 
-            udise: matchedUser.role === 'school' ? matchedUser.userId : '', 
-            name: matchedUser.name || matchedUser.userId 
+            role: dbRole, 
+            udise: dbRole === 'school' ? inputVal : '', 
+            name: matchedUser.name || matchedUser.Name || inputVal 
           }));
           document.getElementById("authOverlay").style.display = "none";
           document.getElementById("maintenanceOverlay").style.display = "none";
@@ -423,9 +430,27 @@ async function checkAuth(){
   }
 
   // Emergency Admin Fallback
-  if ((inputVal === "admin" || inputVal === "brc@shahpur") && passVal === "brc@shahpur") {
+  if ((inputVal === "admin" || inputVal === "brc@shahpur") && passVal === "123456") {
     localStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
+    document.getElementById("authOverlay").style.display = "none";
+    location.reload();
+    return;
+  }
+
+  // JSK Login Fallback
+  if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
+    localStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
+    document.getElementById("authOverlay").style.display = "none";
+    location.reload();
+    return;
+  }
+
+  // School Direct Pattern Fallback
+  if (inputVal.length >= 6 && !isNaN(inputVal) && (passVal === "12345" || passVal === inputVal)) {
+    localStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: 'School UDISE: ' + inputVal }));
     document.getElementById("authOverlay").style.display = "none";
     location.reload();
     return;
