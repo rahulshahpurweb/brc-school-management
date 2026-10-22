@@ -259,41 +259,24 @@ body{
   <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">☰ Menu-1</div>
 </header>
 
-<frame-container class="frame-container">
+<div class="frame-container">
   <iframe id="moduleFrame" src="R2.html"></iframe>
-</frame-container>
+</div>
 
 <script>
 const ADMIN_PASS = "brc@shahpur";
 
-// JSONbin Cloud Configurations (Aap yahan apna free bin URL aur API key daal sakte hain)
-const BIN_URL = "https://api.jsonbin.io/v3/b/YOUR_BIN_ID"; 
-const API_KEY = "YOUR_JSONBIN_SECRET_KEY";
-
-async function checkGlobalMaintenance() {
-  try {
-    let response = await fetch(BIN_URL, {
-      headers: { 'X-Master-Key': API_KEY }
-    });
-    let data = await response.json();
-    let isMaintenance = data.record.maintenance;
-    
-    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-    
-    if (isMaintenance && user.role !== "admin") {
-      document.getElementById("maintenanceOverlay").style.display = "flex";
-      document.getElementById("authOverlay").style.display = "none";
-    } else {
-      document.getElementById("maintenanceOverlay").style.display = "none";
-    }
-    
-    // UI update for admin panel button
-    updateMaintUI(isMaintenance);
-  } catch(e) {
-    // Fallback to local storage agar cloud fetch fail ho jaye
-    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-    updateMaintUI(isMaintenance);
+function checkGlobalMaintenance() {
+  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  
+  if (isMaintenance && user.role !== "admin") {
+    document.getElementById("maintenanceOverlay").style.display = "flex";
+    document.getElementById("authOverlay").style.display = "none";
+  } else {
+    document.getElementById("maintenanceOverlay").style.display = "none";
   }
+  updateMaintUI(isMaintenance);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -340,33 +323,19 @@ function updateMaintUI(isMaint) {
   }
 }
 
-async function toggleMaintenance() {
-  try {
-    // Current status check karo
-    let response = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
-    let data = await response.json();
-    let currentMaint = data.record.maintenance;
-    let newStatus = !currentMaint;
-
-    if(!newStatus || confirm("Maintenance mode par daalna chahte hain?")) {
-      // Cloud par update bhejo
-      let updateRes = await fetch(BIN_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': API_KEY
-        },
-        body: JSON.stringify({ maintenance: newStatus })
-      });
-
-      if(updateRes.ok) {
-        alert(newStatus ? "Portal MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
-        location.reload();
-      }
+function toggleMaintenance() {
+  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
+  if(isMaint) {
+    localStorage.setItem("brc_maintenance_mode", "false");
+    alert("Portal ab LIVE kar diya gaya hai!");
+  } else {
+    if(confirm("Maintenance mode par daalna chahte hain?")) {
+      localStorage.setItem("brc_maintenance_mode", "true");
+      alert("Portal MAINTENANCE mode par chala gaya hai!");
     }
-  } catch(e) {
-    alert("Cloud sync mein error aayi: " + e.message);
   }
+  updateMaintUI(!isMaint);
+  location.reload();
 }
 
 function checkAuth(){
