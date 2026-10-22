@@ -268,18 +268,27 @@ const ADMIN_PASS = "brc@shahpur";
 
 function checkGlobalMaintenance() {
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
-
-  // Agar user pehle se ADMIN logged-in hai, toh maintenance overlay kabhi mat dikhao
-  if (user.role === "admin" || isLoggedIn && user.role === "admin") {
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  
+  // 1. Agar koi logged in hi nahi hai, toh maintenance overlay kabhi mat dikhao, login screen dikhni chahiye!
+  if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
+    document.getElementById("authOverlay").style.display = "flex";
     updateMaintUI(isMaintenance);
     return;
   }
 
-  // Agar maintenance ON hai aur koi non-admin user logged-in hai, tabhi maintenance screen dikhao
-  if (isMaintenance && isLoggedIn && user.role && user.role !== "admin") {
+  // 2. Agar Admin logged in hai, toh bhi maintenance overlay mat dikhao
+  if (user.role === "admin") {
+    document.getElementById("maintenanceOverlay").style.display = "none";
+    document.getElementById("authOverlay").style.display = "none";
+    updateMaintUI(isMaintenance);
+    return;
+  }
+
+  // 3. Agar non-admin (School/JSK) logged in hai aur maintenance ON hai, tabhi maintenance screen dikhao
+  if (isMaintenance && user.role && user.role !== "admin") {
     document.getElementById("maintenanceOverlay").style.display = "flex";
     document.getElementById("authOverlay").style.display = "none";
   } else {
@@ -291,9 +300,7 @@ function checkGlobalMaintenance() {
 window.addEventListener('DOMContentLoaded', () => {
   checkGlobalMaintenance();
   
-  let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-
   if (user.role === 'admin' || user.name === 'BRC Admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
@@ -359,7 +366,7 @@ function checkAuth(){
     return;
   }
 
-  // Admin Login (Yeh hamesha chalega, chahe maintenance ON ho)
+  // Admin Login (Yeh maintenance ON hone par bhi hamesha chalega)
   if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
@@ -416,25 +423,6 @@ function checkAuth(){
 
   err.innerText = "Wrong Password Or UDISE Code!";
   err.style.display = "block";
-}
-
-// Session check
-if(sessionStorage.getItem("brc_logged_in") === "true"){
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  
-  if (user.role === "admin") {
-    document.getElementById("authOverlay").style.display = "none";
-  } else if (isMaintenance) {
-    // Agar normal user logged in hai aur maintenance ON hai
-    document.getElementById("maintenanceOverlay").style.display = "flex";
-    document.getElementById("authOverlay").style.display = "none";
-  } else {
-    document.getElementById("authOverlay").style.display = "none";
-  }
-} else {
-  // Agar koi logged in nahi hai, toh login overlay dikhao taaki Admin login kar sake!
-  document.getElementById("authOverlay").style.display = "flex";
 }
 
 function logoutSession(){
