@@ -270,7 +270,8 @@ function checkGlobalMaintenance() {
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  if (isMaintenance && user.role !== "admin") {
+  // Maintenance sirf tabhi dikhe jab user already logged in ho aur uska role 'admin' na ho
+  if (isMaintenance && user.role && user.role !== "admin") {
     document.getElementById("maintenanceOverlay").style.display = "flex";
     document.getElementById("authOverlay").style.display = "none";
   } else {
