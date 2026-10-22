@@ -1,7 +1,7 @@
 import { AdminLocks } from './admin-locks.js';
 import { MASTER_SCHOOLS } from './schools-data.js';
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 
 // In-Memory store (No LocalStorage for school data)
 window._cloudSchoolsData = [];
