@@ -269,9 +269,17 @@ const ADMIN_PASS = "brc@shahpur";
 function checkGlobalMaintenance() {
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  
-  // Maintenance sirf tabhi dikhe jab user already logged in ho aur uska role 'admin' na ho
-  if (isMaintenance && user.role && user.role !== "admin") {
+  let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
+
+  // Agar user pehle se ADMIN logged-in hai, toh maintenance overlay kabhi mat dikhao
+  if (user.role === "admin" || isLoggedIn && user.role === "admin") {
+    document.getElementById("maintenanceOverlay").style.display = "none";
+    updateMaintUI(isMaintenance);
+    return;
+  }
+
+  // Agar maintenance ON hai aur koi non-admin user logged-in hai, tabhi maintenance screen dikhao
+  if (isMaintenance && isLoggedIn && user.role && user.role !== "admin") {
     document.getElementById("maintenanceOverlay").style.display = "flex";
     document.getElementById("authOverlay").style.display = "none";
   } else {
@@ -343,6 +351,7 @@ function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
+  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
 
   if(!inputVal || !passVal) {
     err.innerText = "Kripya User ID aur Password dono dalein!";
@@ -350,11 +359,20 @@ function checkAuth(){
     return;
   }
 
+  // Admin Login (Yeh hamesha chalega, chahe maintenance ON ho)
   if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
+    document.getElementById("maintenanceOverlay").style.display = "none";
     location.reload();
+    return;
+  }
+
+  // Agar maintenance ON hai, toh JSK aur School login ko yahin rok do
+  if (isMaintenance) {
+    err.innerText = "Portal par maintenance chal rahi hai. Abhi JSK/School login band hai.";
+    err.style.display = "block";
     return;
   }
 
@@ -400,12 +418,22 @@ function checkAuth(){
   err.style.display = "block";
 }
 
+// Session check
 if(sessionStorage.getItem("brc_logged_in") === "true"){
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  
   if (user.role === "admin") {
+    document.getElementById("authOverlay").style.display = "none";
+  } else if (isMaintenance) {
+    // Agar normal user logged in hai aur maintenance ON hai
+    document.getElementById("maintenanceOverlay").style.display = "flex";
+    document.getElementById("authOverlay").style.display = "none";
+  } else {
     document.getElementById("authOverlay").style.display = "none";
   }
 } else {
+  // Agar koi logged in nahi hai, toh login overlay dikhao taaki Admin login kar sake!
   document.getElementById("authOverlay").style.display = "flex";
 }
 
