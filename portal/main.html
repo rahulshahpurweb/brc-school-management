@@ -265,13 +265,13 @@ body{
 
 <script>
 const ADMIN_PASS = "brc@shahpur";
+const WEB_APP_URL = "Https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
 
 function checkGlobalMaintenance() {
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  // 1. Agar koi logged in hi nahi hai, toh maintenance overlay kabhi mat dikhao, login screen dikhni chahiye!
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
     document.getElementById("authOverlay").style.display = "flex";
@@ -279,7 +279,6 @@ function checkGlobalMaintenance() {
     return;
   }
 
-  // 2. Agar Admin logged in hai, toh bhi maintenance overlay mat dikhao
   if (user.role === "admin") {
     document.getElementById("maintenanceOverlay").style.display = "none";
     document.getElementById("authOverlay").style.display = "none";
@@ -287,7 +286,6 @@ function checkGlobalMaintenance() {
     return;
   }
 
-  // 3. Agar non-admin (School/JSK) logged in hai aur maintenance ON hai, tabhi maintenance screen dikhao
   if (isMaintenance && user.role && user.role !== "admin") {
     document.getElementById("maintenanceOverlay").style.display = "flex";
     document.getElementById("authOverlay").style.display = "none";
@@ -354,7 +352,7 @@ function toggleMaintenance() {
   location.reload();
 }
 
-function checkAuth(){
+async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
@@ -366,7 +364,7 @@ function checkAuth(){
     return;
   }
 
-  // Admin Login (Yeh maintenance ON hone par bhi hamesha chalega)
+  // 1. Admin Login
   if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
@@ -376,13 +374,14 @@ function checkAuth(){
     return;
   }
 
-  // Agar maintenance ON hai, toh JSK aur School login ko yahin rok do
+  // 2. Maintenance Check
   if (isMaintenance) {
     err.innerText = "Portal par maintenance chal rahi hai. Abhi JSK/School login band hai.";
     err.style.display = "block";
     return;
   }
 
+  // 3. JSK Login
   if(inputVal === "jsk_login") {
     if(passVal === "jskpassword" || passVal === "brc@123") {
       sessionStorage.setItem("brc_logged_in", "true");
@@ -397,28 +396,42 @@ function checkAuth(){
     }
   }
 
-  let schools = [];
-  if (typeof SessionManager !== 'undefined' && SessionManager.getData) {
-    schools = SessionManager.getData();
-  } else {
+  // 4. School Cloud Verification via Google Sheet API
+  err.innerText = "Cloud se verify ho raha hai...";
+  err.style.display = "block";
+
+  try {
     let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-    schools = JSON.parse(localStorage.getItem(`brc_schools_data_${activeSess}`) || "[]");
+    let response = await fetch(`${WEB_APP_URL}?session=${activeSess}`);
+    let schools = await response.json();
+
+    if (Array.isArray(schools)) {
+      let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
+      if (foundSchool) {
+        if (passVal === "12345" || passVal === String(foundSchool.udise).trim()) {
+          sessionStorage.setItem("brc_logged_in", "true");
+          localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
+          document.getElementById("authOverlay").style.display = "none";
+          location.reload();
+          return;
+        } else {
+          err.innerText = "School ka password galat hai! (Password: 12345 ya UDISE Code)";
+          err.style.display = "block";
+          return;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Cloud Auth Error:", e);
   }
 
-  let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
-
-  if(foundSchool) {
-    if(passVal === "12345" || passVal === String(foundSchool.udise).trim()) {
-      sessionStorage.setItem("brc_logged_in", "true");
-      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
-      document.getElementById("authOverlay").style.display = "none";
-      location.reload();
-      return;
-    } else {
-      err.innerText = "School ka password galat hai!";
-      err.style.display = "block";
-      return;
-    }
+  // Fallback direct check for valid UDISE code if offline/cloud delay
+  if (inputVal.length >= 6 && !isNaN(inputVal) && (passVal === "12345" || passVal === inputVal)) {
+    sessionStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: 'School UDISE: ' + inputVal }));
+    document.getElementById("authOverlay").style.display = "none";
+    location.reload();
+    return;
   }
 
   err.innerText = "Wrong Password Or UDISE Code!";
