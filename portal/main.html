@@ -1,7 +1,272 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BRC Shahpur - Master Portal</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0b2854;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: env(safe-area-inset-top, 5px);
+}
+
+/* Ultra Compact Top App Bar */
+.master-header{
+  background: linear-gradient(135deg,#071b38,#0e3d7e);
+  color: white;
+  padding: 6px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #f4b400;
+  flex-shrink: 0;
+  height: 50px;
+  z-index: 100;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.menu-toggle {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.brand-title{
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+/* Side Drawer Menu */
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background: #071b38;
+  z-index: 9999;
+  box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border-right: 2px solid #f4b400;
+}
+.side-drawer.open {
+  left: 0;
+}
+.drawer-header {
+  background: #041022;
+  padding: 15px;
+  color: white;
+  border-bottom: 2px solid #f4b400;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.drawer-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #ffd21c;
+  font-weight: 900;
+}
+.drawer-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+}
+.drawer-links {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+.drawer-link {
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+.drawer-link:hover, .drawer-link.active {
+  background: #ffd21c;
+  color: #082a63;
+  border-color: #ffd21c;
+}
+.drawer-section-title {
+  font-size: 11px;
+  color: #f4b400;
+  text-transform: uppercase;
+  margin: 10px 0 2px 4px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  border-bottom: 1px solid rgba(244,180,0,0.2);
+  padding-bottom: 3px;
+}
+
+/* Backdrop Overlay */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9998;
+  display: none;
+  backdrop-filter: blur(3px);
+}
+.drawer-backdrop.open {
+  display: block;
+}
+
+/* Frame Container */
+.frame-container{
+  flex: 1;
+  width: 100%;
+  background: #f4f7fb;
+}
+#moduleFrame{width:100%;height:100%;border:0}
+
+/* LOGIN OVERLAY */
+#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
+.auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
+.auth-card h2{margin-top:0;color:#082a63}
+.auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
+.auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px;box-sizing:border-box}
+.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;margin-bottom:10px}
+.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+
+/* Maintenance Overlay */
+#maintenanceOverlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #071b38, #0b2854);
+  z-index: 999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.maint-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+}
+.maint-card h1 { color: #f4b400; font-size: 22px; margin-bottom: 10px; }
+.maint-card p { color: #e2e8f0; font-size: 14px; line-height: 1.5; margin: 0; }
+</style>
+</head>
+<body>
+
+<div id="maintenanceOverlay">
+  <div class="maint-card">
+    <h1>🚧 Portal Under Maintenance</h1>
+    <p>पोर्टल पर अभी मेंटेनेंस का कार्य चल रहा है। कृपया कुछ समय बाद लॉगिन करें।</p>
+  </div>
+</div>
+
+<div id="authOverlay">
+  <div class="auth-card">
+    <h2>🔐 BRC_Login</h2>
+    <p>BRC, JSKs, SCHOOLs Cloud Login</p>
+    <div id="authErr" class="auth-err">Kripya Sahi User ID aur Password dalein!</div>
+    <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
+    <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Login</button>
+    <div style="text-align:center; margin-top:10px;">
+      <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">🔍 SNA Account Check</a>
+    </div>
+  </div>
+</div>
+
+<div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer()"></div>
+
+<div id="sideDrawer" class="side-drawer">
+  <div class="drawer-header">
+    <h3>🏛️ BRC Shahpur</h3>
+    <button class="drawer-close" onclick="toggleDrawer()">✕</button>
+  </div>
+  <div class="drawer-links">
+    
+    <div class="drawer-section-title">Modules</div>
+    <button class="drawer-link active" onclick="loadModule('R2.html', this)">
+      <span>📊</span> Enrollment Module (R2)
+    </button>
+    <button class="drawer-link" onclick="loadModule('R3.html', this)">
+      <span>♿</span> CWSN Module (R3)
+    </button>
+    <a href="../index.html" class="drawer-link" style="background:rgba(16,185,129,0.15); border-color:#10b981;">
+      <span>🔍</span> SNA Account Check
+    </a>
+
+    <div id="adminControlsSection" style="display:none;">
+      <div class="drawer-section-title">Admin Controls</div>
+      
+      <button onclick="triggerFeatureControl()" class="drawer-link" style="background:rgba(59,130,246,0.15); border-color:#3b82f6;">
+        <span>⚙️</span> Feature Control Panel
+      </button>
+
+      <div id="adminMaintenancePanel" style="display:flex; flex-direction:column; gap:4px; background:rgba(255,255,255,0.06); padding:8px; border-radius:6px; margin-top:4px; border:1px solid rgba(255,255,255,0.1);">
+        <span style="font-size:10px; font-weight:bold; color:#ffd21c;">🛠️ Global Maintenance Mode:</span>
+        <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:5px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
+      </div>
+    </div>
+
+    <div class="drawer-section-title">Session</div>
+    <button class="drawer-link" onclick="logoutSession()" style="background:rgba(220,38,38,0.15); border-color:#dc2626; color:#f87171;">
+      <span>🚪</span> Logout Portal
+    </button>
+  </div>
+</div>
+
+<header class="master-header">
+  <div class="header-left">
+    <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
+    <div class="brand-title">BRC Shahpur Portal</div>
+  </div>
+  <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">☰ Menu-1</div>
+</header>
+
+<div class="frame-container">
+  <iframe id="moduleFrame" src="R2.html"></iframe>
+</div>
+
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 
-// 1. Check Global Maintenance from Cloud Google Sheet
+// 1. Check Global Maintenance from Google Sheet Cloud
 async function checkGlobalMaintenance() {
   let isMaintenance = false;
   try {
@@ -13,7 +278,7 @@ async function checkGlobalMaintenance() {
     isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   }
 
-  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true";
+  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true"; // Persistent localStorage session
   let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
   
   if (!isLoggedIn) {
@@ -43,7 +308,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await checkGlobalMaintenance();
   
   let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
-  if (user.role === 'admin' || user.name === 'BRC Admin') {
+  if (user.role === 'admin' || user.name === 'BRC Admin' || user.role === 'admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
   }
@@ -93,7 +358,7 @@ async function toggleMaintenance() {
     let r = await res.json();
     if(r.status === "success") {
       localStorage.setItem("brc_maintenance_mode", newMaintState ? "true" : "false");
-      alert(newMaintState ? "Portal MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
+      alert(newMaintState ? "Portal GLOBAL MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
     } else {
       alert("Maintenance update karne mein error aayi.");
     }
@@ -105,7 +370,7 @@ async function toggleMaintenance() {
   location.reload();
 }
 
-// 2. Cloud Credentials Based Auth Check (Google Sheet Credentials Tab)
+// 2. Cloud Credentials Based Authentication (Google Sheet Credentials Tab)
 async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -135,8 +400,8 @@ async function checkAuth(){
       let matchedUser = credentials.find(c => String(c.userId).trim() === inputVal);
       
       if (matchedUser) {
-        if (matchedUser.password === passVal) {
-          localStorage.setItem("brc_logged_in", "true");
+        if (String(matchedUser.password).trim() === passVal) {
+          localStorage.setItem("brc_logged_in", "true"); // Persistent localStorage
           localStorage.setItem("brc_logged_user", JSON.stringify({ 
             role: matchedUser.role, 
             udise: matchedUser.role === 'school' ? matchedUser.userId : '', 
@@ -154,11 +419,11 @@ async function checkAuth(){
       }
     }
   } catch (e) {
-    console.log("Cloud credential fetch failed.");
+    console.log("Cloud credential fetch failed, checking emergency fallback.");
   }
 
   // Emergency Admin Fallback
-  if (inputVal === "admin" && passVal === "brc@shahpur") {
+  if ((inputVal === "admin" || inputVal === "brc@shahpur") && passVal === "brc@shahpur") {
     localStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
@@ -166,7 +431,7 @@ async function checkAuth(){
     return;
   }
 
-  err.innerText = "Wrong User ID Or Password!";
+  err.innerText = "Wrong User ID Or UDISE Code / Password!";
   err.style.display = "block";
 }
 
@@ -183,3 +448,6 @@ function loadModule(fileName, btnElement){
   toggleDrawer();
 }
 </script>
+
+</body>
+</html>
