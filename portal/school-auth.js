@@ -46,7 +46,7 @@ export const SchoolAuth = {
       return true;
     }
 
-    // 2. Default fallback: Agar password set nahi hai, toh "12345" ya UDISE code se login allow kar do (Cloud/Valid UDISE check ke sath)
+    // 2. Default fallback: Agar password set nahi hai, toh "12345" ya UDISE code se login allow kar do
     if (!creds[udise]) {
       if (schoolObj || (udise.length >= 6 && !isNaN(udise))) {
         if (pass === "12345" || pass === String(udise).trim()) {
