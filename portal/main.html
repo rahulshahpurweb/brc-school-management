@@ -1,11 +1,20 @@
 <script>
-const ADMIN_PASS = "brc@shahpur";
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 
-function checkGlobalMaintenance() {
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true"; // sessionStorage ki jagah localStorage
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+// 1. Check Global Maintenance from Cloud Google Sheet
+async function checkGlobalMaintenance() {
+  let isMaintenance = false;
+  try {
+    let res = await fetch(`${WEB_APP_URL}?action=getMaintenance`);
+    let data = await res.json();
+    isMaintenance = data.maintenance === true;
+    localStorage.setItem("brc_maintenance_mode", isMaintenance ? "true" : "false");
+  } catch(e) {
+    isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  }
+
+  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true";
+  let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
   
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
@@ -30,10 +39,10 @@ function checkGlobalMaintenance() {
   updateMaintUI(isMaintenance);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  checkGlobalMaintenance();
+window.addEventListener('DOMContentLoaded', async () => {
+  await checkGlobalMaintenance();
   
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
   if (user.role === 'admin' || user.name === 'BRC Admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
@@ -72,21 +81,31 @@ function updateMaintUI(isMaint) {
   }
 }
 
-function toggleMaintenance() {
+async function toggleMaintenance() {
   let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
-  if(isMaint) {
-    localStorage.setItem("brc_maintenance_mode", "false");
-    alert("Portal ab LIVE kar diya gaya hai!");
-  } else {
-    if(confirm("Maintenance mode par daalna chahte hain?")) {
-      localStorage.setItem("brc_maintenance_mode", "true");
-      alert("Portal MAINTENANCE mode par chala gaya hai!");
+  let newMaintState = !isMaint;
+
+  try {
+    let res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "setMaintenance", maintenance: newMaintState })
+    });
+    let r = await res.json();
+    if(r.status === "success") {
+      localStorage.setItem("brc_maintenance_mode", newMaintState ? "true" : "false");
+      alert(newMaintState ? "Portal MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
+    } else {
+      alert("Maintenance update karne mein error aayi.");
     }
+  } catch(err) {
+    alert("Network error: Maintenance update nahi ho payi.");
   }
-  updateMaintUI(!isMaint);
+
+  updateMaintUI(newMaintState);
   location.reload();
 }
 
+// 2. Cloud Credentials Based Auth Check (Google Sheet Credentials Tab)
 async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -99,77 +118,55 @@ async function checkAuth(){
     return;
   }
 
-  // 1. Admin Login
-  if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
-    localStorage.setItem("brc_logged_in", "true"); // localStorage use kiya
-    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
-    document.getElementById("authOverlay").style.display = "none";
-    document.getElementById("maintenanceOverlay").style.display = "none";
-    location.reload();
-    return;
-  }
-
-  // 2. Maintenance Check
-  if (isMaintenance) {
-    err.innerText = "Portal par maintenance chal rahi hai. Abhi JSK/School login band hai.";
+  if (isMaintenance && inputVal !== "admin") {
+    err.innerText = "Portal par maintenance chal rahi hai. Abhi login band hai.";
     err.style.display = "block";
     return;
   }
 
-  // 3. JSK Login
-  if(inputVal === "jsk_login") {
-    if(passVal === "jskpassword" || passVal === "brc@123") {
-      localStorage.setItem("brc_logged_in", "true"); // localStorage use kiya
-      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-      document.getElementById("authOverlay").style.display = "none";
-      location.reload();
-      return;
-    } else {
-      err.innerText = "JSK ka password galat hai!";
-      err.style.display = "block";
-      return;
-    }
-  }
-
-  // 4. School Login (Cloud First with Instant Local/Pattern Fallback)
-  err.innerText = "Login ho raha hai, kripya intezar karein...";
+  err.innerText = "Cloud credentials se verification ho raha hai...";
   err.style.display = "block";
 
-  let schoolFound = false;
-  let schoolName = "School UDISE: " + inputVal;
-
   try {
-    let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-    let response = await fetch(`${WEB_APP_URL}?session=${activeSess}`);
-    let schools = await response.json();
+    let response = await fetch(`${WEB_APP_URL}?action=getCredentials`);
+    let credentials = await response.json();
 
-    if (Array.isArray(schools)) {
-      let found = schools.find(s => String(s.udise).trim() === inputVal);
-      if (found) {
-        schoolFound = true;
-        schoolName = found.name;
+    if (Array.isArray(credentials)) {
+      let matchedUser = credentials.find(c => String(c.userId).trim() === inputVal);
+      
+      if (matchedUser) {
+        if (matchedUser.password === passVal) {
+          localStorage.setItem("brc_logged_in", "true");
+          localStorage.setItem("brc_logged_user", JSON.stringify({ 
+            role: matchedUser.role, 
+            udise: matchedUser.role === 'school' ? matchedUser.userId : '', 
+            name: matchedUser.name || matchedUser.userId 
+          }));
+          document.getElementById("authOverlay").style.display = "none";
+          document.getElementById("maintenanceOverlay").style.display = "none";
+          location.reload();
+          return;
+        } else {
+          err.innerText = "Galat Password! Kripya sahi password dalein.";
+          err.style.display = "block";
+          return;
+        }
       }
     }
   } catch (e) {
-    console.log("Cloud fetch skipped during login, using direct validation.");
+    console.log("Cloud credential fetch failed.");
   }
 
-  // Agar cloud mein mil gaya YAA user ne valid UDISE code dala hai (6+ digit)
-  if (schoolFound || (inputVal.length >= 6 && !isNaN(inputVal))) {
-    if (passVal === "12345" || passVal === inputVal) {
-      localStorage.setItem("brc_logged_in", "true"); // localStorage use kiya
-      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: schoolName }));
-      document.getElementById("authOverlay").style.display = "none";
-      location.reload();
-      return;
-    } else {
-      err.innerText = "School ka password galat hai! (Password: 12345 ya UDISE Code)";
-      err.style.display = "block";
-      return;
-    }
+  // Emergency Admin Fallback
+  if (inputVal === "admin" && passVal === "brc@shahpur") {
+    localStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
+    document.getElementById("authOverlay").style.display = "none";
+    location.reload();
+    return;
   }
 
-  err.innerText = "Wrong Password Or UDISE Code!";
+  err.innerText = "Wrong User ID Or Password!";
   err.style.display = "block";
 }
 
