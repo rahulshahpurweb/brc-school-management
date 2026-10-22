@@ -1,3 +1,6 @@
+import { SessionManager } from './session-manager.js';
+
+// UDISE Based School Authentication & Password Management
 export const SchoolLogin = {
   init() {
     let userStr = localStorage.getItem("brc_logged_user");
@@ -6,17 +9,21 @@ export const SchoolLogin = {
     try {
       let user = JSON.parse(userStr);
       if (user && user.role === 'school') {
-        console.log("Applying School Restrictions from separate file...");
+        console.log("Applying School Restrictions from cloud-aligned session...");
 
         // 1. Template aur Upload buttons hide karna
         setTimeout(() => {
           document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
         }, 300);
 
-        // 2. Academic Session ko sirf 2026-27 par lock karna
+        // 2. Academic Session ko Cloud ke active session par lock karna
+        let currentSess = (typeof SessionManager !== 'undefined' && SessionManager.getActiveSession) 
+                          ? SessionManager.getActiveSession() 
+                          : "2026-27";
+                          
         let sessionSelect = document.getElementById("sessionSelect");
         if (sessionSelect) {
-          sessionSelect.innerHTML = `<option value="2026-27">2026-27 (Current)</option>`;
+          sessionSelect.innerHTML = `<option value="${currentSess}">${currentSess} (Current)</option>`;
           sessionSelect.disabled = true;
         }
 
