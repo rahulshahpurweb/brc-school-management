@@ -30,10 +30,10 @@ export const SchoolAuth = {
   login(udise, pass) {
     let creds = this.getCredentials();
     
-    // School data se naam nikalne ke liye
+    // Cloud-backed data se school ka naam nikalne ke liye
     let schools = SessionManager.getData();
-    let schoolObj = schools.find(s => String(s.udise) === String(udise));
-    let schoolName = schoolObj ? schoolObj.name : "School";
+    let schoolObj = schools.find(s => String(s.udise).trim() === String(udise).trim());
+    let schoolName = schoolObj ? schoolObj.name : "School UDISE: " + udise;
 
     // 1. Agar custom password set hai aur match ho gaya
     if(creds[udise] && creds[udise] === pass) {
@@ -46,16 +46,18 @@ export const SchoolAuth = {
       return true;
     }
 
-    // 2. Default fallback: Agar password set nahi hai, toh "12345" ya UDISE code se login allow kar do
+    // 2. Default fallback: Agar password set nahi hai, toh "12345" ya UDISE code se login allow kar do (Cloud/Valid UDISE check ke sath)
     if (!creds[udise]) {
-      if (schoolObj && (pass === "12345" || pass === udise)) {
-        localStorage.setItem("logged_school_udise", udise);
-        localStorage.setItem("brc_logged_user", JSON.stringify({
-          role: 'school',
-          udise: udise,
-          name: schoolName
-        }));
-        return true;
+      if (schoolObj || (udise.length >= 6 && !isNaN(udise))) {
+        if (pass === "12345" || pass === String(udise).trim()) {
+          localStorage.setItem("logged_school_udise", udise);
+          localStorage.setItem("brc_logged_user", JSON.stringify({
+            role: 'school',
+            udise: udise,
+            name: schoolName
+          }));
+          return true;
+        }
       }
     }
 
