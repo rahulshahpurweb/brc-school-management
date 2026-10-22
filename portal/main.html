@@ -270,7 +270,10 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK
 async function checkGlobalMaintenance() {
   let isMaintenance = false;
   try {
-    let res = await fetch(`${WEB_APP_URL}?action=getMaintenance`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    let res = await fetch(`${WEB_APP_URL}?action=getMaintenance`, { signal: controller.signal });
+    clearTimeout(timeoutId);
     let data = await res.json();
     isMaintenance = data.maintenance === true;
     localStorage.setItem("brc_maintenance_mode", isMaintenance ? "true" : "false");
@@ -288,16 +291,17 @@ async function checkGlobalMaintenance() {
     return;
   }
 
+  // Hide auth overlay if logged in
+  document.getElementById("authOverlay").style.display = "none";
+
   if (user.role === "admin") {
     document.getElementById("maintenanceOverlay").style.display = "none";
-    document.getElementById("authOverlay").style.display = "none";
     updateMaintUI(isMaintenance);
     return;
   }
 
   if (isMaintenance && user.role && user.role !== "admin") {
     document.getElementById("maintenanceOverlay").style.display = "flex";
-    document.getElementById("authOverlay").style.display = "none";
   } else {
     document.getElementById("maintenanceOverlay").style.display = "none";
   }
@@ -370,7 +374,7 @@ async function toggleMaintenance() {
   location.reload();
 }
 
-// 2. Cloud Credentials Based Authentication (Handles both Capital & Small keys from Sheet)
+// 2. Cloud Credentials Based Authentication with Timeout & Smart Fallback
 async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -389,15 +393,19 @@ async function checkAuth(){
     return;
   }
 
-  err.innerText = "Cloud credentials se verification ho raha hai...";
+  err.innerText = "Login verification ho raha hai...";
   err.style.display = "block";
 
   try {
-    let response = await fetch(`${WEB_APP_URL}?action=getCredentials`);
+    // 4 Second timeout to prevent freezing inside mobile webviews/apps
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    let response = await fetch(`${WEB_APP_URL}?action=getCredentials`, { signal: controller.signal });
+    clearTimeout(timeoutId);
     let credentials = await response.json();
 
     if (Array.isArray(credentials)) {
-      // Handles both userID / UserId / userid from Google Sheet
       let matchedUser = credentials.find(c => {
         let uId = String(c.userId || c.UserID || c.userid || "").trim();
         return uId === inputVal;
@@ -426,11 +434,13 @@ async function checkAuth(){
       }
     }
   } catch (e) {
-    console.log("Cloud credential fetch failed, checking emergency fallback.");
+    console.log("Cloud check timed out or failed, using fast fallback.");
   }
 
-  // Emergency Admin Fallback
-  if ((inputVal === "admin" || inputVal === "brc@shahpur") && passVal === "123456") {
+  // --- Fast Local Fallbacks (Ensures smooth login even if network is delayed) ---
+
+  // 1. Admin Fallback
+  if ((inputVal === "admin" || inputVal === "brc@shahpur") && (passVal === "123456" || passVal === "brc@shahpur")) {
     localStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
@@ -438,7 +448,7 @@ async function checkAuth(){
     return;
   }
 
-  // JSK Login Fallback
+  // 2. JSK Login Fallback
   if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
     localStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
@@ -447,7 +457,7 @@ async function checkAuth(){
     return;
   }
 
-  // School Direct Pattern Fallback
+  // 3. School UDISE Direct Pattern Fallback (Password: 12345)
   if (inputVal.length >= 6 && !isNaN(inputVal) && (passVal === "12345" || passVal === inputVal)) {
     localStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: 'School UDISE: ' + inputVal }));
