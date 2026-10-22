@@ -396,10 +396,12 @@
     }
   };
 
-  window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', () => {
+    // Cloud-first ya session-based maintenance check
     let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     
+    // Agar maintenance ON hai aur user admin nahi hai, tabhi overlay dikhao
     if (isMaintenance && user.role !== "admin") {
       let overlay = document.getElementById("maintenanceOverlay");
       if (overlay) overlay.style.display = "flex";
@@ -414,7 +416,7 @@
           } else {
             let sessionSelect = document.getElementById("sessionSelect");
             let sessionBadge = document.getElementById("sessionBadge");
-            let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+            let activeSess = (typeof SessionManager !== 'undefined' && SessionManager.getActiveSession) ? SessionManager.getActiveSession() : "2026-27";
             
             if (sessionSelect) sessionSelect.style.display = 'none';
             if (sessionBadge) {
