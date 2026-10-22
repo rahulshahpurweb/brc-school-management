@@ -396,9 +396,12 @@ async function checkAuth(){
     }
   }
 
-  // 4. School Cloud Verification via Google Sheet API
-  err.innerText = "Cloud se verify ho raha hai...";
+  // 4. School Login (Cloud First with Instant Local/Pattern Fallback)
+  err.innerText = "Login ho raha hai, kripya intezar karein...";
   err.style.display = "block";
+
+  let schoolFound = false;
+  let schoolName = "School UDISE: " + inputVal;
 
   try {
     let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -406,37 +409,35 @@ async function checkAuth(){
     let schools = await response.json();
 
     if (Array.isArray(schools)) {
-      let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
-      if (foundSchool) {
-        if (passVal === "12345" || passVal === String(foundSchool.udise).trim()) {
-          sessionStorage.setItem("brc_logged_in", "true");
-          localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
-          document.getElementById("authOverlay").style.display = "none";
-          location.reload();
-          return;
-        } else {
-          err.innerText = "School ka password galat hai! (Password: 12345 ya UDISE Code)";
-          err.style.display = "block";
-          return;
-        }
+      let found = schools.find(s => String(s.udise).trim() === inputVal);
+      if (found) {
+        schoolFound = true;
+        schoolName = found.name;
       }
     }
   } catch (e) {
-    console.error("Cloud Auth Error:", e);
+    console.log("Cloud fetch skipped during login, using direct validation.");
   }
 
-  // Fallback direct check for valid UDISE code if offline/cloud delay
-  if (inputVal.length >= 6 && !isNaN(inputVal) && (passVal === "12345" || passVal === inputVal)) {
-    sessionStorage.setItem("brc_logged_in", "true");
-    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: 'School UDISE: ' + inputVal }));
-    document.getElementById("authOverlay").style.display = "none";
-    location.reload();
-    return;
+  // Agar cloud mein mil gaya YAA user ne valid UDISE code dala hai (6+ digit)
+  if (schoolFound || (inputVal.length >= 6 && !isNaN(inputVal))) {
+    if (passVal === "12345" || passVal === inputVal) {
+      sessionStorage.setItem("brc_logged_in", "true");
+      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: schoolName }));
+      document.getElementById("authOverlay").style.display = "none";
+      location.reload();
+      return;
+    } else {
+      err.innerText = "School ka password galat hai! (Password: 12345 ya UDISE Code)";
+      err.style.display = "block";
+      return;
+    }
   }
 
   err.innerText = "Wrong Password Or UDISE Code!";
   err.style.display = "block";
 }
+
 
 function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
