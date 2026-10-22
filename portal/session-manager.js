@@ -1,33 +1,19 @@
 import { AdminLocks } from './admin-locks.js';
 import { MASTER_SCHOOLS } from './schools-data.js';
 
-const WEB_APP_URL = "Https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
+
+// In-Memory store (No LocalStorage for school data)
+window._cloudSchoolsData = [];
+window._activeCloudSession = "2026-27";
 
 export const SessionManager = {
-    getActiveSession() {
-    // 1. Pehle local storage se turant uthao taaki speed fast rahe
-    let cached = localStorage.getItem("brc_active_session");
-    if (cached) return cached;
-    
-    // 2. Agar local mein na ho, tabhi cloud se mango (fallback)
-    try {
-      let xhr = new XMLHttpRequest();
-      xhr.open("GET", WEB_APP_URL + "?action=getSession", false);
-      xhr.send();
-      if (xhr.status === 200) {
-        let res = JSON.parse(xhr.responseText);
-        if (res && res.activeSession) {
-          localStorage.setItem("brc_active_session", res.activeSession);
-          return res.activeSession;
-        }
-      }
-    } catch (e) {}
-    return "2026-27";
+  getActiveSession() {
+    return window._activeCloudSession;
   },
-  
 
   setActiveSession(sessionName) {
-    localStorage.setItem("brc_active_session", sessionName);
+    window._activeCloudSession = sessionName;
     let payload = { action: "setSession", session: sessionName };
 
     fetch(WEB_APP_URL, {
@@ -41,11 +27,55 @@ export const SessionManager = {
   },
 
   async init() {
+    // Session aur Cloud se live data turant fetch karo
+    await this.fetchActiveSessionFromCloud();
+    await this.fetchCloudData();
+    
     this.renderDropdown();
     this.updateStats();
-    // Background mein cloud se data fetch karke update karega taaki speed fast rahe
-    this.loadCloudDataInBackground();
     this.applyRoleAccess();
+
+    if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();
+    if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
+  },
+
+  async fetchActiveSessionFromCloud() {
+    try {
+      let response = await fetch(WEB_APP_URL + "?action=getSession");
+      let res = await response.json();
+      if (res && res.activeSession) {
+        window._activeCloudSession = res.activeSession;
+      }
+    } catch (e) {
+      console.error("Session Fetch Error:", e);
+    }
+  },
+
+  async fetchCloudData() {
+    let activeSession = this.getActiveSession();
+    try {
+      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);
+      let cloudData = await response.json();
+      if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
+        window._cloudSchoolsData = cloudData;
+        return;
+      }
+    } catch (err) {
+      console.error("Cloud Data Fetch Error:", err);
+    }
+
+    // Fallback agar cloud data na mile toh master schools ka structure load kar do
+    let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+    let freshSchools = JSON.parse(JSON.stringify(baseSchools));
+    freshSchools.forEach(s => {
+      if (s.classes) {
+        Object.keys(s.classes).forEach(cName => {
+          let c = s.classes[cName];
+          Object.keys(c).forEach(k => c[k] = 0);
+        });
+      }
+    });
+    window._cloudSchoolsData = freshSchools;
   },
 
   renderDropdown() {
@@ -87,80 +117,44 @@ export const SessionManager = {
     this.setActiveSession(select.value);
   },
 
+  // Synchronous data return from memory (No LocalStorage)
   getData() {
-    let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`;
-    let saved = localStorage.getItem(dataKey);
-
-    if (!saved) {
-      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
-      let freshSchools = JSON.parse(JSON.stringify(baseSchools));
-      freshSchools.forEach(s => {
-        if (s.classes) {
-          Object.keys(s.classes).forEach(cName => {
-            let c = s.classes[cName];
-            Object.keys(c).forEach(k => c[k] = 0);
-          });
-        }
-      });
-      localStorage.setItem(dataKey, JSON.stringify(freshSchools));
-      return freshSchools;
-    }
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
+    if (!window._cloudSchoolsData || window._cloudSchoolsData.length === 0) {
       return window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
     }
+    return window._cloudSchoolsData;
   },
 
-  async loadCloudDataInBackground() {
+  // Data save seedhe Google Sheet par cloud POST request ke zariye
+  async saveData(schoolsData) {
     let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`;
-    
-    try {
-      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);
-      let cloudData = await response.json();
-      if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
-        localStorage.setItem(dataKey, JSON.stringify(cloudData));
-        this.updateStats();
-        if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();
-        if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
-      }
-    } catch (err) {
-      console.error("Background Sync Error:", err);
-    }
-  },
-
-  saveData(schoolsData) {
-    let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`;
-
-    // Local storage mein turant save karo taaki ekdum instant response mile
     let allSchools = this.getData();
+
     if (Array.isArray(schoolsData)) {
       allSchools = schoolsData;
     } else if (schoolsData && schoolsData.udise) {
-      let index = allSchools.findIndex(s => s.udise === schoolsData.udise);
+      let index = allSchools.findIndex(s => String(s.udise) === String(schoolsData.udise));
       if (index !== -1) allSchools[index] = schoolsData;
       else allSchools.push(schoolsData);
     }
 
-    localStorage.setItem(dataKey, JSON.stringify(allSchools));
+    window._cloudSchoolsData = allSchools;
     this.updateStats();
-    alert("Data safaltapurvak save ho gaya!");
+    alert("Data cloud par save ho raha hai...");
 
-    // Background mein Google Sheet par sync kar do
     let payload = { session: activeSession, data: allSchools };
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    }).then(() => {
-      console.log("Cloud synced successfully");
-    }).catch(err => {
-      console.error("Cloud Sync Error:", err);
-    });
+    try {
+      await fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      alert("Data safaltapurvak Google Sheet par save ho gaya!");
+    } catch (err) {
+      console.error("Cloud Save Error:", err);
+      alert("Cloud par save karne mein error aayi!");
+    }
   },
 
   updateStats() {
@@ -194,7 +188,7 @@ export const SessionManager = {
   },
 
   getCurrentUser() {
-    let session = localStorage.getItem("brc_current_user");
+    let session = localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user");
     return session ? JSON.parse(session) : null;
   },
 
