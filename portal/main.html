@@ -197,7 +197,6 @@ body{
   </div>
 </div>
 
-<!-- Clean Login Overlay without extra clutter -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
@@ -212,10 +211,8 @@ body{
   </div>
 </div>
 
-<!-- Backdrop Overlay -->
 <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer()"></div>
 
-<!-- Slide-out Side Drawer Menu -->
 <div id="sideDrawer" class="side-drawer">
   <div class="drawer-header">
     <h3>🏛️ BRC Shahpur</h3>
@@ -234,7 +231,6 @@ body{
       <span>🔍</span> SNA Account Check
     </a>
 
-    <!-- Admin & Controls Section (Visible ONLY to Admin) -->
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
       
@@ -255,7 +251,6 @@ body{
   </div>
 </div>
 
-<!-- Ultra Compact Top App Bar -->
 <header class="master-header">
   <div class="header-left">
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
@@ -264,28 +259,52 @@ body{
   <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">☰ Menu-1</div>
 </header>
 
-<!-- Main Data Display Iframe -->
-<div class="frame-container">
+<frame-container class="frame-container">
   <iframe id="moduleFrame" src="R2.html"></iframe>
-</div>
+</frame-container>
 
 <script>
 const ADMIN_PASS = "brc@shahpur";
 
+// JSONbin Cloud Configurations (Aap yahan apna free bin URL aur API key daal sakte hain)
+const BIN_URL = "https://api.jsonbin.io/v3/b/YOUR_BIN_ID"; 
+const API_KEY = "YOUR_JSONBIN_SECRET_KEY";
+
+async function checkGlobalMaintenance() {
+  try {
+    let response = await fetch(BIN_URL, {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    let data = await response.json();
+    let isMaintenance = data.record.maintenance;
+    
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    
+    if (isMaintenance && user.role !== "admin") {
+      document.getElementById("maintenanceOverlay").style.display = "flex";
+      document.getElementById("authOverlay").style.display = "none";
+    } else {
+      document.getElementById("maintenanceOverlay").style.display = "none";
+    }
+    
+    // UI update for admin panel button
+    updateMaintUI(isMaintenance);
+  } catch(e) {
+    // Fallback to local storage agar cloud fetch fail ho jaye
+    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+    updateMaintUI(isMaintenance);
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  checkGlobalMaintenance();
+  
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  
-  if (isMaintenance && isLoggedIn && user.role !== "admin") {
-    document.getElementById("maintenanceOverlay").style.display = "flex";
-    document.getElementById("authOverlay").style.display = "none";
-  }
 
   if (user.role === 'admin' || user.name === 'BRC Admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
-    updateMaintUI();
   }
 });
 
@@ -306,8 +325,7 @@ function triggerFeatureControl() {
   }
 }
 
-function updateMaintUI() {
-  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
+function updateMaintUI(isMaint) {
   let btn = document.getElementById("maintToggleBtn");
   if(btn) {
     if(isMaint) {
@@ -322,19 +340,33 @@ function updateMaintUI() {
   }
 }
 
-function toggleMaintenance() {
-  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
-  if(isMaint) {
-    localStorage.setItem("brc_maintenance_mode", "false");
-    alert("Portal ab LIVE kar diya gaya hai!");
-  } else {
-    if(confirm("Maintenance mode par daalna chahte hain?")) {
-      localStorage.setItem("brc_maintenance_mode", "true");
-      alert("Portal MAINTENANCE mode par chala gaya hai!");
+async function toggleMaintenance() {
+  try {
+    // Current status check karo
+    let response = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
+    let data = await response.json();
+    let currentMaint = data.record.maintenance;
+    let newStatus = !currentMaint;
+
+    if(!newStatus || confirm("Maintenance mode par daalna chahte hain?")) {
+      // Cloud par update bhejo
+      let updateRes = await fetch(BIN_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify({ maintenance: newStatus })
+      });
+
+      if(updateRes.ok) {
+        alert(newStatus ? "Portal MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
+        location.reload();
+      }
     }
+  } catch(e) {
+    alert("Cloud sync mein error aayi: " + e.message);
   }
-  updateMaintUI();
-  location.reload();
 }
 
 function checkAuth(){
@@ -399,9 +431,8 @@ function checkAuth(){
 }
 
 if(sessionStorage.getItem("brc_logged_in") === "true"){
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  if (!isMaintenance || user.role === "admin") {
+  if (user.role === "admin") {
     document.getElementById("authOverlay").style.display = "none";
   }
 } else {
