@@ -3,63 +3,68 @@ import { MASTER_SCHOOLS } from './schools-data.js';
 
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 
-export const SessionManager = {
-  getActiveSession() {
-    let cached = localStorage.getItem("brc_active_session");
-    if (cached) return cached;
+let cloudMemoryData = null;
+let currentCloudSession = "2026-27";
 
+export const SessionManager = {
+  async getActiveSession() {
     try {  
-      let xhr = new XMLHttpRequest();  
-      xhr.open("GET", WEB_APP_URL + "?action=getSession", false);  
-      xhr.send();  
-      if (xhr.status === 200) {  
-        let res = JSON.parse(xhr.responseText);  
-        if (res && res.activeSession) {  
-          localStorage.setItem("brc_active_session", res.activeSession);  
-          return res.activeSession;  
-        }  
+      let response = await fetch(WEB_APP_URL + "?action=getSession");
+      let res = await response.json();
+      if (res && res.activeSession) {  
+        currentCloudSession = res.activeSession;
+        return res.activeSession;  
       }  
-    } catch (e) {}  
-    return "2026-27";
+    } catch (e) {
+      console.error("Session fetch error:", e);
+    }
+    return currentCloudSession;
   },
 
-  setActiveSession(sessionName) {
-    localStorage.setItem("brc_active_session", sessionName);
+  async setActiveSession(sessionName) {
+    currentCloudSession = sessionName;
     let payload = { action: "setSession", session: sessionName };
 
-    fetch(WEB_APP_URL, {  
-      method: "POST",  
-      mode: "no-cors",  
-      headers: { "Content-Type": "text/plain;charset=utf-8" },  
-      body: JSON.stringify(payload)  
-    }).then(() => {  
-      location.reload();  
-    });
+    try {
+      await fetch(WEB_APP_URL, {  
+        method: "POST",  
+        mode: "no-cors",  
+        headers: { "Content-Type": "text/plain;charset=utf-8" },  
+        body: JSON.stringify(payload)  
+      });
+    } catch(e) {}
+
+    location.reload();
   },
 
   async init() {
+    // 1. Sabse pehle cloud se active session layenge
+    await this.getActiveSession();
     this.renderDropdown();
-    // Page load hote hi sabse pehle Google Sheet se direct fresh data fetch karenge
-    await this.fetchAndStoreCloudData();
+    
+    // 2. Uske baad seedha cloud se direct live data fetch karenge (No LocalStorage)
+    await this.fetchCloudDataDirectly();
     this.updateStats();
     this.applyRoleAccess();
   },
 
-  async fetchAndStoreCloudData() {
-    let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`;
-    
+  async fetchCloudDataDirectly() {
+    let activeSession = currentCloudSession;
     try {  
       let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
       let cloudData = await response.json();  
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
-        localStorage.setItem(dataKey, JSON.stringify(cloudData));  
-      }  
+        cloudMemoryData = cloudData;  
+      } else {
+        let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];  
+        cloudMemoryData = JSON.parse(JSON.stringify(baseSchools));
+      }
     } catch (err) {  
-      console.error("Cloud Fetch Error:", err);  
+      console.error("Cloud Data Direct Fetch Error:", err);
+      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];  
+      cloudMemoryData = JSON.parse(JSON.stringify(baseSchools));
     }
 
-    // Data aane ke baad UI ko turant refresh/render karna
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
     if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();  
   },
@@ -72,7 +77,7 @@ export const SessionManager = {
       { id: "2028-29", name: "2028-29" }
     ];
 
-    let current = this.getActiveSession();  
+    let current = currentCloudSession;  
     let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");  
     let isAdmin = (currentUser.role === 'admin');  
 
@@ -104,58 +109,39 @@ export const SessionManager = {
   },
 
   getData() {
-    let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`;
-    let saved = localStorage.getItem(dataKey);
-
-    if (!saved) {  
-      let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];  
-      let freshSchools = JSON.parse(JSON.stringify(baseSchools));  
-      freshSchools.forEach(s => {  
-        if (s.classes) {  
-          Object.keys(s.classes).forEach(cName => {  
-            let c = s.classes[cName];  
-            Object.keys(c).forEach(k => c[k] = 0);  
-          });  
-        }  
-      });  
-      return freshSchools;  
-    }  
-    try {  
-      return JSON.parse(saved);  
-    } catch (e) {  
-      return window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];  
+    if (cloudMemoryData && Array.isArray(cloudMemoryData)) {
+      return cloudMemoryData;
     }
+    return window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
   },
 
-  saveData(schoolsData) {
-    let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`;
+  async saveData(schoolsData) {
+    let activeSession = currentCloudSession;
 
-    let allSchools = this.getData();  
     if (Array.isArray(schoolsData)) {  
-      allSchools = schoolsData;  
+      cloudMemoryData = schoolsData;  
     } else if (schoolsData && schoolsData.udise) {  
-      let index = allSchools.findIndex(s => s.udise === schoolsData.udise);  
-      if (index !== -1) allSchools[index] = schoolsData;  
-      else allSchools.push(schoolsData);  
+      if (!cloudMemoryData) cloudMemoryData = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
+      let index = cloudMemoryData.findIndex(s => s.udise === schoolsData.udise);  
+      if (index !== -1) cloudMemoryData[index] = schoolsData;  
+      else cloudMemoryData.push(schoolsData);  
     }  
 
-    localStorage.setItem(dataKey, JSON.stringify(allSchools));  
     this.updateStats();  
     alert("Data safaltapurvak save ho gaya!");  
 
-    let payload = { session: activeSession, data: allSchools };  
-    fetch(WEB_APP_URL, {  
-      method: "POST",  
-      mode: "no-cors",  
-      headers: { "Content-Type": "text/plain;charset=utf-8" },  
-      body: JSON.stringify(payload)  
-    }).then(() => {  
-      console.log("Cloud synced successfully");  
-    }).catch(err => {  
+    let payload = { session: activeSession, data: cloudMemoryData };  
+    try {
+      await fetch(WEB_APP_URL, {  
+        method: "POST",  
+        mode: "no-cors",  
+        headers: { "Content-Type": "text/plain;charset=utf-8" },  
+        body: JSON.stringify(payload)  
+      });
+      console.log("Cloud synced successfully");
+    } catch(err) {  
       console.error("Cloud Sync Error:", err);  
-    });
+    }
   },
 
   updateStats() {
