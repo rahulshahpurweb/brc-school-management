@@ -131,8 +131,6 @@ export const ExcelHandler = {
           }
         });
 
-        alert(`Debug: Total rows found = ${rows.length}, Matched schools = ${updatedCount}, Total Enrollment calculated = ${totalSumCheck}`);
-
         if (updatedCount === 0) {
           alert("Excel file mein koi bhi match karta hua UDISE Code nahi mila!");
           return;
