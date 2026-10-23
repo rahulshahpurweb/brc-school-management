@@ -197,10 +197,11 @@ body{
   </div>
 </div>
 
+<!-- Clean Login Overlay without extra clutter -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
-    <p>BRC, JSKs, SCHOOLs Cloud Login</p>
+    <p>BRC, JSKs, SCHOOLs Login</p>
     <div id="authErr" class="auth-err">Kripya Sahi User ID aur Password dalein!</div>
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
@@ -211,8 +212,10 @@ body{
   </div>
 </div>
 
+<!-- Backdrop Overlay -->
 <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer()"></div>
 
+<!-- Slide-out Side Drawer Menu -->
 <div id="sideDrawer" class="side-drawer">
   <div class="drawer-header">
     <h3>🏛️ BRC Shahpur</h3>
@@ -231,6 +234,7 @@ body{
       <span>🔍</span> SNA Account Check
     </a>
 
+    <!-- Admin & Controls Section (Visible ONLY to Admin) -->
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
       
@@ -239,7 +243,7 @@ body{
       </button>
 
       <div id="adminMaintenancePanel" style="display:flex; flex-direction:column; gap:4px; background:rgba(255,255,255,0.06); padding:8px; border-radius:6px; margin-top:4px; border:1px solid rgba(255,255,255,0.1);">
-        <span style="font-size:10px; font-weight:bold; color:#ffd21c;">🛠️ Global Maintenance Mode:</span>
+        <span style="font-size:10px; font-weight:bold; color:#ffd21c;">🛠️ Maintenance Mode:</span>
         <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:5px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
       </div>
     </div>
@@ -251,70 +255,37 @@ body{
   </div>
 </div>
 
+<!-- Ultra Compact Top App Bar -->
 <header class="master-header">
   <div class="header-left">
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
     <div class="brand-title">BRC Shahpur Portal</div>
   </div>
-  <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">☰ Menu-1</div>
+  <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">Menu ☰</div>
 </header>
 
+<!-- Main Data Display Iframe -->
 <div class="frame-container">
   <iframe id="moduleFrame" src="R2.html"></iframe>
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
+const ADMIN_PASS = "brc@shahpur";
 
-// 1. Check Global Maintenance from Google Sheet Cloud
-async function checkGlobalMaintenance() {
-  let isMaintenance = false;
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-    let res = await fetch(`${WEB_APP_URL}?action=getMaintenance`, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    let data = await res.json();
-    isMaintenance = data.maintenance === true;
-    localStorage.setItem("brc_maintenance_mode", isMaintenance ? "true" : "false");
-  } catch(e) {
-    isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  }
-
-  let isLoggedIn = localStorage.getItem("brc_logged_in") === "true"; 
-  let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
+window.addEventListener('DOMContentLoaded', () => {
+  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  if (!isLoggedIn) {
-    document.getElementById("maintenanceOverlay").style.display = "none";
-    document.getElementById("authOverlay").style.display = "flex";
-    updateMaintUI(isMaintenance);
-    return;
-  }
-
-  // Hide auth overlay if logged in
-  document.getElementById("authOverlay").style.display = "none";
-
-  if (user.role === "admin") {
-    document.getElementById("maintenanceOverlay").style.display = "none";
-    updateMaintUI(isMaintenance);
-    return;
-  }
-
-  if (isMaintenance && user.role && user.role !== "admin") {
+  if (isMaintenance && isLoggedIn && user.role !== "admin") {
     document.getElementById("maintenanceOverlay").style.display = "flex";
-  } else {
-    document.getElementById("maintenanceOverlay").style.display = "none";
+    document.getElementById("authOverlay").style.display = "none";
   }
-  updateMaintUI(isMaintenance);
-}
 
-window.addEventListener('DOMContentLoaded', async () => {
-  await checkGlobalMaintenance();
-  
-  let user = JSON.parse(localStorage.getItem("brc_logged_user") || "{}");
   if (user.role === 'admin' || user.name === 'BRC Admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
+    updateMaintUI();
   }
 });
 
@@ -335,7 +306,8 @@ function triggerFeatureControl() {
   }
 }
 
-function updateMaintUI(isMaint) {
+function updateMaintUI() {
+  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
   let btn = document.getElementById("maintToggleBtn");
   if(btn) {
     if(isMaint) {
@@ -350,36 +322,25 @@ function updateMaintUI(isMaint) {
   }
 }
 
-async function toggleMaintenance() {
+function toggleMaintenance() {
   let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
-  let newMaintState = !isMaint;
-
-  try {
-    let res = await fetch(WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "setMaintenance", maintenance: newMaintState })
-    });
-    let r = await res.json();
-    if(r.status === "success") {
-      localStorage.setItem("brc_maintenance_mode", newMaintState ? "true" : "false");
-      alert(newMaintState ? "Portal GLOBAL MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
-    } else {
-      alert("Maintenance update karne mein error aayi.");
+  if(isMaint) {
+    localStorage.setItem("brc_maintenance_mode", "false");
+    alert("Portal ab LIVE kar diya gaya hai!");
+  } else {
+    if(confirm("Maintenance mode par daalna chahte hain?")) {
+      localStorage.setItem("brc_maintenance_mode", "true");
+      alert("Portal MAINTENANCE mode par chala gaya hai!");
     }
-  } catch(err) {
-    alert("Network error: Maintenance update nahi ho payi.");
   }
-
-  updateMaintUI(newMaintState);
+  updateMaintUI();
   location.reload();
 }
 
-// 2. Cloud Credentials Based Authentication with Timeout & Smart Fallback
-async function checkAuth(){
+function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
 
   if(!inputVal || !passVal) {
     err.innerText = "Kripya User ID aur Password dono dalein!";
@@ -387,91 +348,68 @@ async function checkAuth(){
     return;
   }
 
-  if (isMaintenance && inputVal !== "admin") {
-    err.innerText = "Portal par maintenance chal rahi hai. Abhi login band hai.";
-    err.style.display = "block";
-    return;
-  }
-
-  err.innerText = "Login verification ho raha hai...";
-  err.style.display = "block";
-
-  try {
-    // 4 Second timeout to prevent freezing inside mobile webviews/apps
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    let response = await fetch(`${WEB_APP_URL}?action=getCredentials`, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    let credentials = await response.json();
-
-    if (Array.isArray(credentials)) {
-      let matchedUser = credentials.find(c => {
-        let uId = String(c.userId || c.UserID || c.userid || "").trim();
-        return uId === inputVal;
-      });
-      
-      if (matchedUser) {
-        let dbPass = String(matchedUser.password || matchedUser.Password || "").trim();
-        let dbRole = String(matchedUser.role || matchedUser.Role || "school").trim();
-
-        if (dbPass === passVal) {
-          localStorage.setItem("brc_logged_in", "true");
-          localStorage.setItem("brc_logged_user", JSON.stringify({ 
-            role: dbRole, 
-            udise: dbRole === 'school' ? inputVal : '', 
-            name: matchedUser.name || matchedUser.Name || inputVal 
-          }));
-          document.getElementById("authOverlay").style.display = "none";
-          document.getElementById("maintenanceOverlay").style.display = "none";
-          location.reload();
-          return;
-        } else {
-          err.innerText = "Galat Password! Kripya sahi password dalein.";
-          err.style.display = "block";
-          return;
-        }
-      }
-    }
-  } catch (e) {
-    console.log("Cloud check timed out or failed, using fast fallback.");
-  }
-
-  // --- Fast Local Fallbacks (Ensures smooth login even if network is delayed) ---
-
-  // 1. Admin Fallback
-  if ((inputVal === "admin" || inputVal === "brc@shahpur") && (passVal === "123456" || passVal === "brc@shahpur")) {
-    localStorage.setItem("brc_logged_in", "true");
+  if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
+    sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
     location.reload();
     return;
   }
 
-  // 2. JSK Login Fallback
-  if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
-    localStorage.setItem("brc_logged_in", "true");
-    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-    document.getElementById("authOverlay").style.display = "none";
-    location.reload();
-    return;
+  if(inputVal === "jsk_login") {
+    if(passVal === "jskpassword" || passVal === "brc@123") {
+      sessionStorage.setItem("brc_logged_in", "true");
+      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
+      document.getElementById("authOverlay").style.display = "none";
+      location.reload();
+      return;
+    } else {
+      err.innerText = "JSK ka password galat hai!";
+      err.style.display = "block";
+      return;
+    }
   }
 
-  // 3. School UDISE Direct Pattern Fallback (Password: 12345)
-  if (inputVal.length >= 6 && !isNaN(inputVal) && (passVal === "12345" || passVal === inputVal)) {
-    localStorage.setItem("brc_logged_in", "true");
-    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: 'School UDISE: ' + inputVal }));
-    document.getElementById("authOverlay").style.display = "none";
-    location.reload();
-    return;
+  let schools = [];
+  if (typeof SessionManager !== 'undefined' && SessionManager.getData) {
+    schools = SessionManager.getData();
+  } else {
+    let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+    schools = JSON.parse(localStorage.getItem(`brc_schools_data_${activeSess}`) || "[]");
   }
 
-  err.innerText = "Wrong User ID Or UDISE Code / Password!";
+  let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
+
+  if(foundSchool) {
+    if(passVal === "12345" || passVal === String(foundSchool.udise).trim()) {
+      sessionStorage.setItem("brc_logged_in", "true");
+      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
+      document.getElementById("authOverlay").style.display = "none";
+      location.reload();
+      return;
+    } else {
+      err.innerText = "School ka password galat hai!";
+      err.style.display = "block";
+      return;
+    }
+  }
+
+  err.innerText = "Wrong Password Or UDISE Code!";
   err.style.display = "block";
 }
 
+if(sessionStorage.getItem("brc_logged_in") === "true"){
+  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  if (!isMaintenance || user.role === "admin") {
+    document.getElementById("authOverlay").style.display = "none";
+  }
+} else {
+  document.getElementById("authOverlay").style.display = "flex";
+}
+
 function logoutSession(){
-  localStorage.removeItem("brc_logged_in");
+  sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
   document.getElementById("authOverlay").style.display = "flex";
 }
