@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
 <script src="permissions.js"></script>  
 <style>  
-  /* Anti-Flicker: Jab tak data poori tarah ready na ho, page hidden rahega taaki flash/double reflection na ho */
+  /* Anti-Flicker: Jab tak data aur form ready na ho, page hidden rahega taaki flash/double reflection na ho */
   body { visibility: hidden; }
 
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }  
@@ -280,7 +280,7 @@
   import { SchoolRecords } from './school-records.js';  
   import { CompilationModule } from './compilation.js';  
 
-  // Modules ko explicitly window par bind karna taaki HTML inline onchange work kare
+  // Bind core modules to window for inline HTML event handlers
   window.SessionManager = SessionManager;
   window.SchoolRecords = SchoolRecords;
   window.CompilationModule = CompilationModule;
@@ -396,7 +396,7 @@
     }  
   };  
 
-  // Smart Polling & Anti-Flicker Master Synchronizer
+  // Master Synchronizer with Smart Polling & Correct Index Matching
   window.addEventListener('DOMContentLoaded', () => {  
     let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";  
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");  
@@ -414,17 +414,17 @@
       let schools = SessionManager.getData();  
       let schoolSelect = document.getElementById("schoolSelect");  
 
-      // Jab tak data cloud/storage se fully load nahi hota, wait karega
+      // Wait until SessionManager data and school dropdown are fully initialized
       if ((schools && schools.length > 0 && schoolSelect) || attempts > 35) {  
         clearInterval(dataSyncInterval);  
 
         try {  
-          // 1. Dropdown populate karo
+          // 1. Populate dropdown using EntryModule
           if (window.EntryModule && typeof window.EntryModule.populateDropdown === 'function') {  
             window.EntryModule.populateDropdown();  
           }  
 
-          // 2. Compilation report render karo
+          // 2. Render compilation report initially
           if (typeof CompilationModule !== 'undefined' && typeof CompilationModule.render === 'function') {  
             CompilationModule.render();  
           }  
@@ -456,26 +456,26 @@
               }  
             }  
         
-            // 4. School Role Handling
+            // 4. School Role Handling (Using correct Index value matching)
             if (user.role === 'school') {  
               document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');  
               
               if (schoolSelect && schoolSelect.options.length > 0) {  
-                let foundIndex = -1;  
+                let foundIndexValue = "";  
                 for (let i = 0; i < schoolSelect.options.length; i++) {  
-                  if (schoolSelect.options[i].text.includes(user.udise) || schoolSelect.options[i].value.includes(user.udise)) {  
-                    foundIndex = i; break;  
+                  let opt = schoolSelect.options[i];  
+                  if (opt.text.includes(user.udise) || opt.value === String(user.udise)) {  
+                    foundIndexValue = opt.value; // opt.value contains the array index (e.g., '0', '1', '2')
+                    break;  
                   }  
                 }  
-                if (foundIndex !== -1) {  
-                  schoolSelect.selectedIndex = foundIndex;  
+
+                if (foundIndexValue !== "") {  
+                  schoolSelect.value = foundIndexValue;  
                 } else {  
-                  let newOpt = document.createElement('option');  
-                  newOpt.value = user.udise;   
-                  newOpt.text = `${user.name || 'My School'} (${user.udise})`;  
-                  schoolSelect.add(newOpt);   
-                  schoolSelect.value = user.udise;  
+                  schoolSelect.selectedIndex = 0;  
                 }  
+
                 schoolSelect.disabled = true;  
                 schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
                 if (window.EntryModule && typeof window.EntryModule.loadForm === 'function') {  
@@ -502,7 +502,7 @@
         } catch(e) {  
           console.error("Initialization Error:", e);  
         } finally {  
-          // Anti-Flicker Release: Sab kuch background mein tayar hone ke baad page ek sath dikhega (Zero Blink/Flicker)  
+          // Anti-Flicker Release: Reveal the fully initialized page cleanly in one go
           document.body.style.visibility = 'visible';  
         }  
       }  
