@@ -38,11 +38,10 @@ export const SessionManager = {
   },
 
   async init() {
-    // 1. Sabse pehle cloud se active session layenge
     await this.getActiveSession();
     this.renderDropdown();
     
-    // 2. Uske baad seedha cloud se direct live data fetch karenge (No LocalStorage)
+    // Cloud se direct live data fetch karenge
     await this.fetchCloudDataDirectly();
     this.updateStats();
     this.applyRoleAccess();
@@ -65,8 +64,18 @@ export const SessionManager = {
       cloudMemoryData = JSON.parse(JSON.stringify(baseSchools));
     }
 
+    // Sabhi UI renders aur forms ko turant update/refresh karna
+    this.triggerAllRenders();
+  },
+
+  triggerAllRenders() {
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
-    if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();  
+    if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
+    
+    // Agar page par Data Entry form ya school select dropdown hai, toh use bhi turant refresh karein
+    if(typeof window.loadSchoolData === 'function') {
+      window.loadSchoolData();
+    }
   },
 
   renderDropdown() {
@@ -122,12 +131,13 @@ export const SessionManager = {
       cloudMemoryData = schoolsData;  
     } else if (schoolsData && schoolsData.udise) {  
       if (!cloudMemoryData) cloudMemoryData = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
-      let index = cloudMemoryData.findIndex(s => s.udise === schoolsData.udise);  
+      let index = cloudMemoryData.findIndex(s => String(s.udise).trim() === String(schoolsData.udise).trim());  
       if (index !== -1) cloudMemoryData[index] = schoolsData;  
       else cloudMemoryData.push(schoolsData);  
     }  
 
     this.updateStats();  
+    this.triggerAllRenders();
     alert("Data safaltapurvak save ho gaya!");  
 
     let payload = { session: activeSession, data: cloudMemoryData };  
