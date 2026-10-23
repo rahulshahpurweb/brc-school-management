@@ -8,6 +8,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
 <script src="permissions.js"></script>  
 <style>  
+  /* Anti-Flicker: Page load hote waqt shuru mein hidden rahega taaki double reflection na dikhe */
+  body { visibility: hidden; }
+
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }  
   .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:450px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }  
   .modal-box h3 { margin-top:0; color:#1d4ed8; }  
@@ -395,7 +398,7 @@
   
     setTimeout(() => {  
       try {  
-        // 1. Sabse pehle EntryModule ka populateDropdown call karo taaki select options fill ho jayein
+        // 1. Dropdown populate karo
         if (window.EntryModule && typeof window.EntryModule.populateDropdown === 'function') {  
           window.EntryModule.populateDropdown();  
         }  
@@ -469,7 +472,11 @@
             showTab('compilation');  
           }  
         }  
-      } catch(e) { console.error("Role Error:", e); }  
+      } catch(e) { console.error("Role Error:", e); }   
+      finally {  
+        // Anti-Flicker: Sab kuch set hone ke baad page ko ek sath visible karna
+        document.body.style.visibility = 'visible';  
+      }  
     }, 600);  
   });  
   
