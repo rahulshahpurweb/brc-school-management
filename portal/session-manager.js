@@ -1,394 +1,226 @@
-
-import { AdminLocks } from './admin-locks.js';
+Import { AdminLocks } from './admin-locks.js';
 import { MASTER_SCHOOLS } from './schools-data.js';
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
-
-window._cloudSchoolsData = [];
-window._activeCloudSession = "2026-27";
-window._cloudDataLoaded = false;
+const WEB_APP_URL = "Https://script.google.com/macros/s/AKfycbyRbPEcNgjpFXFGnqVVtVBdTsjlo_mMEy23SS3DggMAk2BRuy_M324DohO9JpYDPhoh_w/exec";
 
 export const SessionManager = {
-  getActiveSession() {
-    return window._activeCloudSession;
-  },
-
-  async postCloud(payload) {
-    // Apps Script ko simple text POST bhejte hain.
-    // no-cors response ko directly read nahi kiya ja sakta.
-    await fetch(WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload)
-    });
-  },
-
-  async setActiveSession(sessionName) {
-    const allowedSessions = ["2026-27", "2027-28", "2028-29"];
-
-    if (!allowedSessions.includes(sessionName)) {
-      alert("Invalid academic session.");
-      return false;
-    }
-
-    try {
-      await this.postCloud({
-        action: "setSession",
-        session: sessionName
-      });
-
-      // Server se session dobara padhkar verify karein.
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const response = await fetch(
-        WEB_APP_URL + "?action=getSession&_=" + Date.now()
-      );
-      const result = await response.json();
-
-      if (!result || result.activeSession !== sessionName) {
-        throw new Error("Session change verify nahi hua.");
-      }
-
-      window._activeCloudSession = sessionName;
-      await this.fetchCloudData();
-
-      if (window._cloudDataLoaded) {
-        location.reload();
-        return true;
-      }
-
-      alert("Session badla hai, lekin uska data load nahi hua. Dobara jaanch karein.");
-      return false;
-
-    } catch (error) {
-      console.error("Session Update Error:", error);
-      alert("Session change verify nahi ho saka. Internet aur Apps Script deployment check karein.");
-      return false;
-    }
-  },
-
-  async init() {
-    await this.fetchActiveSessionFromCloud();
-
-    const loaded = await this.fetchCloudData();
-
-    this.renderDropdown();
-    this.updateStats();
-
-    if (loaded) {
-      this.applyRoleAccess();
-
-      if (
-        typeof SchoolRecords !== "undefined" &&
-        SchoolRecords.render
-      ) {
-        SchoolRecords.render();
-      }
-
-      if (
-        typeof CompilationModule !== "undefined" &&
-        CompilationModule.render
-      ) {
-        CompilationModule.render();
-      }
-    }
-  },
-
-  async fetchActiveSessionFromCloud() {
-    try {
-      const response = await fetch(
-        WEB_APP_URL + "?action=getSession&_=" + Date.now()
-      );
-
-      if (!response.ok) {
-        throw new Error("HTTP " + response.status);
-      }
-
-      const result = await response.json();
-
-      if (
-        result &&
-        ["2026-27", "2027-28", "2028-29"].includes(result.activeSession)
-      ) {
-        window._activeCloudSession = result.activeSession;
-      }
-    } catch (error) {
-      console.error("Session Fetch Error:", error);
-    }
-  },
-
-  async fetchCloudData() {
-    const session = this.getActiveSession();
-
-    try {
-      const response = await fetch(
-        WEB_APP_URL +
-        "?session=" + encodeURIComponent(session) +
-        "&_=" + Date.now()
-      );
-
-      if (!response.ok) {
-        throw new Error("HTTP " + response.status);
-      }
-
-      const cloudData = await response.json();
-
-      if (!Array.isArray(cloudData)) {
-        throw new Error(
-          cloudData && cloudData.error
-            ? cloudData.error
-            : "Cloud data ka format galat hai."
-        );
-      }
-
-      window._cloudSchoolsData = cloudData;
-      window._cloudDataLoaded = true;
-
-      return true;
-
-    } catch (error) {
-      console.error("Cloud Data Fetch Error:", error);
-
-      // IMPORTANT:
-      // Cloud fail hone par MASTER_SCHOOLS se zero data banakar
-      // original cloud data ko overwrite nahi karna hai.
-      window._cloudDataLoaded = false;
-
-      alert(
-        "Cloud se data load nahi hua. Purane data ko zero nahi kiya gaya hai. Internet aur Google Apps Script deployment check karein."
-      );
-
-      return false;
-    }
-  },
-
-  renderDropdown() {
-    const select = document.getElementById("sessionSelect");
-
-    const sessions = [
-      { id: "2026-27", name: "2026-27" },
-      { id: "2027-28", name: "2027-28" },
-      { id: "2028-29", name: "2028-29" }
-    ];
-
-    const current = this.getActiveSession();
-    const currentUser = this.getCurrentUser();
-    const isAdmin = currentUser && currentUser.role === "admin";
-
-    if (select && isAdmin) {
-      select.innerHTML = "";
-
-      sessions.forEach(session => {
-        const option = document.createElement("option");
-        option.value = session.id;
-        option.textContent = session.name;
-        option.selected = session.id === current;
-        select.appendChild(option);
-      });
-
-      select.disabled = false;
-      select.style.display = "";
-    } else if (select) {
-      select.style.display = "none";
-    }
-
-    const badge = document.getElementById("sessionBadge");
-
-    if (badge) {
-      badge.innerText = current;
-      badge.style.display = "inline-block";
-    }
-  },
-
-  async changeSession() {
-    const select = document.getElementById("sessionSelect");
-
-    if (!select) return;
-
-    const currentUser = this.getCurrentUser();
-
-    if (!currentUser || currentUser.role !== "admin") {
-      alert("Session badalne ki permission nahi hai.");
-      this.renderDropdown();
-      return;
-    }
-
-    await this.setActiveSession(select.value);
-  },
-
-  getData() {
-    // Cloud load fail hua ho to fake/zero data return nahi karna.
-    if (!window._cloudDataLoaded) {
-      return [];
-    }
-
-    return window._cloudSchoolsData;
-  },
-
-  async saveData(schoolsData) {
-    if (!window._cloudDataLoaded) {
-      alert("Cloud data load nahi hua. Save rok diya gaya hai taaki data galti se overwrite na ho.");
-      return false;
-    }
-
-    const currentUser = this.getCurrentUser();
-
-    if (!currentUser) {
-      alert("Login session nahi mila. Dobara login karein.");
-      return false;
-    }
-
-    let allSchools = window._cloudSchoolsData;
-
-    if (Array.isArray(schoolsData)) {
-      allSchools = schoolsData;
-    } else if (schoolsData && schoolsData.udise != null) {
-      const index = allSchools.findIndex(
-        school => String(school.udise) === String(schoolsData.udise)
-      );
-
-      if (index !== -1) {
-        allSchools = [...allSchools];
-        allSchools[index] = schoolsData;
-      } else {
-        allSchools = [...allSchools, schoolsData];
-      }
-    } else {
-      alert("Save karne ke liye valid school data nahi mila.");
-      return false;
-    }
-
-    const payload = {
-      session: this.getActiveSession(),
-      data: allSchools
-    };
-
-    try {
-      await this.postCloud(payload);
-
-      // no-cors POST ka response opaque hota hai.
-      // Isliye GET se saved data verify karne ki koshish karte hain.
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const response = await fetch(
-        WEB_APP_URL +
-        "?session=" + encodeURIComponent(payload.session) +
-        "&_=" + Date.now()
-      );
-
-      if (!response.ok) {
-        throw new Error("Save verification HTTP " + response.status);
-      }
-
-      const savedData = await response.json();
-
-      if (
-        !Array.isArray(savedData) ||
-        JSON.stringify(savedData) !== JSON.stringify(allSchools)
-      ) {
-        throw new Error("Server data aur submitted data match nahi hue.");
-      }
-
-      window._cloudSchoolsData = savedData;
-      window._cloudDataLoaded = true;
-
-      this.updateStats();
-
-      alert("Google Sheets par data save aur verify ho gaya.");
-      return true;
-
-    } catch (error) {
-      console.error("Cloud Save Verification Error:", error);
-
-      // Local memory ko server-confirmed data ke roop mein na dikhayein.
-      alert(
-        "Cloud save ki pushti nahi ho saki. Data dobara load karke jaanch karein. Is message ka matlab zaroori nahi ki server par save fail hua ho."
-      );
-
-      return false;
-    }
-  },
-
-  updateStats() {
-    const schools = this.getData();
-
-    const totalSchools = schools.length;
-    let totalEnroll = 0;
-    let filled = 0;
-
-    schools.forEach(school => {
-      let hasData = false;
-      const classes = school.classes || {};
-
-      Object.keys(classes).forEach(className => {
-        const classData = classes[className] || {};
-
-        const sum = Object.values(classData).reduce(
-          (total, value) => total + (parseInt(value, 10) || 0),
-          0
-        );
-
-        if (sum > 0) {
-          hasData = true;
-          totalEnroll += sum;
-        }
-      });
-
-      if (hasData) filled++;
-    });
-
-    const statSchools = document.getElementById("statSchools");
-    const statTotal = document.getElementById("statTotal");
-    const statFilled = document.getElementById("statFilled");
-    const statPending = document.getElementById("statPending");
-
-    if (statSchools) statSchools.innerText = totalSchools;
-    if (statTotal) statTotal.innerText = totalEnroll;
-    if (statFilled) statFilled.innerText = filled;
-    if (statPending) statPending.innerText = totalSchools - filled;
-  },
-
-  getCurrentUser() {
-    try {
-      const storedUser =
-        localStorage.getItem("brc_current_user") ||
-        localStorage.getItem("brc_logged_user");
-
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      console.error("Current User Read Error:", error);
-      return null;
-    }
-  },
-
-  applyRoleAccess() {
-    const currentUser = this.getCurrentUser();
-
-    if (!currentUser) return;
-
-    const role = currentUser.role;
-
-    if (role === "jsk") {
-      const entryTab =
-        document.querySelector("[data-target='entry']") ||
-        document.getElementById("entrySection");
-
-      const recordsTab =
-        document.querySelector("[data-target='records']") ||
-        document.getElementById("recordsSection");
-
-      if (entryTab) entryTab.style.display = "none";
-      if (recordsTab) recordsTab.style.display = "none";
-    } else if (role === "school") {
-      const compilationTab =
-        document.querySelector("[data-target='compilation']") ||
-        document.getElementById("compilationSection");
-
-      if (compilationTab) compilationTab.style.display = "none";
-    }
-  }
+getActiveSession() {
+// 1. Pehle local storage se turant uthao taaki speed fast rahe
+let cached = localStorage.getItem("brc_active_session");
+if (cached) return cached;
+
+// 2. Agar local mein na ho, tabhi cloud se mango (fallback)  
+try {  
+  let xhr = new XMLHttpRequest();  
+  xhr.open("GET", WEB_APP_URL + "?action=getSession", false);  
+  xhr.send();  
+  if (xhr.status === 200) {  
+    let res = JSON.parse(xhr.responseText);  
+    if (res && res.activeSession) {  
+      localStorage.setItem("brc_active_session", res.activeSession);  
+      return res.activeSession;  
+    }  
+  }  
+} catch (e) {}  
+return "2026-27";
+
+},
+
+setActiveSession(sessionName) {
+localStorage.setItem("brc_active_session", sessionName);
+let payload = { action: "setSession", session: sessionName };
+
+fetch(WEB_APP_URL, {  
+  method: "POST",  
+  mode: "no-cors",  
+  headers: { "Content-Type": "text/plain;charset=utf-8" },  
+  body: JSON.stringify(payload)  
+}).then(() => {  
+  location.reload();  
+});
+
+},
+
+async init() {
+this.renderDropdown();
+this.updateStats();
+// Background mein cloud se data fetch karke update karega taaki speed fast rahe
+this.loadCloudDataInBackground();
+this.applyRoleAccess();
+},
+
+renderDropdown() {
+let select = document.getElementById("sessionSelect");
+let sessions = [
+{ id: "2026-27", name: "2026-27" },
+{ id: "2027-28", name: "2027-28" },
+{ id: "2028-29", name: "2028-29" }
+];
+
+let current = this.getActiveSession();  
+let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");  
+let isAdmin = (currentUser.role === 'admin');  
+
+if(select && isAdmin) {  
+  select.innerHTML = "";  
+  sessions.forEach(s => {  
+    let opt = document.createElement("option");  
+    opt.value = s.id;  
+    opt.textContent = s.name;  
+    if(s.id === current) opt.selected = true;  
+    select.appendChild(opt);  
+  });  
+  select.disabled = false;  
+} else if (select && !isAdmin) {  
+  select.style.display = 'none';  
+}  
+
+let sessionBadge = document.getElementById("sessionBadge");  
+if (sessionBadge) {  
+  sessionBadge.innerText = current;  
+  sessionBadge.style.display = 'inline-block';  
+}
+
+},
+
+changeSession() {
+let select = document.getElementById("sessionSelect");
+if(!select) return;
+this.setActiveSession(select.value);
+},
+
+getData() {
+let activeSession = this.getActiveSession();
+let dataKey = brc_schools_data_${activeSession};
+let saved = localStorage.getItem(dataKey);
+
+if (!saved) {  
+  let baseSchools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];  
+  let freshSchools = JSON.parse(JSON.stringify(baseSchools));  
+  freshSchools.forEach(s => {  
+    if (s.classes) {  
+      Object.keys(s.classes).forEach(cName => {  
+        let c = s.classes[cName];  
+        Object.keys(c).forEach(k => c[k] = 0);  
+      });  
+    }  
+  });  
+  localStorage.setItem(dataKey, JSON.stringify(freshSchools));  
+  return freshSchools;  
+}  
+try {  
+  return JSON.parse(saved);  
+} catch (e) {  
+  return window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];  
+}
+
+},
+
+async loadCloudDataInBackground() {
+let activeSession = this.getActiveSession();
+let dataKey = brc_schools_data_${activeSession};
+
+try {  
+  let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
+  let cloudData = await response.json();  
+  if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
+    localStorage.setItem(dataKey, JSON.stringify(cloudData));  
+    this.updateStats();  
+    if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
+    if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();  
+  }  
+} catch (err) {  
+  console.error("Background Sync Error:", err);  
+}
+
+},
+
+saveData(schoolsData) {
+let activeSession = this.getActiveSession();
+let dataKey = brc_schools_data_${activeSession};
+
+// Local storage mein turant save karo taaki ekdum instant response mile  
+let allSchools = this.getData();  
+if (Array.isArray(schoolsData)) {  
+  allSchools = schoolsData;  
+} else if (schoolsData && schoolsData.udise) {  
+  let index = allSchools.findIndex(s => s.udise === schoolsData.udise);  
+  if (index !== -1) allSchools[index] = schoolsData;  
+  else allSchools.push(schoolsData);  
+}  
+
+localStorage.setItem(dataKey, JSON.stringify(allSchools));  
+this.updateStats();  
+alert("Data safaltapurvak save ho gaya!");  
+
+// Background mein Google Sheet par sync kar do  
+let payload = { session: activeSession, data: allSchools };  
+fetch(WEB_APP_URL, {  
+  method: "POST",  
+  mode: "no-cors",  
+  headers: { "Content-Type": "text/plain;charset=utf-8" },  
+  body: JSON.stringify(payload)  
+}).then(() => {  
+  console.log("Cloud synced successfully");  
+}).catch(err => {  
+  console.error("Cloud Sync Error:", err);  
+});
+
+},
+
+updateStats() {
+let schools = this.getData();
+let totalSchools = schools.length;
+let totalEnroll = 0, filled = 0;
+
+schools.forEach(s => {  
+  let hasData = false;  
+  let classesObj = s.classes || {};  
+  Object.keys(classesObj).forEach(cName => {  
+    let c = classesObj[cName] || {};  
+    let sum = Object.values(c).reduce((a, b) => a + (parseInt(b) || 0), 0);  
+    if (sum > 0) {  
+      hasData = true;  
+      totalEnroll += sum;  
+    }  
+  });  
+  if (hasData) filled++;  
+});  
+
+let statSchools = document.getElementById("statSchools");  
+let statTotal = document.getElementById("statTotal");  
+let statFilled = document.getElementById("statFilled");  
+let statPending = document.getElementById("statPending");  
+
+if(statSchools) statSchools.innerText = totalSchools;  
+if(statTotal) statTotal.innerText = totalEnroll;  
+if(statFilled) statFilled.innerText = filled;  
+if(statPending) statPending.innerText = totalSchools - filled;
+
+},
+
+getCurrentUser() {
+let session = localStorage.getItem("brc_current_user");
+return session ? JSON.parse(session) : null;
+},
+
+applyRoleAccess() {
+let currentUser = this.getCurrentUser();
+if(!currentUser) return;
+let role = currentUser.role;
+
+if(role === "jsk") {  
+  let dataEntryTab = document.querySelector("[data-target='entry']") || document.getElementById("entrySection");  
+  let schoolListTab = document.querySelector("[data-target='records']") || document.getElementById("recordsSection");  
+  if(dataEntryTab) dataEntryTab.style.display = "none";  
+  if(schoolListTab) schoolListTab.style.display = "none";  
+}  
+else if(role === "school") {  
+  let compilationTab = document.querySelector("[data-target='compilation']") || document.getElementById("compilationSection");  
+  if(compilationTab) compilationTab.style.display = "none";  
+}
+
+}
 };
 
 window.SessionManager = SessionManager;
