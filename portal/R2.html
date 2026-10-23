@@ -395,26 +395,28 @@
   
     setTimeout(() => {  
       try {  
+        // 1. Sabse pehle EntryModule ka populateDropdown call karo taaki select options fill ho jayein
+        if (window.EntryModule && typeof window.EntryModule.populateDropdown === 'function') {  
+          window.EntryModule.populateDropdown();  
+        }  
+
         if (user && user.role) {  
-          // 1. Admin Control & Auto-Load First School Data
+          let schoolSelect = document.getElementById("schoolSelect");  
+
+          // 2. Admin Auto-Load Logic
           if (user.role === 'admin') {  
             let adminBtn = document.getElementById("adminControlBtn");  
             if(adminBtn) adminBtn.style.display = "inline-block";  
   
-            let checkAdminInterval = setInterval(() => {  
-              let schoolSelect = document.getElementById("schoolSelect");  
-              if (schoolSelect && schoolSelect.options.length > 1) {  
-                if (!schoolSelect.value || schoolSelect.value === "") {  
-                  schoolSelect.selectedIndex = 1;  
-                  schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
-                  if (window.EntryModule && typeof EntryModule.loadForm === 'function') {  
-                    EntryModule.loadForm();  
-                  }  
-                }  
-                clearInterval(checkAdminInterval);  
+            if (schoolSelect && schoolSelect.options.length > 1) {  
+              if (!schoolSelect.value || schoolSelect.value === "") {  
+                schoolSelect.selectedIndex = 1;  
               }  
-            }, 300);  
-  
+              schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
+              if (window.EntryModule && typeof window.EntryModule.loadForm === 'function') {  
+                window.EntryModule.loadForm();  
+              }  
+            }  
           } else {  
             let sessionSelect = document.getElementById("sessionSelect");  
             let sessionBadge = document.getElementById("sessionBadge");  
@@ -427,37 +429,34 @@
             }  
           }  
       
-          // 2. School Login Auto-Select & Lock
+          // 3. School Login Auto-Select & Lock
           if (user.role === 'school') {  
             document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');  
-            let checkInterval = setInterval(() => {  
-              let schoolSelect = document.getElementById("schoolSelect");  
-              if (schoolSelect && schoolSelect.options.length > 0) {  
-                let foundIndex = -1;  
-                for (let i = 0; i < schoolSelect.options.length; i++) {  
-                  if (schoolSelect.options[i].text.includes(user.udise) || schoolSelect.options[i].value.includes(user.udise)) {  
-                    foundIndex = i; break;  
-                  }  
+            
+            if (schoolSelect && schoolSelect.options.length > 0) {  
+              let foundIndex = -1;  
+              for (let i = 0; i < schoolSelect.options.length; i++) {  
+                if (schoolSelect.options[i].text.includes(user.udise) || schoolSelect.options[i].value.includes(user.udise)) {  
+                  foundIndex = i; break;  
                 }  
-                if (foundIndex !== -1) {  
-                  schoolSelect.selectedIndex = foundIndex;  
-                } else {  
-                  let newOpt = document.createElement('option');  
-                  newOpt.value = user.udise;   
-                  newOpt.text = `${user.name || 'My School'} (${user.udise})`;  
-                  schoolSelect.add(newOpt);   
-                  schoolSelect.value = user.udise;  
-                }  
-                schoolSelect.disabled = true;  
-                schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
-                if (window.EntryModule && typeof EntryModule.loadForm === 'function') {  
-                  EntryModule.loadForm();  
-                }  
-                clearInterval(checkInterval);  
               }  
-            }, 300);  
+              if (foundIndex !== -1) {  
+                schoolSelect.selectedIndex = foundIndex;  
+              } else {  
+                let newOpt = document.createElement('option');  
+                newOpt.value = user.udise;   
+                newOpt.text = `${user.name || 'My School'} (${user.udise})`;  
+                schoolSelect.add(newOpt);   
+                schoolSelect.value = user.udise;  
+              }  
+              schoolSelect.disabled = true;  
+              schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
+              if (window.EntryModule && typeof window.EntryModule.loadForm === 'function') {  
+                window.EntryModule.loadForm();  
+              }  
+            }  
           }   
-          // 3. JSK Login Handling
+          // 4. JSK Login Handling
           else if (user.role === 'jsk') {  
             let navEntryBtn = document.getElementById("navEntryBtn");  
             if(navEntryBtn) navEntryBtn.style.display = 'none';  
@@ -471,7 +470,7 @@
           }  
         }  
       } catch(e) { console.error("Role Error:", e); }  
-    }, 500);  
+    }, 600);  
   });  
   
   window.showTab = function(id){  
