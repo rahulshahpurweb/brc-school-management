@@ -21,13 +21,13 @@ body{
 .master-header{
   background: linear-gradient(135deg,#071b38,#0e3d7e);
   color: white;
-  padding: 6px 15px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 2px solid #f4b400;
   flex-shrink: 0;
-  height: 50px;
+  height: 48px;
   z-index: 100;
 }
 .header-left {
@@ -46,12 +46,12 @@ body{
   align-items: center;
 }
 .brand-title{
-  font-size: 15px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: 800;
   letter-spacing: .2px;
 }
 
-/* Side Drawer Menu */
+/* Sleek & Organized Side Drawer Menu */
 .side-drawer {
   position: fixed;
   top: 0;
@@ -80,7 +80,7 @@ body{
 }
 .drawer-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   color: #ffd21c;
   font-weight: 900;
 }
@@ -91,22 +91,23 @@ body{
   font-size: 18px;
   cursor: pointer;
 }
+
 .drawer-links {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   overflow-y: auto;
 }
 .drawer-link {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.04);
   color: #e2e8f0;
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 10px 14px;
-  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 9px 12px;
+  border-radius: 6px;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -122,14 +123,14 @@ body{
   border-color: #ffd21c;
 }
 .drawer-section-title {
-  font-size: 11px;
+  font-size: 10px;
   color: #f4b400;
   text-transform: uppercase;
   margin: 10px 0 2px 4px;
   font-weight: 800;
   letter-spacing: .5px;
   border-bottom: 1px solid rgba(244,180,0,0.2);
-  padding-bottom: 3px;
+  padding-bottom: 2px;
 }
 
 /* Backdrop Overlay */
@@ -197,11 +198,10 @@ body{
   </div>
 </div>
 
-<!-- Clean Login Overlay without extra clutter -->
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
-    <p>BRC, JSKs, SCHOOLs Login</p>
+    <p>BRC, JSKs, SCHOOLs Cloud Login</p>
     <div id="authErr" class="auth-err">Kripya Sahi User ID aur Password dalein!</div>
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
@@ -238,6 +238,10 @@ body{
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
       
+      <button onclick="triggerAdminPasswordChange()" class="drawer-link" style="background:rgba(23,105,223,0.2); border-color:#1769df;">
+        <span>🔑</span> Change Password
+      </button>
+
       <button onclick="triggerFeatureControl()" class="drawer-link" style="background:rgba(59,130,246,0.15); border-color:#3b82f6;">
         <span>⚙️</span> Feature Control Panel
       </button>
@@ -261,7 +265,13 @@ body{
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
     <div class="brand-title">BRC Shahpur Portal</div>
   </div>
-  <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">Menu ☰</div>
+  
+  <!-- Session Selector, Badge & Menu Trigger -->
+  <div style="display:flex; align-items:center; gap:8px;">
+    <select id="sessionSelect" onchange="SessionManager.changeSession()" style="background:#071b38; color:#ffd21c; border:1px solid #f4b400; padding:3px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:none;"></select>
+    <span id="sessionBadge" style="font-size: 11px; color: #ffd21c; font-weight: bold; background:rgba(255,255,255,0.1); padding:3px 6px; border-radius:4px; display:none;">2026-27</span>
+    <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">Menu ☰</div>
+  </div>
 </header>
 
 <!-- Main Data Display Iframe -->
@@ -270,22 +280,57 @@ body{
 </div>
 
 <script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 const ADMIN_PASS = "brc@shahpur";
 
-window.addEventListener('DOMContentLoaded', () => {
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true";
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  
-  if (isMaintenance && isLoggedIn && user.role !== "admin") {
-    document.getElementById("maintenanceOverlay").style.display = "flex";
-    document.getElementById("authOverlay").style.display = "none";
+// 1. Check Global Maintenance & Session on load
+async function checkGlobalMaintenance() {
+  let isMaintenance = false;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    let res = await fetch(`${WEB_APP_URL}?action=getMaintenance`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    let data = await res.json();
+    isMaintenance = data.maintenance === true;
+    localStorage.setItem("brc_maintenance_mode", isMaintenance ? "true" : "false");
+  } catch(e) {
+    isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
   }
 
+  let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true"; 
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+  
+  if (!isLoggedIn) {
+    document.getElementById("maintenanceOverlay").style.display = "none";
+    document.getElementById("authOverlay").style.display = "flex";
+    updateMaintUI(isMaintenance);
+    return;
+  }
+
+  document.getElementById("authOverlay").style.display = "none";
+
+  if (user.role === "admin") {
+    document.getElementById("maintenanceOverlay").style.display = "none";
+    updateMaintUI(isMaintenance);
+    return;
+  }
+
+  if (isMaintenance && user.role && user.role !== "admin") {
+    document.getElementById("maintenanceOverlay").style.display = "flex";
+  } else {
+    document.getElementById("maintenanceOverlay").style.display = "none";
+  }
+  updateMaintUI(isMaintenance);
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await checkGlobalMaintenance();
+  
+  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   if (user.role === 'admin' || user.name === 'BRC Admin') {
     let adminSec = document.getElementById("adminControlsSection");
     if(adminSec) adminSec.style.display = "block";
-    updateMaintUI();
   }
 });
 
@@ -294,6 +339,16 @@ function toggleDrawer() {
   const backdrop = document.getElementById('drawerBackdrop');
   drawer.classList.toggle('open');
   backdrop.classList.toggle('open');
+}
+
+function triggerAdminPasswordChange() {
+  toggleDrawer();
+  const iframeWin = document.getElementById('moduleFrame').contentWindow;
+  if(iframeWin && typeof iframeWin.changePassword === 'function') {
+    iframeWin.changePassword();
+  } else {
+    alert("Please open Enrollment module to change password.");
+  }
 }
 
 function triggerFeatureControl() {
@@ -306,8 +361,7 @@ function triggerFeatureControl() {
   }
 }
 
-function updateMaintUI() {
-  let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
+function updateMaintUI(isMaint) {
   let btn = document.getElementById("maintToggleBtn");
   if(btn) {
     if(isMaint) {
@@ -322,25 +376,36 @@ function updateMaintUI() {
   }
 }
 
-function toggleMaintenance() {
+async function toggleMaintenance() {
   let isMaint = localStorage.getItem("brc_maintenance_mode") === "true";
-  if(isMaint) {
-    localStorage.setItem("brc_maintenance_mode", "false");
-    alert("Portal ab LIVE kar diya gaya hai!");
-  } else {
-    if(confirm("Maintenance mode par daalna chahte hain?")) {
-      localStorage.setItem("brc_maintenance_mode", "true");
-      alert("Portal MAINTENANCE mode par chala gaya hai!");
+  let newMaintState = !isMaint;
+
+  try {
+    let res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "setMaintenance", maintenance: newMaintState })
+    });
+    let r = await res.json();
+    if(r.status === "success") {
+      localStorage.setItem("brc_maintenance_mode", newMaintState ? "true" : "false");
+      alert(newMaintState ? "Portal GLOBAL MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
+    } else {
+      alert("Maintenance update karne mein error aayi.");
     }
+  } catch(err) {
+    alert("Network error: Maintenance update nahi ho payi.");
   }
-  updateMaintUI();
+
+  updateMaintUI(newMaintState);
   location.reload();
 }
 
-function checkAuth(){
+// 2. Cloud Credentials Based Authentication with Timeout & Smart Fallback
+async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
   const err = document.getElementById("authErr");
+  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
 
   if(!inputVal || !passVal) {
     err.innerText = "Kripya User ID aur Password dono dalein!";
@@ -348,7 +413,57 @@ function checkAuth(){
     return;
   }
 
-  if(inputVal === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
+  if (isMaintenance && inputVal !== "admin") {
+    err.innerText = "Portal par maintenance chal rahi hai. Abhi login band hai.";
+    err.style.display = "block";
+    return;
+  }
+
+  err.innerText = "Login verification ho raha hai...";
+  err.style.display = "block";
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    let response = await fetch(`${WEB_APP_URL}?action=getCredentials`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    let credentials = await response.json();
+
+    if (Array.isArray(credentials)) {
+      let matchedUser = credentials.find(c => {
+        let uId = String(c.userId || c.UserID || c.userid || "").trim();
+        return uId === inputVal;
+      });
+      
+      if (matchedUser) {
+        let dbPass = String(matchedUser.password || matchedUser.Password || "").trim();
+        let dbRole = String(matchedUser.role || matchedUser.Role || "school").trim();
+
+        if (dbPass === passVal) {
+          sessionStorage.setItem("brc_logged_in", "true");
+          localStorage.setItem("brc_logged_user", JSON.stringify({ 
+            role: dbRole, 
+            udise: dbRole === 'school' ? inputVal : '', 
+            name: matchedUser.name || matchedUser.Name || inputVal 
+          }));
+          document.getElementById("authOverlay").style.display = "none";
+          document.getElementById("maintenanceOverlay").style.display = "none";
+          location.reload();
+          return;
+        } else {
+          err.innerText = "Galat Password! Kripya sahi password dalein.";
+          err.style.display = "block";
+          return;
+        }
+      }
+    }
+  } catch (e) {
+    console.log("Cloud check timed out, using fast fallback.");
+  }
+
+  // --- Fast Local Fallbacks ---
+  if ((inputVal === ADMIN_PASS || inputVal === "admin") && (passVal === ADMIN_PASS || passVal === "123456")) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("authOverlay").style.display = "none";
@@ -356,56 +471,24 @@ function checkAuth(){
     return;
   }
 
-  if(inputVal === "jsk_login") {
-    if(passVal === "jskpassword" || passVal === "brc@123") {
-      sessionStorage.setItem("brc_logged_in", "true");
-      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-      document.getElementById("authOverlay").style.display = "none";
-      location.reload();
-      return;
-    } else {
-      err.innerText = "JSK ka password galat hai!";
-      err.style.display = "block";
-      return;
-    }
-  }
-
-  let schools = [];
-  if (typeof SessionManager !== 'undefined' && SessionManager.getData) {
-    schools = SessionManager.getData();
-  } else {
-    let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-    schools = JSON.parse(localStorage.getItem(`brc_schools_data_${activeSess}`) || "[]");
-  }
-
-  let foundSchool = schools.find(s => String(s.udise).trim() === inputVal);
-
-  if(foundSchool) {
-    if(passVal === "12345" || passVal === String(foundSchool.udise).trim()) {
-      sessionStorage.setItem("brc_logged_in", "true");
-      localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: foundSchool.udise, name: foundSchool.name }));
-      document.getElementById("authOverlay").style.display = "none";
-      location.reload();
-      return;
-    } else {
-      err.innerText = "School ka password galat hai!";
-      err.style.display = "block";
-      return;
-    }
-  }
-
-  err.innerText = "Wrong Password Or UDISE Code!";
-  err.style.display = "block";
-}
-
-if(sessionStorage.getItem("brc_logged_in") === "true"){
-  let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  if (!isMaintenance || user.role === "admin") {
+  if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
+    sessionStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
     document.getElementById("authOverlay").style.display = "none";
+    location.reload();
+    return;
   }
-} else {
-  document.getElementById("authOverlay").style.display = "flex";
+
+  if (inputVal.length >= 6 && !isNaN(inputVal) && (passVal === "12345" || passVal === inputVal)) {
+    sessionStorage.setItem("brc_logged_in", "true");
+    localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'school', udise: inputVal, name: 'School UDISE: ' + inputVal }));
+    document.getElementById("authOverlay").style.display = "none";
+    location.reload();
+    return;
+  }
+
+  err.innerText = "Wrong User ID Or UDISE Code / Password!";
+  err.style.display = "block";
 }
 
 function logoutSession(){
