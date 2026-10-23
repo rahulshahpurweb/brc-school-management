@@ -39,7 +39,7 @@ export const SessionManager = {
 
   async init() {
     this.renderDropdown();
-    // Sabse pehle seedha Google Sheet se fresh data fetch karenge taaki zero (0) na aaye
+    // Page load hote hi sabse pehle Google Sheet se direct fresh data fetch karenge
     await this.fetchAndStoreCloudData();
     this.updateStats();
     this.applyRoleAccess();
@@ -59,6 +59,7 @@ export const SessionManager = {
       console.error("Cloud Fetch Error:", err);  
     }
 
+    // Data aane ke baad UI ko turant refresh/render karna
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
     if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();  
   },
