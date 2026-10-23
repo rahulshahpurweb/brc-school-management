@@ -38,3 +38,5 @@ export const PrintHandler = {
     }, 600);
   }
 };
+
+window.PrintHandler = PrintHandler;
