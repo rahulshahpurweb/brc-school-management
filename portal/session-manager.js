@@ -1,15 +1,13 @@
 import { AdminLocks } from './admin-locks.js';
 import { MASTER_SCHOOLS } from './schools-data.js';
 
-const WEB_APP_URL = "[https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec](https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec)";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 
 export const SessionManager = {
   getActiveSession() {
-    // 1. Pehle local storage se turant uthao taaki speed fast rahe
     let cached = localStorage.getItem("brc_active_session");
     if (cached) return cached;
 
-    // 2. Agar local mein na ho, tabhi cloud se mango (fallback)  
     try {  
       let xhr = new XMLHttpRequest();  
       xhr.open("GET", WEB_APP_URL + "?action=getSession", false);  
@@ -41,10 +39,28 @@ export const SessionManager = {
 
   async init() {
     this.renderDropdown();
+    // Sabse pehle seedha Google Sheet se fresh data fetch karenge taaki zero (0) na aaye
+    await this.fetchAndStoreCloudData();
     this.updateStats();
-    // Background mein cloud se data fetch karke update karega taaki speed fast rahe
-    this.loadCloudDataInBackground();
     this.applyRoleAccess();
+  },
+
+  async fetchAndStoreCloudData() {
+    let activeSession = this.getActiveSession();
+    let dataKey = `brc_schools_data_${activeSession}`;
+    
+    try {  
+      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
+      let cloudData = await response.json();  
+      if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
+        localStorage.setItem(dataKey, JSON.stringify(cloudData));  
+      }  
+    } catch (err) {  
+      console.error("Cloud Fetch Error:", err);  
+    }
+
+    if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
+    if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();  
   },
 
   renderDropdown() {
@@ -88,7 +104,7 @@ export const SessionManager = {
 
   getData() {
     let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`; // Backticks theek kar diye gaye hain
+    let dataKey = `brc_schools_data_${activeSession}`;
     let saved = localStorage.getItem(dataKey);
 
     if (!saved) {  
@@ -102,7 +118,6 @@ export const SessionManager = {
           });  
         }  
       });  
-      localStorage.setItem(dataKey, JSON.stringify(freshSchools));  
       return freshSchools;  
     }  
     try {  
@@ -112,27 +127,9 @@ export const SessionManager = {
     }
   },
 
-  async loadCloudDataInBackground() {
-    let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`; // Backticks theek kar diye gaye hain
-
-    try {  
-      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
-      let cloudData = await response.json();  
-      if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
-        localStorage.setItem(dataKey, JSON.stringify(cloudData));  
-        this.updateStats();  
-        if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
-        if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();  
-      }  
-    } catch (err) {  
-      console.error("Background Sync Error:", err);  
-    }
-  },
-
   saveData(schoolsData) {
     let activeSession = this.getActiveSession();
-    let dataKey = `brc_schools_data_${activeSession}`; // Backticks theek kar diye gaye hain
+    let dataKey = `brc_schools_data_${activeSession}`;
 
     let allSchools = this.getData();  
     if (Array.isArray(schoolsData)) {  
