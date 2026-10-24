@@ -25,19 +25,16 @@ export const EntryModule = {
     this.loadForm();
   },
 
-    // School ki category ke hisab se exact classes tay karna
+  // Determine exact classes based on school category
   getClassesForSchool(category) {
     let cat = (category || "").toUpperCase().trim();
     
-    // Agar category PS hai ya sirf Primary hai (jaise "PS", "PRIMARY SCHOOL", "1 TO 5")
     if (cat === "PS" || (cat.includes("PRIMARY") && !cat.includes("MIDDLE") && !cat.includes("1-8") && !cat.includes("1 TO 8"))) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
     }
-    // Agar category UPS ya Middle hai (jaise "UPS", "MIDDLE", "6 TO 8")
     else if (cat === "UPS" || (cat.includes("MIDDLE") && !cat.includes("PRIMARY"))) {
       return ["Class 6", "Class 7", "Class 8"];
     }
-    // Baaki sabhi ke liye default 1 se 8 tak
     else {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
@@ -87,7 +84,7 @@ export const EntryModule = {
     this.attachListeners();
     this.calculateAllRows();
 
-    // By default data freeze/locked rahega
+    // Data remains frozen/locked by default
     if (s.isFrozen === undefined) {
       s.isFrozen = true; 
     }
@@ -182,7 +179,6 @@ export const EntryModule = {
     let inputs = document.querySelectorAll("#entryTableBody input");
     inputs.forEach(input => {
       input.disabled = isFrozen;
-      // Freeze hone par halka gray background aur active hone par white background
       if (isFrozen) {
         input.style.background = "#e2e8f0";
         input.style.color = "#475569";
@@ -195,7 +191,7 @@ export const EntryModule = {
     let editBtn = document.getElementById("editToggleBtn");
     if(editBtn) {
       if(isFrozen) {
-        editBtn.innerHTML = "🔓 Unlock to Edit (डेटा एडिट करें)";
+        editBtn.innerHTML = "🔓 Unlock to Edit";
         editBtn.style.background = "#1d4ed8";
       } else {
         editBtn.innerHTML = "🔒 Lock / Editing Active";
@@ -216,13 +212,13 @@ export const EntryModule = {
     SessionManager.saveData(schools);
 
     this.setFormLockStatus(s.isFrozen);
-    alert(s.isFrozen ? "Data lock kar diya gaya hai!" : "Data unlock ho gaya hai, ab aap edit kar sakte hain.");
+    alert(s.isFrozen ? "Data has been locked successfully!" : "Data is now unlocked. You can edit the entries.");
   },
 
   saveData() {
     let sel = document.getElementById("schoolSelect");
     if(!sel || sel.value === "") {
-      alert("Kripya pehle school chunein!");
+      alert("Please select a school first!");
       return;
     }
     
@@ -254,7 +250,7 @@ export const EntryModule = {
       }
     });
 
-    // Save karne par data automatic freeze ho jayega
+    // Automatically freeze data upon saving
     s.isFrozen = true;
 
     SessionManager.saveData(schools);
@@ -263,7 +259,7 @@ export const EntryModule = {
     CompilationModule.render();
 
     this.setFormLockStatus(true);
-    alert("School ka data safaltapurvak save aur freeze ho gaya hai!");
+    alert("School data has been saved and frozen successfully!");
   }
 };
 
