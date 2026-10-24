@@ -358,16 +358,67 @@
     location.reload();  
   }  
   
+  // WebView & Browser compatible Excel Export Function
   function ExportAnyTable(filename = "BRC_Report.xlsx") {  
     try {  
       let activeSection = document.querySelector("main section.active");  
       let table = activeSection ? activeSection.querySelector("table") : null;  
       if (!table) { alert("No table data found to export."); return; }  
-      XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), filename);  
+      
+      let wb = XLSX.utils.table_to_book(table, { raw: true });
+      
+      try {
+        XLSX.writeFile(wb, filename);
+      } catch (err) {
+        // Fallback blob download handler for Android WebViews & App wrappers
+        let wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        let blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
     } catch (e) {  
       alert("Error exporting Excel file: " + e.message);  
     }  
   };  
+
+  // WebView & Browser compatible Print Handler
+  window.PrintHandler = {
+    printPage() {
+      let activeSection = document.querySelector("main section.active");
+      if (!activeSection) {
+        alert("No active section found for printing.");
+        return;
+      }
+      
+      try {
+        window.print();
+      } catch (e) {
+        let printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write('<html><head><title>Print Report</title>');
+          printWindow.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 11px; font-family: sans-serif; }</style>');
+          printWindow.document.write('</head><body>');
+          printWindow.document.write(activeSection.innerHTML);
+          printWindow.document.write('</body></html>');
+          printWindow.document.close();
+          printWindow.focus();
+          setTimeout(() => {
+            printWindow.print();
+          }, 500);
+        } else {
+          alert("Printing is not supported or pop-up was blocked in this view.");
+        }
+      }
+    }
+  };
   
   function handleSmartDownload() {  
     let activeSection = document.querySelector("main section.active");  
