@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -194,7 +194,7 @@ body{
 <div id="maintenanceOverlay">
   <div class="maint-card">
     <h1>🚧 Portal Under Maintenance</h1>
-    <p>पोर्टल पर अभी मेंटेनेंस का कार्य चल रहा है। कृपया कुछ समय बाद लॉगिन करें।</p>
+    <p>The portal is currently undergoing maintenance. Please try logging in later.</p>
   </div>
 </div>
 
@@ -202,7 +202,7 @@ body{
   <div class="auth-card">
     <h2>🔐 BRC_Login</h2>
     <p>BRC, JSKs, SCHOOLs Cloud Login</p>
-    <div id="authErr" class="auth-err">Kripya Sahi User ID aur Password dalein!</div>
+    <div id="authErr" class="auth-err">Please enter a valid User ID and Password!</div>
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
     <button class="auth-btn" onclick="checkAuth()">Login</button>
@@ -347,11 +347,11 @@ function updateMaintUI(isMaint) {
   let btn = document.getElementById("maintToggleBtn");
   if(btn) {
     if(isMaint) {
-      btn.innerText = "🔴 ON (Site Band Hai)";
+      btn.innerText = "🔴 ON (Site Offline)";
       btn.style.background = "#dc2626";
       btn.style.color = "#fff";
     } else {
-      btn.innerText = "🟢 OFF (Site Live Hai)";
+      btn.innerText = "🟢 OFF (Site Live)";
       btn.style.background = "#16a34a";
       btn.style.color = "#fff";
     }
@@ -370,12 +370,12 @@ async function toggleMaintenance() {
     let r = await res.json();
     if(r.status === "success") {
       localStorage.setItem("brc_maintenance_mode", newMaintState ? "true" : "false");
-      alert(newMaintState ? "Portal GLOBAL MAINTENANCE mode par chala gaya hai!" : "Portal ab LIVE kar diya gaya hai!");
+      alert(newMaintState ? "Portal has switched to GLOBAL MAINTENANCE mode!" : "Portal is now live!");
     } else {
-      alert("Maintenance update karne mein error aayi.");
+      alert("Error updating maintenance mode.");
     }
   } catch(err) {
-    alert("Network error: Maintenance update nahi ho payi.");
+    alert("Network error: Could not update maintenance mode.");
   }
 
   updateMaintUI(newMaintState);
@@ -389,18 +389,18 @@ async function checkAuth(){
   let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";
 
   if(!inputVal || !passVal) {
-    err.innerText = "Kripya User ID aur Password dono dalein!";
+    err.innerText = "Please enter both User ID and Password!";
     err.style.display = "block";
     return;
   }
 
   if (isMaintenance && inputVal !== "admin") {
-    err.innerText = "Portal par maintenance chal rahi hai. Abhi login band hai.";
+    err.innerText = "Portal is under maintenance. Login is currently disabled.";
     err.style.display = "block";
     return;
   }
 
-  err.innerText = "Login verification ho raha hai...";
+  err.innerText = "Verifying credentials...";
   err.style.display = "block";
 
   try {
@@ -433,7 +433,7 @@ async function checkAuth(){
           location.reload();
           return;
         } else {
-          err.innerText = "Galat Password! Kripya sahi password dalein.";
+          err.innerText = "Incorrect Password! Please enter the correct password.";
           err.style.display = "block";
           return;
         }
@@ -467,7 +467,7 @@ async function checkAuth(){
     return;
   }
 
-  err.innerText = "Wrong User ID Or UDISE Code / Password!";
+  err.innerText = "Wrong User ID or UDISE Code / Password!";
   err.style.display = "block";
 }
 
