@@ -146,7 +146,7 @@
 <div id="maintenanceOverlay">  
   <div class="maint-card">  
     <h1>🚧 Portal Under Maintenance</h1>  
-    <p>पोर्टल पर अभी मेंटेनेंस का कार्य चल रहा है। कृपया कुछ समय बाद लॉगिन करें, प्रतीक्षा करने के लिए धन्यवाद।</p>  
+    <p>The portal is currently undergoing maintenance. Please try logging in later. Thank you for your patience.</p>  
   </div>  
 </div>  
 
@@ -207,7 +207,7 @@
         <option value="Shahpur">Shahpur</option>  
         <option value="Tara">Tara</option>  
       </select>  
-      <input type="text" id="searchBox" placeholder="School name ya UDISE khojein..." onkeyup="SchoolRecords.render()" style="flex:1;min-width:180px;">  
+      <input type="text" id="searchBox" placeholder="Search school name or UDISE..." onkeyup="SchoolRecords.render()" style="flex:1;min-width:180px;">  
     </div>  
     <div class="tablewrap"><table><thead><tr><th>S.No.</th><th>School Name</th><th>UDISE Code</th><th>Category</th><th>JSK</th><th>Total Enrollment</th><th>Status</th></tr></thead><tbody id="schoolTableBody"></tbody></table></div>  
   </section>    
@@ -215,7 +215,7 @@
   <section id="entry">  
     <h3>✍️ School Data Entry Module</h3>  
     <div class="filter-bar">  
-      <label><b>School Chunein:</b></label>  
+      <label><b>Select School:</b></label>  
       <select id="schoolSelect" onchange="EntryModule.loadForm()" style="flex:1;max-width:400px;font-weight:bold;"></select>  
     </div>  
     <div class="tablewrap">  
@@ -223,7 +223,7 @@
         <thead>  
           <tr>  
             <th rowspan="2" style="vertical-align:middle;width:120px;">Class</th>  
-            <th colspan="2">sc</th><th colspan="2">st</th><th colspan="2">obc</th><th colspan="2">gen</th><th colspan="2">toal</th>  
+            <th colspan="2">SC</th><th colspan="2">ST</th><th colspan="2">OBC</th><th colspan="2">GEN</th><th colspan="2">Total</th>  
             <th rowspan="2" style="vertical-align:middle;width:60px;">T</th>  
           </tr>  
           <tr><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th></tr>  
@@ -232,7 +232,7 @@
       </table>  
     </div>  
     <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px; border-radius:10px; box-shadow:0 1px 6px #ddd;">  
-      <button type="button" id="editToggleBtn" onclick="EntryModule.toggleEdit()" style="background:#1d4ed8; color:#fff; padding:10px 18px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">🔓 Unlock to Edit (डेटा एडिट करें)</button>  
+      <button type="button" id="editToggleBtn" onclick="EntryModule.toggleEdit()" style="background:#1d4ed8; color:#fff; padding:10px 18px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">🔓 Unlock to Edit</button>  
       <button type="button" onclick="EntryModule.saveData()" style="background:#15803d; color:#fff; padding:10px 20px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save & Freeze Data</button>  
     </div>  
   </section>    
@@ -253,10 +253,10 @@
       </select>  
       <label style="margin-left:10px;"><b>Report Format:</b></label>  
       <select id="compViewMode" onchange="CompilationModule.render()" style="font-weight:bold;color:#1d4ed8;">  
-        <option value="format1">📊 F_1: JSK & Cate.wise Schools</option>  
-        <option value="format2">📈 F_2: Class-wise_Cast_Enroll</option>  
+        <option value="format1">📊 F_1: JSK & Category-wise Schools</option>  
+        <option value="format2">📈 F_2: Class-wise Caste Enrollment</option>  
         <option value="format3">📑 F_3: Class 1-8 Summary</option>  
-        <option value="format4">📋 F_4: School-wise_lis(1to8)</option>  
+        <option value="format4">📋 F_4: School-wise List (1-8)</option>  
         <option value="format5">⭐ F_5: Detailed Report</option>  
       </select>  
     </div>  
@@ -267,9 +267,9 @@
 <div id="permissionModal" class="modal-overlay">  
   <div class="modal-box" style="max-width:450px;">  
     <h3>⚙️ Master Feature Control Center</h3>  
-    <p style="font-size:13px; color:#64748b;">Sabhi modules ke liye JSK aur Schools ke permissions yahan se control honge.</p>  
+    <p style="font-size:13px; color:#64748b;">Manage permissions for JSK and Schools across all modules.</p>  
     <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;"></div>  
-    <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Settings Save Karein</button>  
+    <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Save Settings</button>  
     <button class="secondary" onclick="closePermissionModal()">Cancel</button>  
   </div>  
 </div>  
@@ -296,7 +296,7 @@
     let container = document.getElementById("permissionListContainer");  
     container.innerHTML = "";  
   
-    container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:5px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">📊 JSK Suvidhaen Control</div>`;  
+    container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:5px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">📊 JSK Permissions Control</div>`;  
     for (let key in settings) {  
       if (key.includes('jsk') && !key.includes('session')) {  
         let isChecked = settings[key] ? "checked" : "";  
@@ -308,7 +308,7 @@
       }  
     }  
   
-    container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Suvidhaen Control</div>`;  
+    container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Permissions Control</div>`;  
     for (let key in settings) {  
       if (key.includes('school')) {  
         let isChecked = settings[key] ? "checked" : "";  
@@ -322,7 +322,7 @@
   
     container.innerHTML += `<div style="font-weight:bold; color:#b45309; margin-top:10px; border-bottom:2px solid #b45309; padding-bottom:3px;">🔒 Academic Session Lock / Unlock</div>`;  
     sessions.forEach(s => {  
-      let lockStatusText = s.locked ? "🔒 Locked (Band)" : "🔓 Active (Chalu)";  
+      let lockStatusText = s.locked ? "🔒 Locked" : "🔓 Active";  
       let btnBg = s.locked ? "#dc2626" : "#16a34a";  
       container.innerHTML += `  
         <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; background:#fffbeb; padding:8px 12px; border-radius:6px; border:1px solid #fde68a;">  
@@ -353,7 +353,7 @@
       settings[cb.getAttribute("data-key")] = cb.checked;  
     });  
     FeaturePermissions.saveSettings(settings);  
-    alert("Sabhi permissions safaltapurvak update ho gayi hain!");  
+    alert("All permissions updated successfully!");  
     document.getElementById("permissionModal").style.display = "none";  
     location.reload();  
   }  
@@ -362,10 +362,10 @@
     try {  
       let activeSection = document.querySelector("main section.active");  
       let table = activeSection ? activeSection.querySelector("table") : null;  
-      if (!table) { alert("Download karne ke liye koi table data nahi mila!"); return; }  
+      if (!table) { alert("No table data found to export."); return; }  
       XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), filename);  
     } catch (e) {  
-      alert("Excel download karne mein samasya aayi: " + e.message);  
+      alert("Error exporting Excel file: " + e.message);  
     }  
   };  
   
