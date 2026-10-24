@@ -333,7 +333,6 @@ function toggleDrawer() {
   backdrop.classList.toggle('open');
 }
 
-// Corrected to invoke openPermissionModal() inside R2.html iframe
 function triggerFeatureControl() {
   toggleDrawer();
   const iframeWin = document.getElementById('moduleFrame').contentWindow;
@@ -455,7 +454,6 @@ async function checkAuth(){
   if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-    document.getElementById("authOverlay": { display: "none" });
     document.getElementById("authOverlay").style.display = "none";
     location.reload();
     return;
