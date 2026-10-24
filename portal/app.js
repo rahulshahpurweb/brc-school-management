@@ -29,7 +29,7 @@ window.addEventListener('DOMContentLoaded', () => {
   SchoolRecords.render();
   CompilationModule.render();
 
-  // 2. Populate Dropdown
+  // 2. Populate Dropdown first so options are available
   EntryModule.populateDropdown();
 
   let schoolSelect = document.getElementById("schoolSelect");
@@ -52,6 +52,9 @@ window.addEventListener('DOMContentLoaded', () => {
           schoolSelect.selectedIndex = 1;
         }
         schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        if (typeof EntryModule.loadForm === 'function') {
+          EntryModule.loadForm();
+        }
       }
     } else {
       if (sessionSelect) sessionSelect.style.display = 'none';
@@ -61,7 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // School Role Handling (Correct Index Matching)
+    // School Role Handling (Using correct index value matching so data appears instantly)
     if (user.role === 'school') {
       document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
 
@@ -70,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < schoolSelect.options.length; i++) {
           let opt = schoolSelect.options[i];
           if (opt.text.includes(user.udise) || opt.value === String(user.udise)) {
-            foundIndexValue = opt.value; // Yeh exact index (jaise '0', '1') hai
+            foundIndexValue = opt.value; // Exact array index (e.g., '0', '1')
             break;
           }
         }
@@ -105,7 +108,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 3. Anti-Flicker Release: Page ko ab ek sath visible kar do
+  // 3. Anti-Flicker Release: Show page cleanly in one go without double-reflection
   document.body.style.visibility = 'visible';
 });
 
