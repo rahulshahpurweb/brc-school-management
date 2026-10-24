@@ -158,16 +158,24 @@ export const SessionManager = {
     let schools = this.getData();
     let totalSchools = schools.length;
     let totalEnroll = 0, filled = 0;
+    let totalBoys = 0, totalGirls = 0;
 
     schools.forEach(s => {  
       let hasData = false;  
       let classesObj = s.classes || {};  
       Object.keys(classesObj).forEach(cName => {  
         let c = classesObj[cName] || {};  
-        let sum = Object.values(c).reduce((a, b) => a + (parseInt(b) || 0), 0);  
+        
+        // Calculate category-wise individual sums for boys and girls
+        let bSum = (parseInt(c.scB) || 0) + (parseInt(c.stB) || 0) + (parseInt(c.obcB) || 0) + (parseInt(c.genB) || 0);
+        let gSum = (parseInt(c.scG) || 0) + (parseInt(c.stG) || 0) + (parseInt(c.obcG) || 0) + (parseInt(c.genG) || 0);
+        let sum = bSum + gSum;
+
         if (sum > 0) {  
           hasData = true;  
           totalEnroll += sum;  
+          totalBoys += bSum;
+          totalGirls += gSum;
         }  
       });  
       if (hasData) filled++;  
@@ -177,11 +185,17 @@ export const SessionManager = {
     let statTotal = document.getElementById("statTotal");  
     let statFilled = document.getElementById("statFilled");  
     let statPending = document.getElementById("statPending");  
+    let statBoysGirls = document.getElementById("statBoysGirls");
 
     if(statSchools) statSchools.innerText = totalSchools;  
     if(statTotal) statTotal.innerText = totalEnroll;  
     if(statFilled) statFilled.innerText = filled;  
     if(statPending) statPending.innerText = totalSchools - filled;
+    
+    // Update dashboard statistics breakdown for boys and girls
+    if(statBoysGirls) {
+      statBoysGirls.innerText = `Boys: ${totalBoys} | Girls: ${totalGirls}`;
+    }
   },
 
   getCurrentUser() {
