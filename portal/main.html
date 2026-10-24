@@ -237,10 +237,6 @@ body{
     <!-- Admin & Controls Section (Visible ONLY to Admin) -->
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
-      
-      <button onclick="triggerAdminPasswordChange()" class="drawer-link" style="background:rgba(23,105,223,0.2); border-color:#1769df;">
-        <span>🔑</span> Change Password
-      </button>
 
       <button onclick="triggerFeatureControl()" class="drawer-link" style="background:rgba(59,130,246,0.15); border-color:#3b82f6;">
         <span>⚙️</span> Feature Control Panel
@@ -266,10 +262,7 @@ body{
     <div class="brand-title">BRC Shahpur Portal</div>
   </div>
   
-  <!-- Session Selector, Badge & Menu Trigger -->
   <div style="display:flex; align-items:center; gap:8px;">
-    <select id="sessionSelect" onchange="SessionManager.changeSession()" style="background:#071b38; color:#ffd21c; border:1px solid #f4b400; padding:3px 6px; border-radius:4px; font-size:11px; font-weight:bold; display:none;"></select>
-    <span id="sessionBadge" style="font-size: 11px; color: #ffd21c; font-weight: bold; background:rgba(255,255,255,0.1); padding:3px 6px; border-radius:4px; display:none;">2026-27</span>
     <div style="font-size: 12px; color: #ffd21c; font-weight: bold; cursor:pointer; background:rgba(255,255,255,0.1); padding:3px 8px; border-radius:4px;" onclick="toggleDrawer()">Menu ☰</div>
   </div>
 </header>
@@ -283,7 +276,6 @@ body{
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 const ADMIN_PASS = "brc@shahpur";
 
-// 1. Check Global Maintenance & Session on load
 async function checkGlobalMaintenance() {
   let isMaintenance = false;
   try {
@@ -341,23 +333,14 @@ function toggleDrawer() {
   backdrop.classList.toggle('open');
 }
 
-function triggerAdminPasswordChange() {
-  toggleDrawer();
-  const iframeWin = document.getElementById('moduleFrame').contentWindow;
-  if(iframeWin && typeof iframeWin.changePassword === 'function') {
-    iframeWin.changePassword();
-  } else {
-    alert("Please open Enrollment module to change password.");
-  }
-}
-
+// Corrected to invoke openPermissionModal() inside R2.html iframe
 function triggerFeatureControl() {
   toggleDrawer();
   const iframeWin = document.getElementById('moduleFrame').contentWindow;
-  if(iframeWin && typeof iframeWin.openFeatureControl === 'function') {
-    iframeWin.openFeatureControl();
+  if(iframeWin && typeof iframeWin.openPermissionModal === 'function') {
+    iframeWin.openPermissionModal();
   } else {
-    alert("Feature control settings are available inside the modules.");
+    alert("Feature control settings are available inside the Enrollment module.");
   }
 }
 
@@ -400,7 +383,6 @@ async function toggleMaintenance() {
   location.reload();
 }
 
-// 2. Cloud Credentials Based Authentication with Timeout & Smart Fallback
 async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -462,7 +444,6 @@ async function checkAuth(){
     console.log("Cloud check timed out, using fast fallback.");
   }
 
-  // --- Fast Local Fallbacks ---
   if ((inputVal === ADMIN_PASS || inputVal === "admin") && (passVal === ADMIN_PASS || passVal === "123456")) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
@@ -474,6 +455,7 @@ async function checkAuth(){
   if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
+    document.getElementById("authOverlay": { display: "none" });
     document.getElementById("authOverlay").style.display = "none";
     location.reload();
     return;
