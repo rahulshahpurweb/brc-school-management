@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
 <script src="permissions.js"></script>  
 <style>  
-  /* Anti-Flicker: Jab tak data aur form ready na ho, page hidden rahega taaki flash/double reflection na ho */
+  /* Anti-Flicker: Page load hote waqt jab tak data ready na ho, hidden rahega taaki flash na ho */
   body { visibility: hidden; }
 
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }  
@@ -274,17 +274,9 @@
   </div>  
 </div>  
 
+<!-- Main Modular Script -->
 <script type="module" src="app.js"></script>  
-<script type="module">  
-  import { SessionManager } from './session-manager.js';  
-  import { SchoolRecords } from './school-records.js';  
-  import { CompilationModule } from './compilation.js';  
-
-  // Bind core modules to window for inline HTML event handlers
-  window.SessionManager = SessionManager;
-  window.SchoolRecords = SchoolRecords;
-  window.CompilationModule = CompilationModule;
-
+<script>  
   const featureLabels = {  
     r2_jsk_upload_excel: "📊 [JSK] Excel Upload Permission",  
     r2_jsk_template_download: "📊 [JSK] Template Download Permission",  
@@ -293,12 +285,12 @@
     jsk_can_edit_locked_session: "📊 [JSK] Unlock Locked Session Data Entry"  
   };  
   
-  window.toggleInternalMenu = function() {  
+  function toggleInternalMenu() {  
     let menu = document.getElementById("internalDropdownMenu");  
     if(menu) menu.classList.toggle("open");  
   }  
   
-  window.openPermissionModal = function() {  
+  function openPermissionModal() {  
     let settings = FeaturePermissions.getSettings();  
     let sessions = AdminLocks.getSessions();  
     let container = document.getElementById("permissionListContainer");  
@@ -342,20 +334,20 @@
     document.getElementById("permissionModal").style.display = "flex";  
   }  
   
-  window.closePermissionModal = function() {  
+  function closePermissionModal() {  
     let modal = document.getElementById("permissionModal");  
     if(modal) modal.style.display = "none";  
   }  
   
-  window.toggleSession = function(sessionId) {  
+  function toggleSession(sessionId) {  
     AdminLocks.toggleSessionLock(sessionId);  
-    window.openPermissionModal();   
+    openPermissionModal();   
     if(typeof SessionManager !== 'undefined' && SessionManager.renderDropdown) {  
       SessionManager.renderDropdown();  
     }  
   }  
   
-  window.savePermissions = function() {  
+  function savePermissions() {  
     let settings = FeaturePermissions.getSettings();  
     document.querySelectorAll("#permissionListContainer input.perm-checkbox").forEach(cb => {  
       settings[cb.getAttribute("data-key")] = cb.checked;  
@@ -366,7 +358,7 @@
     location.reload();  
   }  
   
-  window.ExportAnyTable = function(filename = "BRC_Report.xlsx") {  
+  function ExportAnyTable(filename = "BRC_Report.xlsx") {  
     try {  
       let activeSection = document.querySelector("main section.active");  
       let table = activeSection ? activeSection.querySelector("table") : null;  
@@ -377,7 +369,7 @@
     }  
   };  
   
-  window.handleSmartDownload = function() {  
+  function handleSmartDownload() {  
     let activeSection = document.querySelector("main section.active");  
     if (!activeSection) return;  
     let sectionId = activeSection.id;  
@@ -395,125 +387,6 @@
       }  
     }  
   };  
-
-  // Master Synchronizer with Smart Polling & Correct Index Matching
-  window.addEventListener('DOMContentLoaded', () => {  
-    let isMaintenance = localStorage.getItem("brc_maintenance_mode") === "true";  
-    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");  
-      
-    if (isMaintenance && user.role !== "admin") {  
-      let overlay = document.getElementById("maintenanceOverlay");  
-      if (overlay) overlay.style.display = "flex";  
-      document.body.style.visibility = 'visible';  
-      return;  
-    }  
-
-    let attempts = 0;  
-    let dataSyncInterval = setInterval(() => {  
-      attempts++;  
-      let schools = SessionManager.getData();  
-      let schoolSelect = document.getElementById("schoolSelect");  
-
-      // Wait until SessionManager data and school dropdown are fully initialized
-      if ((schools && schools.length > 0 && schoolSelect) || attempts > 35) {  
-        clearInterval(dataSyncInterval);  
-
-        try {  
-          // 1. Populate dropdown using EntryModule
-          if (window.EntryModule && typeof window.EntryModule.populateDropdown === 'function') {  
-            window.EntryModule.populateDropdown();  
-          }  
-
-          // 2. Render compilation report initially
-          if (typeof CompilationModule !== 'undefined' && typeof CompilationModule.render === 'function') {  
-            CompilationModule.render();  
-          }  
-
-          if (user && user.role) {  
-            // 3. Admin Role Handling
-            if (user.role === 'admin') {  
-              let adminBtn = document.getElementById("adminControlBtn");  
-              if(adminBtn) adminBtn.style.display = "inline-block";  
-    
-              if (schoolSelect && schoolSelect.options.length > 1) {  
-                if (!schoolSelect.value || schoolSelect.value === "") {  
-                  schoolSelect.selectedIndex = 1;  
-                }  
-                schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
-                if (window.EntryModule && typeof window.EntryModule.loadForm === 'function') {  
-                  window.EntryModule.loadForm();  
-                }  
-              }  
-            } else {  
-              let sessionSelect = document.getElementById("sessionSelect");  
-              let sessionBadge = document.getElementById("sessionBadge");  
-              let activeSess = localStorage.getItem("brc_active_session") || "2026-27";  
-                
-              if (sessionSelect) sessionSelect.style.display = 'none';  
-              if (sessionBadge) {  
-                sessionBadge.innerText = activeSess;  
-                sessionBadge.style.display = 'inline-block';  
-              }  
-            }  
-        
-            // 4. School Role Handling (Using correct Index value matching)
-            if (user.role === 'school') {  
-              document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');  
-              
-              if (schoolSelect && schoolSelect.options.length > 0) {  
-                let foundIndexValue = "";  
-                for (let i = 0; i < schoolSelect.options.length; i++) {  
-                  let opt = schoolSelect.options[i];  
-                  if (opt.text.includes(user.udise) || opt.value === String(user.udise)) {  
-                    foundIndexValue = opt.value; // opt.value contains the array index (e.g., '0', '1', '2')
-                    break;  
-                  }  
-                }  
-
-                if (foundIndexValue !== "") {  
-                  schoolSelect.value = foundIndexValue;  
-                } else {  
-                  schoolSelect.selectedIndex = 0;  
-                }  
-
-                schoolSelect.disabled = true;  
-                schoolSelect.dispatchEvent(new Event('change', { bubbles: true }));  
-                if (window.EntryModule && typeof window.EntryModule.loadForm === 'function') {  
-                  window.EntryModule.loadForm();  
-                }  
-              }  
-            }   
-            // 5. JSK Role Handling
-            else if (user.role === 'jsk') {  
-              let navEntryBtn = document.getElementById("navEntryBtn");  
-              if(navEntryBtn) navEntryBtn.style.display = 'none';  
-                
-              let settings = FeaturePermissions.getSettings();  
-              if (!settings.r2_jsk_upload_excel) document.getElementById("uploadLabelBtn").style.display = 'none';  
-              if (!settings.r2_jsk_template_download) document.getElementById("templateBtn").style.display = 'none';  
-              if (!settings.r2_jsk_school_list) document.getElementById("navRecordsBtn").style.display = 'none';  
-        
-              showTab('compilation');  
-              if (typeof CompilationModule !== 'undefined' && typeof CompilationModule.render === 'function') {  
-                CompilationModule.render();  
-              }  
-            }  
-          }  
-        } catch(e) {  
-          console.error("Initialization Error:", e);  
-        } finally {  
-          // Anti-Flicker Release: Reveal the fully initialized page cleanly in one go
-          document.body.style.visibility = 'visible';  
-        }  
-      }  
-    }, 150);  
-  });  
-  
-  window.showTab = function(id){  
-    document.querySelectorAll("main section").forEach(s => s.classList.remove("active"));  
-    let target = document.getElementById(id);  
-    if(target) target.classList.add("active");  
-  }  
 </script>  
 </body>  
 </html>
