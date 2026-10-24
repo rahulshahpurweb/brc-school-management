@@ -41,7 +41,7 @@ export const SessionManager = {
     await this.getActiveSession();
     this.renderDropdown();
     
-    // Cloud se direct live data fetch karenge
+    // Fetch live data directly from the cloud
     await this.fetchCloudDataDirectly();
     this.updateStats();
     this.applyRoleAccess();
@@ -64,7 +64,7 @@ export const SessionManager = {
       cloudMemoryData = JSON.parse(JSON.stringify(baseSchools));
     }
 
-    // Sabhi UI renders aur forms ko turant update/refresh karna
+    // Instantly update and refresh all UI renders and forms
     this.triggerAllRenders();
   },
 
@@ -72,7 +72,7 @@ export const SessionManager = {
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
     if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
     
-    // Agar page par Data Entry form ya school select dropdown hai, toh use bhi turant refresh karein
+    // Refresh the data entry form or school dropdown if present on the page
     if(typeof window.loadSchoolData === 'function') {
       window.loadSchoolData();
     }
@@ -138,7 +138,7 @@ export const SessionManager = {
 
     this.updateStats();  
     this.triggerAllRenders();
-    alert("Data safaltapurvak save ho gaya!");  
+    alert("Data saved successfully!");  
 
     let payload = { session: activeSession, data: cloudMemoryData };  
     try {
