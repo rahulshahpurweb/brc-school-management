@@ -9,10 +9,10 @@
 <script src="permissions.js"></script>
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
-  .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; }
+  .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; flex-wrap: wrap; gap: 10px; }
   .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
   .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
-  .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+  .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
   .sub-nav-btn.active { background: #f4b400; color: #071b38; }
   .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
   .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
@@ -37,10 +37,15 @@
 
 <div class="module-header">
   <div class="module-title">♿ CWSN Module & Report Management (R3)</div>
-  <div style="display:flex; gap:10px; align-items:center;">
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <!-- Template Download Button -->
+    <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
+    
+    <!-- Admin Bulk Upload Button -->
     <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
       📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
     </label>
+    
     <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Main Portal (R2)</button>
   </div>
 </div>
@@ -536,6 +541,30 @@
       }
     },
 
+    // Download Excel Template with 26 columns
+    downloadTemplate() {
+      let headers = [
+        "Sr. No.", "School Name", "Dise_code", "JSK", "Samagra Id", 
+        "Student Name", "Father Name", "Mother Name", "Gender", "CAST Category", 
+        "Class", "Parent's Mobile n.", "UDID NO.", "Aadhar No.", "DOB", 
+        "Disability Type", "Certificate yes/No", "Disability Percent", 
+        "Necessary Equipment Materials", "address", "pin code", "Bank Name", 
+        "Bank IFSC Code", "Bank Account No.", "Teacher name", "Teacher Mob.No."
+      ];
+      let sample = [
+        1, "GHSS MODEL SHAHPUR(6 to 12)", "23351003914", "Shahpur", "302877484",
+        "Chetan Verma", "Sard", "Rina", "Boy", "SC",
+        "Class - 6", "9876543210", "UDID123", "Aadhar123", "2012-05-15",
+        "Specific Learning Disabilities", "Yes", "0 - 39 Percent", "Hearing Aid",
+        "Shahpur", "460440", "CBI", "CBIN0280760", "2227888040",
+        "Ramesh Kumar", "9425012345"
+      ];
+      let wb = XLSX.utils.book_new();
+      let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
+      XLSX.utils.book_append_sheet(wb, ws, "Consolidate_Data");
+      XLSX.writeFile(wb, "CWSN_Bulk_Upload_Template.xlsx");
+    },
+
     handleBulkUpload(event) {
       let file = event.target.files[0];
       if (!file) return;
@@ -705,8 +734,9 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      let r2Data = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || "{}");
-      let r2Total = r2Data.grandTotal || 0;
+      // Robust R2 enrollment fetch from multiple potential keys
+      let r2Data = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || localStorage.getItem("brc_school_" + udise) || "{}");
+      let r2Total = r2Data.grandTotal || r2Data.total || r2Data.overallTotal || 0;
       document.getElementById('lblR2Total').textContent = r2Total;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
