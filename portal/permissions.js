@@ -1,7 +1,7 @@
 // Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced + Anti-Cache Live Sync)
 const FeaturePermissions = {
   // Aapki npoint.io ki live cloud sync link
-  cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb", 
+  cloudApiUrl: "https://api.npoint.io/7c280aaadade1e14b43f", 
 
   getDefaults() {
     return {
