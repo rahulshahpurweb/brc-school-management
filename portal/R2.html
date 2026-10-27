@@ -281,6 +281,7 @@
     jsk_dash_view: "📊 [JSK] Summary Dashboard",  
     jsk_records_view: "📋 [JSK] School List & Filters",  
     jsk_compilation_view: "📑 [JSK] Compilation Report",  
+    jsk_entry_view: "✍️ [JSK] Data Entry Form Access",  
     jsk_upload_excel: "📊 [JSK] Excel Upload Permission",  
     jsk_template_download: "📊 [JSK] Template Download Permission",  
     
@@ -306,7 +307,7 @@
   
     // 1. JSK Specific Controls Section
     container.innerHTML += `<div style="font-weight:bold; color:#0284c7; margin-top:5px; border-bottom:2px solid #0284c7; padding-bottom:3px;">📊 JSK Specific Controls</div>`;  
-    ['jsk_dash_view', 'jsk_records_view', 'jsk_compilation_view', 'jsk_upload_excel', 'jsk_template_download'].forEach(key => {
+    ['jsk_dash_view', 'jsk_records_view', 'jsk_compilation_view', 'jsk_entry_view', 'jsk_upload_excel', 'jsk_template_download'].forEach(key => {
       if(settings[key] !== undefined) {
         let isChecked = settings[key] ? "checked" : "";  
         container.innerHTML += `  
