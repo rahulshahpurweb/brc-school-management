@@ -74,8 +74,51 @@ const FeaturePermissions = {
     }
     this.saveSettings(settings);
     return this.getSessions();
+  },
+
+  // Real-time UI Enforcement Logic (Makes checkboxes actually work)
+  enforceUI() {
+    let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+    if (user.role === 'admin') return; // Admin has full access
+
+    // 1. JSK Role Restrictions Enforcement
+    if (user.role === 'jsk') {
+      let uploadBtn = document.getElementById("uploadLabelBtn");
+      let templateBtn = document.getElementById("templateBtn");
+      let recordsBtn = document.getElementById("navRecordsBtn");
+
+      if (uploadBtn) {
+        uploadBtn.style.display = this.isAllowed('r2_jsk_upload_excel') ? 'flex' : 'none';
+      }
+      if (templateBtn) {
+        templateBtn.style.display = this.isAllowed('r2_jsk_template_download') ? 'flex' : 'none';
+      }
+      if (recordsBtn) {
+        recordsBtn.style.display = this.isAllowed('r2_jsk_school_list') ? 'flex' : 'none';
+      }
+    }
+
+    // 2. School Locked Session Enforcement
+    if (user.role === 'school') {
+      let activeSess = this.getActiveSession();
+      let locked = this.isSessionLocked(activeSess);
+      if (locked) {
+        let canEditLocked = this.isAllowed('school_can_edit_locked_session');
+        if (!canEditLocked) {
+          let editBtn = document.getElementById("editToggleBtn");
+          if (editBtn) editBtn.style.display = 'none';
+        }
+      }
+    }
   }
 };
 
 window.FeaturePermissions = FeaturePermissions;
 window.AdminLocks = FeaturePermissions;
+
+// Auto-enforce permissions when the page loads
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    FeaturePermissions.enforceUI();
+  }, 300);
+});
