@@ -1,25 +1,30 @@
-// Feature, Module & Academic Session Permissions Control Module (100% npoint.io Cloud Sync)
+// Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced with JSK Data Entry)
 const FeaturePermissions = {
-  // Aapki npoint.io ki live cloud sync link yahan set ho gayi hai
-  cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb",
+  // Aapki npoint.io ki live cloud sync link
+  cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb", 
 
   getDefaults() {
     return {
+      // --- JSK Specific Module View & Feature Permissions ---
       jsk_dash_view: true,
       jsk_records_view: true,
       jsk_compilation_view: true,
+      jsk_entry_view: false, // JSK Data Entry By Default Off (Admin on kar sakta hai)
       jsk_upload_excel: false,
       jsk_template_download: false,
       jsk_school_list: true,
 
+      // --- School Specific Module View & Feature Permissions ---
       school_dash_view: true,
       school_records_view: true,
       school_entry_view: true,
       school_can_edit_locked_session: false,
 
+      // --- General Module Access ---
       cwsn_module_access: true,
       sna_account_check_access: true,
 
+      // Global Active Session
       global_active_session: "2026-27",
 
       session_2026_27: false,
@@ -35,11 +40,10 @@ const FeaturePermissions = {
 
   async fetchCloudSettings() {
     try {
-      if (this.cloudApiUrl.includes("YOUR_BIN_ID")) return;
       let response = await fetch(this.cloudApiUrl);
       if (response.ok) {
         let remoteSettings = await response.json();
-        if (remoteSettings) {
+        if (remoteSettings && typeof remoteSettings === 'object') {
           localStorage.setItem("brc_feature_permissions", JSON.stringify(remoteSettings));
           if (remoteSettings.global_active_session) {
             localStorage.setItem("brc_active_session", remoteSettings.global_active_session);
@@ -50,7 +54,7 @@ const FeaturePermissions = {
         }
       }
     } catch (e) {
-      console.error("Cloud fetch error, using local storage fallback.", e);
+      console.error("Cloud fetch error, falling back to local cache.", e);
     }
   },
 
@@ -61,16 +65,12 @@ const FeaturePermissions = {
     }
 
     try {
-      if (!this.cloudApiUrl.includes("YOUR_BIN_ID")) {
-        await fetch(this.cloudApiUrl, {
-          method: "POST", // npoint.io updates ke liye POST use karta hai
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(settings)
-        });
-        console.log("Settings successfully pushed to npoint Cloud!");
-      }
+      await fetch(this.cloudApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings)
+      });
+      console.log("Settings successfully updated on npoint Cloud!");
     } catch (e) {
       console.error("Cloud save failed.", e);
     }
@@ -137,7 +137,7 @@ const FeaturePermissions = {
       if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? 'flex' : 'none';
       if (recordsBtn) recordsBtn.style.display = this.isAllowed('jsk_records_view') ? 'flex' : 'none';
       if (compilationBtn) compilationBtn.style.display = this.isAllowed('jsk_compilation_view') ? 'flex' : 'none';
-      if (entryBtn) entryBtn.style.display = 'none'; 
+      if (entryBtn) entryBtn.style.display = this.isAllowed('jsk_entry_view') ? 'flex' : 'none'; // JSK Data Entry Control
       
       if (uploadBtn) uploadBtn.style.display = this.isAllowed('jsk_upload_excel') ? 'flex' : 'none';
       if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? 'flex' : 'none';
