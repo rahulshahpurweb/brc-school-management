@@ -238,7 +238,6 @@
 </main>
 
 <script>
-  // MASTER SCHOOLS directly embedded to avoid module loading delay or errors
   const MASTER_SCHOOLS = [
     {name: "GPS DHODHARAMOHAR", udise: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
     {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
@@ -706,7 +705,6 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // R2 enrollment automatic fetch & sync link
       let r2Data = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || "{}");
       let r2Total = r2Data.grandTotal || 0;
       document.getElementById('lblR2Total').textContent = r2Total;
