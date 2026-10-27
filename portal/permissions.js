@@ -88,12 +88,12 @@ const FeaturePermissions = {
     return this.getSessions();
   },
 
-  // Real-time UI Enforcement Logic for All Sub-Modules
+  // Real-time UI Enforcement Logic strictly driven by Feature Control panel
   enforceUI() {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return; // Admin has full access
 
-    // 1. Sub-Modules Visibility Enforcement based on Settings
+    // 1. Sub-Modules Visibility Enforcement based on Feature Settings
     let dashBtn = document.querySelector("button[onclick*=\"showTab('dash')\"]");
     let recordsBtn = document.getElementById("navRecordsBtn");
     let entryBtn = document.getElementById("navEntryBtn");
@@ -104,30 +104,15 @@ const FeaturePermissions = {
     if (entryBtn) entryBtn.style.display = this.isAllowed('r2_entry_view') ? 'flex' : 'none';
     if (compilationBtn) compilationBtn.style.display = this.isAllowed('r2_compilation_view') ? 'flex' : 'none';
 
-    // 2. JSK Role Specific Feature Restrictions
-    if (user.role === 'jsk') {
-      let uploadBtn = document.getElementById("uploadLabelBtn");
-      let templateBtn = document.getElementById("templateBtn");
+    // 2. JSK Specific Feature Restrictions
+    let uploadBtn = document.getElementById("uploadLabelBtn");
+    let templateBtn = document.getElementById("templateBtn");
 
-      if (uploadBtn) {
-        uploadBtn.style.display = this.isAllowed('r2_jsk_upload_excel') ? 'flex' : 'none';
-      }
-      if (templateBtn) {
-        templateBtn.style.display = this.isAllowed('r2_jsk_template_download') ? 'flex' : 'none';
-      }
+    if (uploadBtn) {
+      uploadBtn.style.display = this.isAllowed('r2_jsk_upload_excel') ? 'flex' : 'none';
     }
-
-    // 3. School Locked Session Editing Restriction
-    if (user.role === 'school') {
-      let activeSess = this.getActiveSession();
-      let locked = this.isSessionLocked(activeSess);
-      if (locked) {
-        let canEditLocked = this.isAllowed('school_can_edit_locked_session');
-        if (!canEditLocked) {
-          let editBtn = document.getElementById("editToggleBtn");
-          if (editBtn) editBtn.style.display = 'none';
-        }
-      }
+    if (templateBtn) {
+      templateBtn.style.display = this.isAllowed('r2_jsk_template_download') ? 'flex' : 'none';
     }
   }
 };
