@@ -58,7 +58,7 @@
     <div class="grid-stats">
       <div class="stat-card">
         <div>Total Schools</div>
-        <div class="num" id="statTotalSchools">203</div>
+        <div class="num" id="statTotalSchools">202</div>
       </div>
       <div class="stat-card" style="border-left-color: #16a34a;">
         <div>Schools with CWSN (Yes)</div>
@@ -99,7 +99,7 @@
   <section id="cwsnSelection" class="cwsn-section" style="display:none;">
     <div class="card">
       <h3>🏫 School-wise CWSN Availability Setup (Yes / No)</h3>
-      <p style="font-size:13px; color:#64748b;">Jis school mein CWSN bachhe hain, uske samne <b>YES</b> select karein. Sirf 'YES' wale schools hi Data Entry drop-down list mein aayenge.</p>
+      <p style="font-size:13px; color:#64748b;">Jis school mein CWSN bachhe hain, uske samne <b>YES</b> select karein. Sirf 'YES' wale schools hi Data Entry drop-down list mein aayenge[span_2](start_span)[span_2](end_span).</p>
       
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
@@ -233,7 +233,7 @@
 
 <script>
   const CwsnApp = {
-    cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb", // Aap chahe toh CWSN ke liye alag npoint bin link yahan daal sakte hain
+    cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb",
     disabilityTypes: [
       "Locomotor Disability",
       "Visual Impairment",
@@ -244,28 +244,213 @@
       "Multiple Disabilities"
     ],
 
-    allSchools: [],
+    // Complete master list of all 202 schools extracted directly from Excel sheet
+    allSchools: [
+      {name: "GPS DHODHARAMOHAR", code: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) HAWAL DARDHANA", code: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS GURGUNDA 1 TO 8", code: "23351008203", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
+      {name: "GPS CHIRMATEKRI", code: "23351008301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GOVT. HS DHAR 1 TO 10", code: "23351008403", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura"},
+      {name: "GPS CHIMDI", code: "23351011601", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS DENDUPURA", code: "23351011901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS GUVADI 1 TO 8", code: "23351012102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
+      {name: "GOVT. HSS DHAPADA 1 TO 12", code: "23351012204", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bhoura"},
+      {name: "GMS NEW CHIKHALDA BUJURG 1 TO 8", code: "23351012302", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
+      {name: "GPS(U) KOYAL BUDDI", code: "23351015501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) DHAPADA RAIYAT", code: "23351016701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS NAYA NISHAN 1 TO 8", code: "23351017202", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
+      {name: "GPS HANDIPANI", code: "23351002901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS NEW HANDIPANI", code: "23351002902", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
+      {name: "GPS SONADHEH", code: "23351003001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) JHIRIYA DOL", code: "23351003002", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS BANABEHDA", code: "23351003101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS BANABEHDA", code: "23351003102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
+      {name: "GPS TWD KALAPANI", code: "23351004803", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS KOYLARI", code: "23351005001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS KOYLARI", code: "23351005003", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
+      {name: "GPS JHAPDI", code: "23351005101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS JHAPDI", code: "23351005102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
+      {name: "GPS(U) MAGRA PURA", code: "23351005103", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GOVT. HS KACHHAR 1 TO 10", code: "23351005204", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura"},
+      {name: "GPS KHAPA JHAPDI", code: "23351005301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) KHAPA DHANA", code: "23351005302", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) KOCHAMAU", code: "23351005303", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS (U) VIRGUWADI", code: "23351005304", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS BEHRAPURA", code: "23351005401", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS MANSINGPURA", code: "23351005501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) NAYAPURA", code: "23351005502", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) SEMALPURA", code: "23351005503", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS SALIMET 1 TO 8", code: "23351005602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
+      {name: "GPS(U) POLAPATHAR", code: "23351005603", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS(U) BODIPANI", code: "23351005604", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS JODIYAMAU", code: "23351005701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS BHORADHANA", code: "23351008003", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GPS GIRLS ASHRAM BHORA", code: "23351008006", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
+      {name: "GMS GIRLS BHORA 1 TO 8", code: "23351008008", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
+      {name: "GOVT. HSS GIRL'S BHOURA 6 TO 12", code: "23351008014", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Bhoura"},
+      {name: "GMS KOTHA 1 TO 8", code: "23351003502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
+      {name: "GPS(U) JAKA DHANA", code: "23351005803", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GOVT.HSS BIJADEHI 1 TO 12", code: "23351005804", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bijadehi"},
+      {name: "GPS KANJITALAB", code: "23351005901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "MS KANJITALAB", code: "23351005902", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
+      {name: "GPS SELDA", code: "23351006001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS KAJLI", code: "23351006101", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GMS KAJLI", code: "23351006102", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
+      {name: "GPS DUDAR", code: "23351006201", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS MENDHAKHEDA", code: "23351006301", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS SITADONGRI", code: "23351006401", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GMS SITADONGRI", code: "23351006402", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
+      {name: "GPS(U) TANGNA RAIYAT", code: "23351006502", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GNMS TANGNAMAL 1 TO 8", code: "23351006504", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
+      {name: "GPS TENDUKHEDA", code: "23351006701", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GMS TENDUKHEDA", code: "23351006703", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
+      {name: "GMS BARJORPUR 1 TO 8", code: "23351006802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
+      {name: "GPS RATAMDHANA", code: "23351006901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS KAWLIKHEDA", code: "23351007001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS DHAMNYA", code: "23351001801", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS(U) CHAK SANGWANI", code: "23351001902", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS PANDAJHIRI", code: "23351002001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
+      {name: "GPS PHOPHLYA (MAL)", code: "23351016601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GMS TARAMKHEDA RAIYAT 1 TO 8", code: "23351017001", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
+      {name: "GMS BOD 1 TO 8", code: "23351003602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
+      {name: "GPS DHODHARAMAHU", code: "23351007101", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS(U) BHIMPURA", code: "23351007103", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS(U) PANDRA SEL", code: "23351007104", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GOVT. HS DHODHRAMAU 6 TO 10", code: "23351007105", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau"},
+      {name: "GPS KHARWAR", code: "23351007201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS(U) BANDIDHANA", code: "23351007302", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GMS TIMARNI 1 TO 8", code: "23351007303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
+      {name: "GMS PAT 1 TO 8", code: "23351007402", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
+      {name: "GOVT. HS DABRI 1 to 10", code: "23351007503", category: "Primary to High School (Class 1 to 10)", jsk: "Dhodhramau"},
+      {name: "GPS(U) RUMAKOL", code: "23351007504", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS(U) DONDIYA KAU", code: "23351007505", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS DHANVAR", code: "23351007601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS TARAMKHEDA", code: "23351007701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS SAWRIDA", code: "23351007801", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS DHUTTAPURA", code: "23351007901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS PHOPHLYA", code: "23351001601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GOVT. HS PHOPHLYA 6 TO 10", code: "23351001604", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau"},
+      {name: "GPS NIMIYA", code: "23351001701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "PS SANGWANI", code: "23351001901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GPS BUDIMAI", code: "23351002201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
+      {name: "GMS KESIYA 1 TO 8", code: "23351008502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
+      {name: "GPS(U) PINJARA DHANA", code: "23351008503", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS(U) OOJHA DHANA", code: "23351008504", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS BONDRI", code: "23351008601", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GMS SEHRA 1 TO 8", code: "23351008702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
+      {name: "GMS KANHEGAON 1 TO 8", code: "23351008803", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
+      {name: "GPS(U) GONDIDHANA", code: "23351009002", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS(U) TEKRI DHANA", code: "23351009004", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GOVT. HS MANDAI BUJURGE 1 to 10", code: "23351009005", category: "Primary to High School (Class 1 to 10)", jsk: "Kesiya"},
+      {name: "GPS BHAGUDHANA", code: "23351009701", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS DHOLYADHANA", code: "23351010001", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GOVT. HSS RAMPUR MAL 1 TO 12", code: "23351010903", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Kesiya"},
+      {name: "GMS KHOKRA 1 TO 8", code: "23351011002", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
+      {name: "GPS(U) NAKADHANA", code: "23351011003", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GMS SITALJHIRI 1 TO 8", code: "23351011102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
+      {name: "GPS(U) NAVALSINGH DHANA", code: "23351011103", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS THAPPA", code: "23351011201", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS(U) KHEDA DHANA", code: "23351011202", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS HATHIKUND", code: "23351011301", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS RAMPUR RAIYAT", code: "23351011401", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS(U) BADA DHANA", code: "23351011402", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS TEMRA", code: "23351011501", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GMS NEW TEMRA MAL", code: "23351011503", category: "Middle School (Class 6 to 8)", jsk: "Kesiya"},
+      {name: "GPS(U) TEMRA RAIYAT", code: "23351014201", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS(U) GAOLIDHANA", code: "23351017101", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
+      {name: "GPS (S) NAVRANGDHANA", code: "23351010103", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GOVT. HS KUNDI 1 TO 10", code: "23351010104", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
+      {name: "GPS MAGARDOH", code: "23351010201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS KAMTI", code: "23351010301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS BANKAKHODRI", code: "23351010401", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS(U) KHODRI", code: "23351010402", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS (U) THANIKHEDA", code: "23351010403", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS NEW BANKAKHODRI", code: "23351010404", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
+      {name: "GPS KUSMARI", code: "23351010501", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS MARDANPUR 1 TO 8", code: "23351010602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
+      {name: "GPS DAODI", code: "23351010701", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS BHUMKADHANA", code: "23351010801", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS NEW DHASAI 1 TO 8", code: "23351011702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
+      {name: "GMS RANAPURA 1 TO 8", code: "23351011802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
+      {name: "GPS BHATNA", code: "23351012001", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS(U) HEERAWADI", code: "23351015001", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS(U) JAMNAGRI", code: "23351015201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS KUPPA 1 TO 8", code: "23351003303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
+      {name: "GPS TETARMAL", code: "23351003401", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS BANKABHARDA", code: "23351004301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS PATWAPURA", code: "23351000103", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
+      {name: "GPS CHIKHALDA (KHURD)", code: "23351000201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "PS CHAPDA (RAIYAT)", code: "23351000301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS JHILPA", code: "23351000501", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS PHAWADI", code: "23351000601", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS PHAWADI", code: "23351000602", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
+      {name: "PS(U) CHILAM TEKRI", code: "23351000603", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS(U) TEKRIPURA", code: "23351000704", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GOVT. HS RAIPUR 1 TO 10", code: "23351000705", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
+      {name: "GPS JAMUNDHANA", code: "23351000801", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS JAMUNDHANA", code: "23351000802", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
+      {name: "GPS SEMARPUR", code: "23351000901", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GOVT. HS PAWAR JHANDA 1 TO 10", code: "23351001004", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
+      {name: "GPS MUDHA", code: "23351001101", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GMS MUDHA", code: "23351001102", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
+      {name: "GPS(SATT) MUDHA", code: "23351001103", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS AAMDHANA", code: "23351001201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
+      {name: "GPS(U) GAONAPUR", code: "23351012401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS(U) CHAOKIDHANA", code: "23351002304", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS(U) JILERI", code: "23351002305", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GOVT HS BHAYAWADI 1 TO 10", code: "23351002307", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur"},
+      {name: "GPS DESHAWADI", code: "23351002401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GMS DESHAWADI", code: "23351002402", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
+      {name: "GPS(U) ADMADHANA", code: "23351002403", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS MOKHAMAL", code: "23351002501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS MOKHARAIYAT", code: "23351002601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS(U) CHITARIBAD", code: "23351002602", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GMS MALI SILPATI 1 TO 8", code: "23351002702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
+      {name: "GPS BARETHA", code: "23351002801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GMS BARETHA", code: "23351002802", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
+      {name: "GPS NISHANA", code: "23351003701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS(U) DEHRI PATHAR", code: "23351003804", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GOVT. HS SILPATI 1 TO 10", code: "23351003807", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur"},
+      {name: "GMS BOYS SHAHPUR 1 TO 8", code: "23351003907", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
+      {name: "GPS SOHAGPUR DHANA", code: "23351004001", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS KOTMI", code: "23351004101", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GMS KOTMI 1 TO 8", code: "23351004102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
+      {name: "GPS KANTAWADI", code: "23351004201", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GMS KANTAWADI", code: "23351004202", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
+      {name: "GPS BHAKTANDHANA", code: "23351004501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS PATAI", code: "23351004601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GOVT. HS PATAI 6 TO 10", code: "23351004603", category: "Middle to High School (Class 6 to 10)", jsk: "Shahpur"},
+      {name: "GPS PALASPANI", code: "23351004701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS KALAPANI", code: "23351004801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GPS GENDIDHANA", code: "23351004901", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GOVT.HSS MODEL (RMSA) SHAHPUR (Hindi)", code: "23351003914", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Shahpur"},
+      {name: "GOVT.HSS MODEL (RMSA) SHAHPUR (English)", code: "23351003914", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Shahpur"},
+      {name: "GPS BARBATPUR", code: "23351000401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
+      {name: "GOVT. HS GHISIBAGLA 6 TO 10", code: "23351009103", category: "Middle to High School (Class 6 to 10)", jsk: "Tara"},
+      {name: "GPS(U) RUMA DHANA", code: "23351008802", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS AAVRIYA", code: "23351008901", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS(U) MADIYA DHANA", code: "23351009003", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS GHISIBAGLA", code: "23351009101", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS TARA", code: "23351009201", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GMS TARA", code: "23351009202", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
+      {name: "GPS(U) BATTI DHANA", code: "23351009203", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS(U) TENDUDHANA", code: "23351009204", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS CHIKHALI RAIYAT", code: "23351009301", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GMS CHIKHALI RAIYAT", code: "23351009302", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
+      {name: "GPS(U) JARGAL DHANA", code: "23351009303", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS(U) BAGAT DHANA", code: "23351009304", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS CHIKHALI MAL", code: "23351009401", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GMS CHIKHALI MAL", code: "23351009402", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
+      {name: "GPS THUMKA", code: "23351009501", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS(U) GAOLAN DHANA", code: "23351009502", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GMS THUMKA RAIYAT", code: "23351009504", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
+      {name: "GPS KAODIYA", code: "23351009601", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GPS BAGLADHANA", code: "23351009801", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
+      {name: "GMS MANJIRADHANA 1 TO 8", code: "23351009902", category: "Primary with Middle School (Class 1 to 8)", jsk: "Tara"},
+      {name: "GPS(U) MATHI GARH", code: "23351016501", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
+    ],
 
     async init() {
-      // Load schools master data from R2 localStorage or fallback
-      let savedMaster = localStorage.getItem("brc_master_schools");
-      if (savedMaster) {
-        try { this.allSchools = JSON.parse(savedMaster); } catch(e){}
-      }
-
-      if (this.allSchools.length === 0 && window.SchoolData && window.SchoolData.schools) {
-        this.allSchools = window.SchoolData.schools;
-      }
-
-      if (this.allSchools.length === 0) {
-        this.allSchools = [
-          { name: "GPS DHODHARAMOHAR", code: "23351008101", category: "Primary School", jsk: "Bhoura", total: 48 },
-          { name: "GPS(U) HAWAL DARDHANA", code: "23351008202", category: "Primary School", jsk: "Bhoura", total: 14 },
-          { name: "GMS GURGUNDA 1 TO 8", code: "23351008203", category: "Middle School", jsk: "Bhoura", total: 103 }
-        ];
-      }
-
-      // Cloud se CWSN sync data fetch karna
       await this.fetchCloudCwsnData();
       this.switchTab('dashboard');
     },
@@ -276,16 +461,17 @@
         if (res.ok) {
           let data = await res.json();
           if (data && data.cwsn_records) {
-            localStorage.setItem("brc_cwsn_cloud_store", JSON.stringify(data.cwsn_records));
+            for (let key in data.cwsn_records) {
+              localStorage.setItem(key, data.cwsn_records[key]);
+            }
           }
         }
       } catch(e) {
-        console.error("Cloud fetch failed, using local storage cache.", e);
+        console.error("Cloud fetch failed.", e);
       }
     },
 
     async syncToCloud() {
-      // Local storage se saara Cwsn data collect karke cloud par push karna
       try {
         let allData = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -294,7 +480,6 @@
             allData[key] = localStorage.getItem(key);
           }
         }
-        // Cloud par POST request
         await fetch(this.cloudApiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -337,24 +522,24 @@
       let idx = 1;
       let filtered = this.allSchools.filter(s => {
         let jsk = s.jsk || "Bhoura";
-        let name = (s.name || s.school_name || "").toLowerCase();
-        let code = (s.code || s.school_code || "").toLowerCase();
-        if (jskFilter !== "ALL" && jsk !== jskFilter) return false;
+        let name = (s.name || "").toLowerCase();
+        let code = (s.code || "").toLowerCase();
+        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return false;
         if (keyword && !name.includes(keyword) && !code.includes(keyword)) return false;
         return true;
       });
 
       filtered.forEach(s => {
-        let udise = s.code || s.school_code;
+        let udise = s.code;
         let cwsnStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
 
         tbody.innerHTML += `
           <tr>
             <td>${idx++}</td>
-            <td style="text-align:left; font-weight:bold;">${s.name || s.school_name}</td>
+            <td style="text-align:left; font-weight:bold;">${s.name}</td>
             <td>${udise}</td>
-            <td>${s.category || '-'}</td>
-            <td>${s.jsk || '-'}</td>
+            <td>${s.category}</td>
+            <td>${s.jsk}</td>
             <td>
               <label style="margin-right:15px; cursor:pointer; font-weight:bold; color:${cwsnStatus === 'yes' ? '#16a34a' : '#64748b'};">
                 <input type="radio" name="cwsn_chk_${udise}" value="yes" ${cwsnStatus === 'yes' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'yes')"> YES
@@ -373,7 +558,7 @@
       if (status === 'no' && savedData) {
         let parsed = JSON.parse(savedData);
         if (parsed && parsed.completed && parsed.grandTotal > 0) {
-          let confirmNo = confirm("⚠️ Is school ke paas pehle se CWSN entries saved hain (Total: " + parsed.grandTotal + "). Kya aap ise 'NO' karna chahte hain?");
+          let confirmNo = confirm("⚠️ Is school ke paas CWSN entries saved hain. Kya aap ise 'NO' karna chahte hain?");
           if (!confirmNo) {
             this.renderSchoolSelectionTable();
             return;
@@ -391,8 +576,7 @@
       select.innerHTML = '<option value="">-- Select CWSN School --</option>';
 
       let yesSchools = this.allSchools.filter(s => {
-        let udise = s.code || s.school_code;
-        return localStorage.getItem("brc_cwsn_has_" + udise) === 'yes';
+        return localStorage.getItem("brc_cwsn_has_" + s.code) === 'yes';
       });
 
       if (yesSchools.length === 0) {
@@ -401,10 +585,9 @@
       }
 
       yesSchools.forEach(s => {
-        let udise = s.code || s.school_code;
         let el = document.createElement('option');
-        el.value = udise;
-        el.textContent = `${s.name || s.school_name} (${udise}) - JSK: ${s.jsk}`;
+        el.value = s.code;
+        el.textContent = `${s.name} (${s.code}) - JSK: ${s.jsk}`;
         select.appendChild(el);
       });
     },
@@ -413,15 +596,15 @@
       let udise = document.getElementById('cwsnSchoolSelect').value;
       if (!udise) return;
 
-      let school = this.allSchools.find(s => (s.code || s.school_code) === udise);
+      let school = this.allSchools.find(s => s.code === udise);
       if (!school) return;
 
-      document.getElementById('lblSchoolName').textContent = school.name || school.school_name;
+      document.getElementById('lblSchoolName').textContent = school.name;
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
       let r2Data = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || "{}");
-      let r2Total = school.total || r2Data.grandTotal || 0;
+      let r2Total = r2Data.grandTotal || 0;
       document.getElementById('lblR2Total').textContent = r2Total;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
@@ -554,11 +737,11 @@
       });
 
       this.allSchools.forEach(s => {
-        let jsk = s.jsk || "Bhoura";
+        let jsk = s.jsk ? s.jsk.charAt(0).toUpperCase() + s.jsk.slice(1).toLowerCase() : "Bhoura";
         if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
         jskMap[jsk].schools++;
 
-        let udise = s.code || s.school_code;
+        let udise = s.code;
         if (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes') {
           yesCount++;
           jskMap[jsk].yesSchools++;
@@ -649,10 +832,10 @@
       let found = false;
 
       this.allSchools.forEach(s => {
-        let jsk = s.jsk || "Bhoura";
-        if (jskFilter !== "ALL" && jsk !== jskFilter) return;
+        let jsk = s.jsk;
+        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
-        let udise = s.code || s.school_code;
+        let udise = s.code;
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.students && saved.students.length > 0) {
           saved.students.forEach(st => {
@@ -661,7 +844,7 @@
             html += `
               <tr>
                 <td>${rowIdx++}</td>
-                <td style="text-align:left;">${s.name || s.school_name}</td>
+                <td style="text-align:left;">${s.name}</td>
                 <td>${udise}</td>
                 <td>${jsk}</td>
                 <td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
