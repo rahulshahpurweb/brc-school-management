@@ -267,7 +267,7 @@
 <div id="permissionModal" class="modal-overlay">  
   <div class="modal-box" style="max-width:450px;">  
     <h3>⚙️ Master Feature Control Center</h3>  
-    <p style="font-size:13px; color:#64748b;">Manage permissions for JSK and Schools across all modules.</p>  
+    <p style="font-size:13px; color:#64748b;">Manage separate permissions for JSK and Schools.</p>  
     <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;"></div>  
     <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Save Settings</button>  
     <button class="secondary" onclick="closePermissionModal()">Cancel</button>  
@@ -278,17 +278,19 @@
 <script type="module" src="app.js"></script>  
 <script>  
   const featureLabels = {  
-    r2_dash_view: "📊 [Sub-Module] Summary Dashboard",  
-    r2_records_view: "📋 [Sub-Module] School List & Filters",  
-    r2_entry_view: "✍️ [Sub-Module] Data Entry Form",  
-    r2_compilation_view: "📑 [Sub-Module] JSK Compilation Report",  
-    r2_jsk_upload_excel: "📊 [JSK] Excel Upload Permission",  
-    r2_jsk_template_download: "📊 [JSK] Template Download Permission",  
-    r2_jsk_school_list: "📊 [JSK] School List View Permission",  
+    jsk_dash_view: "📊 [JSK] Summary Dashboard",  
+    jsk_records_view: "📋 [JSK] School List & Filters",  
+    jsk_compilation_view: "📑 [JSK] Compilation Report",  
+    jsk_upload_excel: "📊 [JSK] Excel Upload Permission",  
+    jsk_template_download: "📊 [JSK] Template Download Permission",  
+    
+    school_dash_view: "📊 [School] Summary Dashboard",  
+    school_records_view: "📋 [School] School List & Filters",  
+    school_entry_view: "✍️ [School] Data Entry Form",  
+    school_can_edit_locked_session: "🏫 [School] Unlock Locked Session Entry",  
+    
     cwsn_module_access: "♿ [Module] CWSN Module (R3) Access",
-    sna_account_check_access: "🔍 [Module] SNA Account Check Access",
-    school_can_edit_locked_session: "🏫 [School] Unlock Locked Session Data Entry",  
-    jsk_can_edit_locked_session: "📊 [JSK] Unlock Locked Session Data Entry"  
+    sna_account_check_access: "🔍 [Module] SNA Account Check Access"
   };  
   
   function toggleInternalMenu() {  
@@ -302,9 +304,9 @@
     let container = document.getElementById("permissionListContainer");  
     container.innerHTML = "";  
   
-    // 1. Sub-Modules Views Control
-    container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:5px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">📊 Sub-Modules & Views Control</div>`;  
-    ['r2_dash_view', 'r2_records_view', 'r2_entry_view', 'r2_compilation_view', 'cwsn_module_access', 'sna_account_check_access'].forEach(key => {
+    // 1. JSK Specific Controls Section
+    container.innerHTML += `<div style="font-weight:bold; color:#0284c7; margin-top:5px; border-bottom:2px solid #0284c7; padding-bottom:3px;">📊 JSK Specific Controls</div>`;  
+    ['jsk_dash_view', 'jsk_records_view', 'jsk_compilation_view', 'jsk_upload_excel', 'jsk_template_download'].forEach(key => {
       if(settings[key] !== undefined) {
         let isChecked = settings[key] ? "checked" : "";  
         container.innerHTML += `  
@@ -315,9 +317,9 @@
       }
     });
 
-    // 2. JSK Specific Permissions
-    container.innerHTML += `<div style="font-weight:bold; color:#0284c7; margin-top:10px; border-bottom:2px solid #0284c7; padding-bottom:3px;">📊 JSK Permissions Control</div>`;  
-    ['r2_jsk_upload_excel', 'r2_jsk_template_download', 'r2_jsk_school_list'].forEach(key => {
+    // 2. School Specific Controls Section
+    container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Specific Controls</div>`;  
+    ['school_dash_view', 'school_records_view', 'school_entry_view', 'school_can_edit_locked_session'].forEach(key => {
       if(settings[key] !== undefined) {
         let isChecked = settings[key] ? "checked" : "";  
         container.innerHTML += `  
@@ -328,9 +330,9 @@
       }
     });
 
-    // 3. School & Edit Permissions
-    container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School & Edit Permissions</div>`;  
-    ['school_can_edit_locked_session', 'jsk_can_edit_locked_session'].forEach(key => {
+    // 3. General Module Access Section
+    container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:10px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">🌐 General Portal Modules</div>`;  
+    ['cwsn_module_access', 'sna_account_check_access'].forEach(key => {
       if(settings[key] !== undefined) {
         let isChecked = settings[key] ? "checked" : "";  
         container.innerHTML += `  
@@ -341,7 +343,7 @@
       }
     });
   
-    // 4. Academic Session Lock / Unlock
+    // 4. Academic Session Lock / Unlock Section
     container.innerHTML += `<div style="font-weight:bold; color:#b45309; margin-top:10px; border-bottom:2px solid #b45309; padding-bottom:3px;">🔒 Academic Session Lock / Unlock</div>`;  
     sessions.forEach(s => {  
       let lockStatusText = s.locked ? "🔒 Locked" : "🔓 Active";  
