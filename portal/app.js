@@ -66,14 +66,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // School Role Handling (Using correct index value matching so data appears instantly)
     if (user.role === 'school') {
-      document.querySelectorAll('.hide-for-school').forEach(el => el.style.display = 'none');
-
       if (schoolSelect && schoolSelect.options.length > 0) {
         let foundIndexValue = "";
         for (let i = 0; i < schoolSelect.options.length; i++) {
           let opt = schoolSelect.options[i];
           if (opt.text.includes(user.udise) || opt.value === String(user.udise)) {
-            foundIndexValue = opt.value; // Exact array index (e.g., '0', '1')
+            foundIndexValue = opt.value;
             break;
           }
         }
@@ -91,24 +89,19 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
     } 
-    // JSK Role Handling
+    // JSK Role Handling (Default view opens compilation report, visibility is fully managed by Feature Control panel)
     else if (user.role === 'jsk') {
-      let navEntryBtn = document.getElementById("navEntryBtn");
-      if (navEntryBtn) navEntryBtn.style.display = 'none';
-
-      try {
-        let settings = FeaturePermissions.getSettings();
-        if (!settings.r2_jsk_upload_excel) document.getElementById("uploadLabelBtn").style.display = 'none';
-        if (!settings.r2_jsk_template_download) document.getElementById("templateBtn").style.display = 'none';
-        if (!settings.r2_jsk_school_list) document.getElementById("navRecordsBtn").style.display = 'none';
-      } catch (e) {}
-
       window.showTab('compilation');
       CompilationModule.render();
     }
   }
 
-  // 3. Anti-Flicker Release: Show page cleanly in one go without double-reflection
+  // 3. Enforce Master Feature Control settings live across UI
+  if (typeof FeaturePermissions !== 'undefined' && typeof FeaturePermissions.enforceUI === 'function') {
+    FeaturePermissions.enforceUI();
+  }
+
+  // 4. Anti-Flicker Release: Show page cleanly in one go without double-reflection
   document.body.style.visibility = 'visible';
 });
 
