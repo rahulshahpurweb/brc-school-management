@@ -1,15 +1,27 @@
-// Feature, Module & Academic Session Permissions Control Module
+// Feature, Module & Academic Session Permissions Control Module (Complete Sub-Modules Edition)
 const FeaturePermissions = {
   getDefaults() {
     return {
-      r2_jsk_upload_excel: false,
-      r2_jsk_template_download: false,
-      r2_jsk_school_list: true,
+      // --- Module & Sub-Module View Permissions ---
+      r2_dash_view: true,           // Summary Dashboard
+      r2_records_view: true,        // School List & Filters
+      r2_entry_view: true,          // School Data Entry Form
+      r2_compilation_view: true,    // JSK Compilation Report
       
+      // --- JSK Specific Permissions ---
+      r2_jsk_upload_excel: false,   // Excel Upload Permission
+      r2_jsk_template_download: false,// Template Download Permission
+      r2_jsk_school_list: true,     // School List View Permission
+
+      // --- Other Portal Modules Access ---
+      cwsn_module_access: true,     // CWSN Module (R3) Access
+      sna_account_check_access: true, // SNA Account Check Access
+
+      // --- Session Locking & Editing Permissions ---
       school_can_edit_locked_session: false,
       jsk_can_edit_locked_session: false,
 
-      // Global Active Session jo kabhi apne aap reset nahi hoga
+      // Global Active Session
       global_active_session: "2026-27",
 
       session_2026_27: false,
@@ -76,16 +88,26 @@ const FeaturePermissions = {
     return this.getSessions();
   },
 
-  // Real-time UI Enforcement Logic (Makes checkboxes actually work)
+  // Real-time UI Enforcement Logic for All Sub-Modules
   enforceUI() {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return; // Admin has full access
 
-    // 1. JSK Role Restrictions Enforcement
+    // 1. Sub-Modules Visibility Enforcement based on Settings
+    let dashBtn = document.querySelector("button[onclick*=\"showTab('dash')\"]");
+    let recordsBtn = document.getElementById("navRecordsBtn");
+    let entryBtn = document.getElementById("navEntryBtn");
+    let compilationBtn = document.querySelector("button[onclick*=\"showTab('compilation')\"]");
+
+    if (dashBtn) dashBtn.style.display = this.isAllowed('r2_dash_view') ? 'flex' : 'none';
+    if (recordsBtn) recordsBtn.style.display = this.isAllowed('r2_records_view') ? 'flex' : 'none';
+    if (entryBtn) entryBtn.style.display = this.isAllowed('r2_entry_view') ? 'flex' : 'none';
+    if (compilationBtn) compilationBtn.style.display = this.isAllowed('r2_compilation_view') ? 'flex' : 'none';
+
+    // 2. JSK Role Specific Feature Restrictions
     if (user.role === 'jsk') {
       let uploadBtn = document.getElementById("uploadLabelBtn");
       let templateBtn = document.getElementById("templateBtn");
-      let recordsBtn = document.getElementById("navRecordsBtn");
 
       if (uploadBtn) {
         uploadBtn.style.display = this.isAllowed('r2_jsk_upload_excel') ? 'flex' : 'none';
@@ -93,12 +115,9 @@ const FeaturePermissions = {
       if (templateBtn) {
         templateBtn.style.display = this.isAllowed('r2_jsk_template_download') ? 'flex' : 'none';
       }
-      if (recordsBtn) {
-        recordsBtn.style.display = this.isAllowed('r2_jsk_school_list') ? 'flex' : 'none';
-      }
     }
 
-    // 2. School Locked Session Enforcement
+    // 3. School Locked Session Editing Restriction
     if (user.role === 'school') {
       let activeSess = this.getActiveSession();
       let locked = this.isSessionLocked(activeSess);
