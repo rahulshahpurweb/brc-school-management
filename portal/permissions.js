@@ -33,10 +33,21 @@ const FeaturePermissions = {
     };
   },
 
-  getSettings() {
+    getSettings() {
     let saved = localStorage.getItem("brc_feature_permissions");
-    return saved ? JSON.parse(saved) : this.getDefaults();
+    let defaults = this.getDefaults();
+    if (saved) {
+      try {
+        let remote = JSON.parse(saved);
+        // Defaults ke sath merge karega taaki koi bhi key miss na ho
+        return Object.assign({}, defaults, remote);
+      } catch (e) {
+        return defaults;
+      }
+    }
+    return defaults;
   },
+
 
   async fetchCloudSettings() {
     try {
