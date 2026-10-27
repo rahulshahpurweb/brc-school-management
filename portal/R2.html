@@ -214,9 +214,9 @@
 
   <section id="entry">  
     <h3>✍️ School Data Entry Module</h3>  
-    <div class="filter-bar">  
-      <label><b>Select School:</b></label>  
-      <select id="schoolSelect" onchange="EntryModule.loadForm()" style="flex:1;max-width:400px;font-weight:bold;"></select>  
+    <div class="filter-bar" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">  
+      <input type="text" id="entrySearchBox" placeholder="🔍 Search school name or UDISE..." onkeyup="filterSchoolDropdown()" style="flex:1; min-width:200px; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:13px;">  
+      <select id="schoolSelect" onchange="EntryModule.loadForm()" style="flex:2; min-width:250px; font-weight:bold; padding:8px; border-radius:6px;"></select>  
     </div>  
     <div class="tablewrap">  
       <table>  
@@ -294,6 +294,57 @@
     sna_account_check_access: "🔍 [Module] SNA Account Check Access"
   };  
   
+  let allSchoolOptions = [];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+      let select = document.getElementById("schoolSelect");
+      if (select) {
+        allSchoolOptions = Array.from(select.options).map(opt => ({
+          value: opt.value,
+          text: opt.text
+        }));
+      }
+    }, 1200);
+  });
+
+  function filterSchoolDropdown() {
+    let keyword = document.getElementById("entrySearchBox").value.toLowerCase();
+    let select = document.getElementById("schoolSelect");
+    if (!select) return;
+
+    if (allSchoolOptions.length === 0) {
+      allSchoolOptions = Array.from(select.options).map(opt => ({
+        value: opt.value,
+        text: opt.text
+      }));
+    }
+
+    select.innerHTML = "";
+    let filtered = allSchoolOptions.filter(item => item.text.toLowerCase().includes(keyword));
+
+    if (filtered.length === 0) {
+      let opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "-- No School Found --";
+      select.appendChild(opt);
+    } else {
+      filtered.forEach(item => {
+        let opt = document.createElement("option");
+        opt.value = item.value;
+        opt.textContent = item.text;
+        select.appendChild(opt);
+      });
+    }
+
+    if (filtered.length > 0) {
+      select.value = filtered[0].value;
+      if (typeof EntryModule !== 'undefined' && EntryModule.loadForm) {
+        EntryModule.loadForm();
+      }
+    }
+  }
+
   function toggleInternalMenu() {  
     let menu = document.getElementById("internalDropdownMenu");  
     if(menu) menu.classList.toggle("open");  
