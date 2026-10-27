@@ -20,16 +20,16 @@
   .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1d4ed8; text-align: center; }
   .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-  th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; }
   .tablewrap { overflow-x: auto; max-height: 500px; }
   @media print {
     .module-header, .sub-nav, .filter-bar, button, select, input { display: none !important; }
     body, html, main, .content-container, .card { background: #fff !important; color: #000 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-    table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
-    th, td { border: 1px solid #000 !important; padding: 5px !important; color: #000 !important; }
-    @page { size: landscape; margin: 10mm; }
+    table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
+    th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; }
+    @page { size: landscape; margin: 8mm; }
   }
 </style>
 </head>
@@ -37,7 +37,13 @@
 
 <div class="module-header">
   <div class="module-title">♿ CWSN Module & Report Management (R3)</div>
-  <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Main Portal (R2)</button>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <!-- Admin Bulk Upload Button -->
+    <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
+      📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
+    </label>
+    <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Main Portal (R2)</button>
+  </div>
 </div>
 
 <!-- Sub-Nav Bar -->
@@ -99,7 +105,7 @@
   <section id="cwsnSelection" class="cwsn-section" style="display:none;">
     <div class="card">
       <h3>🏫 School-wise CWSN Availability Setup (Yes / No)</h3>
-      <p style="font-size:13px; color:#64748b;">Jis school mein CWSN bachhe hain, uske samne <b>YES</b> select karein. Sirf 'YES' wale schools hi Data Entry drop-down list mein aayenge[span_2](start_span)[span_2](end_span).</p>
+      <p style="font-size:13px; color:#64748b;">Jis school mein CWSN bachhe hain, uske samne <b>YES</b> select karein. Sirf 'YES' wale schools hi Data Entry drop-down list mein aayenge.</p>
       
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
@@ -137,7 +143,7 @@
   <!-- Data Entry Section -->
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module</h3>
+      <h3>✍️ School CWSN Data Entry Module (Based on Excel Format)</h3>
       <div class="filter-bar">
         <label><b>Select School (CWSN Yes Only):</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -152,38 +158,32 @@
         </div>
       </div>
 
-      <h4 style="color:#071b38; margin-bottom:8px;">Disability-wise Student Count Summary</h4>
-      <div class="tablewrap" style="margin-bottom:15px;">
-        <table>
-          <thead>
-            <tr>
-              <th>Disability Type</th>
-              <th>Boys</th>
-              <th>Girls</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody id="disabilitySummaryBody"></tbody>
-        </table>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h4 style="color:#071b38; margin:0;">Student Details Entry (Excel Fields)</h4>
+        <button type="button" onclick="CwsnApp.addNewStudentRow()" style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add Student</button>
       </div>
 
-      <h4 style="color:#071b38; margin-top:20px; margin-bottom:8px;">Student-wise Specific Details</h4>
       <div class="tablewrap">
         <table>
           <thead>
             <tr>
               <th>#</th>
               <th>Student Name</th>
-              <th>Father's Name</th>
-              <th>Class</th>
+              <th>Father Name</th>
+              <th>Mother Name</th>
               <th>Gender</th>
-              <th>Disability Category</th>
-              <th>Age</th>
-              <th>UDID / Remarks</th>
+              <th>Class</th>
+              <th>Disability Type</th>
+              <th>Percentage</th>
+              <th>UDID No.</th>
+              <th>Bank Name</th>
+              <th>IFSC Code</th>
+              <th>Account No.</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="studentRowsBody">
-            <tr><td colspan="8" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
+            <tr><td colspan="13" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
           </tbody>
         </table>
       </div>
@@ -218,7 +218,8 @@
           <option value="Visual Impairment">Visual Impairment</option>
           <option value="Hearing Impairment">Hearing Impairment</option>
           <option value="Speech & Language">Speech & Language</option>
-          <option value="Mental Retardation / Intellectual">Mental Retardation / Intellectual</option>
+          <option value="Intellectual Disability">Intellectual Disability</option>
+          <option value="Specific Learning Disabilities">Specific Learning Disabilities</option>
           <option value="Autism Spectrum">Autism Spectrum</option>
           <option value="Multiple Disabilities">Multiple Disabilities</option>
         </select>
@@ -239,12 +240,14 @@
       "Visual Impairment",
       "Hearing Impairment",
       "Speech & Language",
-      "Mental Retardation / Intellectual",
+      "Intellectual Disability",
+      "Specific Learning Disabilities",
       "Autism Spectrum",
-      "Multiple Disabilities"
+      "Multiple Disabilities",
+      "Blindness",
+      "Low Vision"
     ],
 
-    // Complete master list of all 202 schools extracted directly from Excel sheet
     allSchools: [
       {name: "GPS DHODHARAMOHAR", code: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
       {name: "GPS(U) HAWAL DARDHANA", code: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
@@ -452,7 +455,20 @@
 
     async init() {
       await this.fetchCloudCwsnData();
+      this.checkAdminRole();
       this.switchTab('dashboard');
+    },
+
+    checkAdminRole() {
+      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let bulkBtn = document.getElementById("adminBulkUploadBtn");
+      if (bulkBtn) {
+        if (user.role === 'admin') {
+          bulkBtn.style.display = 'inline-block';
+        } else {
+          bulkBtn.style.display = 'none';
+        }
+      }
     },
 
     async fetchCloudCwsnData() {
@@ -513,6 +529,101 @@
       }
     },
 
+    // Admin Bulk Upload Handler for cwsn.xlsx format
+    handleBulkUpload(event) {
+      let file = event.target.files[0];
+      if (!file) return;
+
+      let reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          let data = new Uint8Array(e.target.result);
+          let workbook = XLSX.read(data, { type: 'array' });
+          let firstSheet = workbook.SheetNames[0];
+          let worksheet = workbook.Sheets[firstSheet];
+          let jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          // Row 0 is header, rows 1 onwards are data based on cwsn.xlsx structure
+          // Columns: Sr. No.(0), School Name(1), Dise_code(2), JSK(3), Samagra Id(4), Student Name(5), 
+          // Father Name(6), Mother Name(7), Gender(8), CAST Category(9), Class(10), Mobile(11), UDID(12), Aadhar(13), DOB(14), Disability Type(15), Cert(16), Percent(17), Equipment(18), Address(19), Pin(20), Bank(21), IFSC(22), AccNo(23), Teacher(24), TeacherMob(25)
+          
+          let schoolMap = {};
+
+          for (let i = 1; i < jsonRows.length; i++) {
+            let r = jsonRows[i];
+            if (!r || r.length < 3) continue;
+            let schoolName = r[1] ? String(r[1]).trim() : "";
+            let udise = r[2] ? String(r[2]).trim() : "";
+            let jsk = r[3] ? String(r[3]).trim() : "Bhoura";
+
+            if (!udise || udise === '3' || udise === 'Dise_code') continue;
+
+            if (!schoolMap[udise]) {
+              schoolMap[udise] = {
+                schoolName: schoolName,
+                jsk: jsk,
+                students: []
+              };
+            }
+
+            schoolMap[udise].students.push({
+              name: r[5] ? String(r[5]).trim() : "",
+              father: r[6] ? String(r[6]).trim() : "",
+              mother: r[7] ? String(r[7]).trim() : "",
+              gender: r[8] ? String(r[8]).trim() : "Boy",
+              cast: r[9] ? String(r[9]).trim() : "",
+              cls: r[10] ? String(r[10]).trim() : "Class - 1",
+              mobile: r[11] ? String(r[11]).trim() : "",
+              udid: r[12] ? String(r[12]).trim() : "",
+              aadhar: r[13] ? String(r[13]).trim() : "",
+              dob: r[14] ? String(r[14]).trim() : "",
+              disability: r[15] ? String(r[15]).trim() : "Locomotor Disability",
+              cert: r[16] ? String(r[16]).trim() : "",
+              percent: r[17] ? String(r[17]).trim() : "",
+              equipment: r[18] ? String(r[18]).trim() : "",
+              address: r[19] ? String(r[19]).trim() : "",
+              pin: r[20] ? String(r[20]).trim() : "",
+              bank: r[21] ? String(r[21]).trim() : "",
+              ifsc: r[22] ? String(r[22]).trim() : "",
+              accNo: r[23] ? String(r[23]).trim() : "",
+              teacher: r[24] ? String(r[24]).trim() : "",
+              teacherMob: r[25] ? String(r[25]).trim() : ""
+            });
+          }
+
+          // Save each school data into localStorage and mark as 'yes'
+          let count = 0;
+          for (let udise in schoolMap) {
+            let sData = schoolMap[udise];
+            let boys = sData.students.filter(st => st.gender.toLowerCase().includes('boy')).length;
+            let girls = sData.students.filter(st => st.gender.toLowerCase().includes('girl')).length;
+
+            let payload = {
+              udise: udise,
+              schoolName: sData.schoolName,
+              jsk: sData.jsk,
+              students: sData.students,
+              totalBoys: boys,
+              totalGirls: girls,
+              grandTotal: sData.students.length,
+              completed: sData.students.length > 0
+            };
+
+            localStorage.setItem("brc_cwsn_has_" + udise, "yes");
+            localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
+            count++;
+          }
+
+          CwsnApp.syncToCloud();
+          alert(`Successfully imported CWSN data for ${count} schools from Excel!`);
+          CwsnApp.switchTab('dashboard');
+        } catch (err) {
+          alert("Error parsing Excel file: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    },
+
     renderSchoolSelectionTable() {
       let jskFilter = document.getElementById('selJskFilter').value;
       let keyword = document.getElementById('selSearchBox').value.toLowerCase();
@@ -554,17 +665,6 @@
     },
 
     setSchoolCwsn(udise, status) {
-      let savedData = localStorage.getItem("brc_cwsn_" + udise);
-      if (status === 'no' && savedData) {
-        let parsed = JSON.parse(savedData);
-        if (parsed && parsed.completed && parsed.grandTotal > 0) {
-          let confirmNo = confirm("⚠️ Is school ke paas CWSN entries saved hain. Kya aap ise 'NO' karna chahte hain?");
-          if (!confirmNo) {
-            this.renderSchoolSelectionTable();
-            return;
-          }
-        }
-      }
       localStorage.setItem("brc_cwsn_has_" + udise, status);
       this.syncToCloud();
       this.renderSchoolSelectionTable();
@@ -580,7 +680,7 @@
       });
 
       if (yesSchools.length === 0) {
-        select.innerHTML = '<option value="">-- No Schools marked as YES. Go to "School CWSN Yes/No Setup" first --</option>';
+        select.innerHTML = '<option value="">-- No Schools marked as YES. Go to "School CWSN Yes/No Setup" or Bulk Upload --</option>';
         return;
       }
 
@@ -608,74 +708,90 @@
       document.getElementById('lblR2Total').textContent = r2Total;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
-
-      let tbody = document.getElementById('disabilitySummaryBody');
-      tbody.innerHTML = '';
-      this.disabilityTypes.forEach((dis, idx) => {
-        let savedDis = cwsnSaved && cwsnSaved.summaries ? cwsnSaved.summaries[idx] : { boys: 0, girls: 0 };
-        tbody.innerHTML += `
-          <tr>
-            <td style="text-align:left; font-weight:bold;">${dis}</td>
-            <td><input type="number" min="0" class="dis-boys" data-idx="${idx}" value="${savedDis.boys}" onchange="CwsnApp.renderStudentRows()" style="width:70px; text-align:center; padding:5px;"></td>
-            <td><input type="number" min="0" class="dis-girls" data-idx="${idx}" value="${savedDis.girls}" onchange="CwsnApp.renderStudentRows()" style="width:70px; text-align:center; padding:5px;"></td>
-            <td><span class="dis-total-${idx}" style="font-weight:bold; color:#1d4ed8;">${Number(savedDis.boys) + Number(savedDis.girls)}</span></td>
-          </tr>
-        `;
-      });
-
       this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
     },
 
-    renderStudentRows(existingStudents = []) {
+    addNewStudentRow() {
+      let tbody = document.getElementById('studentRowsBody');
+      // If placeholder text is present, clear it
+      if (tbody.querySelector('td[colspan]')) {
+        tbody.innerHTML = '';
+      }
+      let idx = tbody.rows.length + 1;
+      let tr = document.createElement('tr');
+      tr.className = 'student-row';
+      tr.innerHTML = `
+        <td>${idx}</td>
+        <td><input type="text" class="s-name" placeholder="Student Name" style="width:100%; padding:4px;"></td>
+        <td><input type="text" class="s-father" placeholder="Father Name" style="width:100%; padding:4px;"></td>
+        <td><input type="text" class="s-mother" placeholder="Mother Name" style="width:100%; padding:4px;"></td>
+        <td>
+          <select class="s-gender" style="width:100%; padding:4px;">
+            <option value="Boy">Boy</option>
+            <option value="Girl">Girl</option>
+          </select>
+        </td>
+        <td>
+          <select class="s-class" style="width:100%; padding:4px;">
+            ${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}">${c}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select class="s-dis" style="width:100%; padding:4px;">
+            ${this.disabilityTypes.map(d => `<option value="${d}">${d}</option>`).join('')}
+          </select>
+        </td>
+        <td><input type="text" class="s-percent" placeholder="0-39 Percent" style="width:90px; padding:4px;"></td>
+        <td><input type="text" class="s-udid" placeholder="UDID No." style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-bank" placeholder="Bank" style="width:70px; padding:4px;"></td>
+        <td><input type="text" class="s-ifsc" placeholder="IFSC" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-acc" placeholder="Account No." style="width:120px; padding:4px;"></td>
+        <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
+      `;
+      tbody.appendChild(tr);
+    },
+
+    renderStudentRows(students = []) {
       let tbody = document.getElementById('studentRowsBody');
       tbody.innerHTML = '';
 
-      let totalCount = 0;
-      let summaryData = [];
-      this.disabilityTypes.forEach((dis, idx) => {
-        let b = parseInt(document.querySelectorAll('.dis-boys')[idx]?.value || 0);
-        let g = parseInt(document.querySelectorAll('.dis-girls')[idx]?.value || 0);
-        let tot = b + g;
-        let totSpan = document.querySelector(`.dis-total-${idx}`);
-        if(totSpan) totSpan.textContent = tot;
-        totalCount += tot;
-        for(let i=0; i<tot; i++) {
-          summaryData.push(dis);
-        }
-      });
-
-      if (totalCount === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; color:#64748b;">No CWSN students specified in summary above.</td></tr>`;
+      if (!students || students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" style="padding:20px; color:#64748b;">No CWSN students added yet. Click 'Add Student' above.</td></tr>`;
         return;
       }
 
-      summaryData.forEach((dis, i) => {
-        let st = existingStudents[i] || { name: '', father: '', cls: '1', gender: 'Boys', disability: dis, age: '', remarks: '' };
-        tbody.innerHTML += `
-          <tr class="student-row">
-            <td>${i+1}</td>
-            <td><input type="text" class="s-name" value="${st.name}" placeholder="Student Name" style="width:100%; padding:5px; box-sizing:border-box;"></td>
-            <td><input type="text" class="s-father" value="${st.father}" placeholder="Father Name" style="width:100%; padding:5px; box-sizing:border-box;"></td>
-            <td>
-              <select class="s-class" style="width:100%; padding:5px;">
-                ${[1,2,3,4,5,6,7,8,9,10,11,12].map(c => `<option value="${c}" ${st.cls == c ? 'selected' : ''}>${c}</option>`).join('')}
-              </select>
-            </td>
-            <td>
-              <select class="s-gender" style="width:100%; padding:5px;">
-                <option value="Boys" ${st.gender === 'Boys' ? 'selected' : ''}>Boys</option>
-                <option value="Girls" ${st.gender === 'Girls' ? 'selected' : ''}>Girls</option>
-              </select>
-            </td>
-            <td>
-              <select class="s-dis" style="width:100%; padding:5px;">
-                ${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}
-              </select>
-            </td>
-            <td><input type="number" class="s-age" value="${st.age}" placeholder="Age" style="width:60px; padding:5px; text-align:center;"></td>
-            <td><input type="text" class="s-rem" value="${st.remarks}" placeholder="UDID / Remarks" style="width:100%; padding:5px; box-sizing:border-box;"></td>
-          </tr>
+      students.forEach((st, i) => {
+        let tr = document.createElement('tr');
+        tr.className = 'student-row';
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td><input type="text" class="s-name" value="${st.name || ''}" style="width:100%; padding:4px;"></td>
+          <td><input type="text" class="s-father" value="${st.father || ''}" style="width:100%; padding:4px;"></td>
+          <td><input type="text" class="s-mother" value="${st.mother || ''}" style="width:100%; padding:4px;"></td>
+          <td>
+            <select class="s-gender" style="width:100%; padding:4px;">
+              <option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option>
+              <option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option>
+            </select>
+          </td>
+          <td>
+            <select class="s-class" style="width:100%; padding:4px;">
+              ${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <select class="s-dis" style="width:100%; padding:4px;">
+              ${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}
+            </select>
+          </td>
+          <td><input type="text" class="s-percent" value="${st.percent || ''}" style="width:90px; padding:4px;"></td>
+          <td><input type="text" class="s-udid" value="${st.udid || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-bank" value="${st.bank || ''}" style="width:70px; padding:4px;"></td>
+          <td><input type="text" class="s-ifsc" value="${st.ifsc || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-acc" value="${st.accNo || ''}" style="width:120px; padding:4px;"></td>
+          <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
         `;
+        tbody.appendChild(tr);
       });
     },
 
@@ -687,37 +803,36 @@
         return;
       }
 
-      let summaries = [];
-      let totalBoys = 0, totalGirls = 0;
-      this.disabilityTypes.forEach((dis, idx) => {
-        let b = parseInt(document.querySelectorAll('.dis-boys')[idx]?.value || 0);
-        let g = parseInt(document.querySelectorAll('.dis-girls')[idx]?.value || 0);
-        summaries.push({ disability: dis, boys: b, girls: g });
-        totalBoys += b;
-        totalGirls += g;
-      });
-
+      let school = this.allSchools.find(s => s.code === udise);
       let students = [];
       document.querySelectorAll('.student-row').forEach(row => {
         students.push({
           name: row.querySelector('.s-name').value,
           father: row.querySelector('.s-father').value,
-          cls: row.querySelector('.s-class').value,
+          mother: row.querySelector('.s-mother').value,
           gender: row.querySelector('.s-gender').value,
+          cls: row.querySelector('.s-class').value,
           disability: row.querySelector('.s-dis').value,
-          age: row.querySelector('.s-age').value,
-          remarks: row.querySelector('.s-rem').value
+          percent: row.querySelector('.s-percent').value,
+          udid: row.querySelector('.s-udid').value,
+          bank: row.querySelector('.s-bank').value,
+          ifsc: row.querySelector('.s-ifsc').value,
+          accNo: row.querySelector('.s-acc').value
         });
       });
 
+      let boys = students.filter(st => st.gender === 'Boy').length;
+      let girls = students.filter(st => st.gender === 'Girl').length;
+
       let payload = {
         udise: udise,
-        summaries: summaries,
+        schoolName: school.name,
+        jsk: school.jsk,
         students: students,
-        totalBoys: totalBoys,
-        totalGirls: totalGirls,
-        grandTotal: totalBoys + totalGirls,
-        completed: (totalBoys + totalGirls) > 0 || students.length > 0
+        totalBoys: boys,
+        totalGirls: girls,
+        grandTotal: students.length,
+        completed: students.length > 0
       };
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
@@ -812,17 +927,21 @@
       let html = `
         <thead>
           <tr>
-            <th>S.No.</th>
+            <th>Sr. No.</th>
             <th>School Name</th>
-            <th>UDISE Code</th>
+            <th>Dise_code</th>
             <th>JSK</th>
             <th>Student Name</th>
-            <th>Father's Name</th>
-            <th>Class</th>
+            <th>Father Name</th>
+            <th>Mother Name</th>
             <th>Gender</th>
-            <th>Disability Category</th>
-            <th>Age</th>
-            <th>UDID / Remarks</th>
+            <th>Class</th>
+            <th>Disability Type</th>
+            <th>Disability Percent</th>
+            <th>UDID NO.</th>
+            <th>Bank Name</th>
+            <th>IFSC Code</th>
+            <th>Account No.</th>
           </tr>
         </thead>
         <tbody>
@@ -849,11 +968,15 @@
                 <td>${jsk}</td>
                 <td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
                 <td style="text-align:left;">${st.father || '-'}</td>
-                <td>${st.cls}</td>
+                <td style="text-align:left;">${st.mother || '-'}</td>
                 <td>${st.gender}</td>
+                <td>${st.cls}</td>
                 <td style="text-align:left;">${st.disability}</td>
-                <td>${st.age || '-'}</td>
-                <td style="text-align:left;">${st.remarks || '-'}</td>
+                <td>${st.percent || '-'}</td>
+                <td>${st.udid || '-'}</td>
+                <td>${st.bank || '-'}</td>
+                <td>${st.ifsc || '-'}</td>
+                <td>${st.accNo || '-'}</td>
               </tr>
             `;
           });
@@ -861,7 +984,7 @@
       });
 
       if (!found) {
-        html += `<tr><td colspan="11" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
+        html += `<tr><td colspan="15" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
       }
 
       html += `</tbody>`;
@@ -875,7 +998,7 @@
         return;
       }
       let wb = XLSX.utils.table_to_book(table, { raw: true });
-      XLSX.writeFile(wb, "BRC_CWSN_Report.xlsx");
+      XLSX.writeFile(wb, "BRC_CWSN_Compilation_Report.xlsx");
     }
   };
 
