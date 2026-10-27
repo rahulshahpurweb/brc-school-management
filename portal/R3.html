@@ -7,6 +7,13 @@
 <link rel="stylesheet" href="r2-styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="permissions.js"></script>
+<script type="module">
+  import { MASTER_SCHOOLS } from './schools-data (1).js';
+  window.MASTER_SCHOOLS = MASTER_SCHOOLS;
+  if(window.CwsnApp && typeof window.CwsnApp.init === 'function') {
+    window.CwsnApp.init();
+  }
+</script>
 <style>
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
   .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; }
@@ -38,7 +45,6 @@
 <div class="module-header">
   <div class="module-title">♿ CWSN Module & Report Management (R3)</div>
   <div style="display:flex; gap:10px; align-items:center;">
-    <!-- Admin Bulk Upload Button -->
     <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
       📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
     </label>
@@ -46,7 +52,6 @@
   </div>
 </div>
 
-<!-- Sub-Nav Bar -->
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 CWSN Dashboard</button>
   <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School CWSN Yes/No Setup</button>
@@ -59,12 +64,11 @@
 </div>
 
 <main class="content-container">
-  <!-- Dashboard Section -->
   <section id="cwsnDash" class="cwsn-section">
     <div class="grid-stats">
       <div class="stat-card">
         <div>Total Schools</div>
-        <div class="num" id="statTotalSchools">202</div>
+        <div class="num" id="statTotalSchools">203</div>
       </div>
       <div class="stat-card" style="border-left-color: #16a34a;">
         <div>Schools with CWSN (Yes)</div>
@@ -101,7 +105,6 @@
     </div>
   </section>
 
-  <!-- School Selection (Yes/No) Setup Section -->
   <section id="cwsnSelection" class="cwsn-section" style="display:none;">
     <div class="card">
       <h3>🏫 School-wise CWSN Availability Setup (Yes / No)</h3>
@@ -140,10 +143,9 @@
     </div>
   </section>
 
-  <!-- Data Entry Section -->
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module (Based on Excel Format)</h3>
+      <h3>✍️ School CWSN Data Entry Module (Complete Excel Format)</h3>
       <div class="filter-bar">
         <label><b>Select School (CWSN Yes Only):</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -154,12 +156,12 @@
           <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
           <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
           <span><b>JSK:</b> <span id="lblJsk">-</span></span>
-          <span><b>R2 Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
+          <span><b>R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="color:#071b38; margin:0;">Student Details Entry (Excel Fields)</h4>
+        <h4 style="color:#071b38; margin:0;">Student Details Entry</h4>
         <button type="button" onclick="CwsnApp.addNewStudentRow()" style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add Student</button>
       </div>
 
@@ -168,22 +170,33 @@
           <thead>
             <tr>
               <th>#</th>
+              <th>Samagra ID</th>
               <th>Student Name</th>
               <th>Father Name</th>
               <th>Mother Name</th>
               <th>Gender</th>
+              <th>Category</th>
               <th>Class</th>
-              <th>Disability Type</th>
-              <th>Percentage</th>
+              <th>Mobile No.</th>
               <th>UDID No.</th>
+              <th>Aadhar No.</th>
+              <th>DOB</th>
+              <th>Disability Type</th>
+              <th>Cert. (Yes/No)</th>
+              <th>Disability %</th>
+              <th>Equipment</th>
+              <th>Address</th>
+              <th>Pin Code</th>
               <th>Bank Name</th>
               <th>IFSC Code</th>
               <th>Account No.</th>
+              <th>Teacher Name</th>
+              <th>Teacher Mobile</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody id="studentRowsBody">
-            <tr><td colspan="13" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
+            <tr><td colspan="24" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
           </tbody>
         </table>
       </div>
@@ -194,7 +207,6 @@
     </div>
   </section>
 
-  <!-- Reports Section -->
   <section id="cwsnReports" class="cwsn-section" style="display:none;">
     <div class="card">
       <h3>📑 CWSN Compilation & Filter Reports</h3>
@@ -233,7 +245,7 @@
 </main>
 
 <script>
-  const CwsnApp = {
+  window.CwsnApp = {
     cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb",
     disabilityTypes: [
       "Locomotor Disability",
@@ -248,212 +260,12 @@
       "Low Vision"
     ],
 
-    allSchools: [
-      {name: "GPS DHODHARAMOHAR", code: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) HAWAL DARDHANA", code: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS GURGUNDA 1 TO 8", code: "23351008203", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-      {name: "GPS CHIRMATEKRI", code: "23351008301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GOVT. HS DHAR 1 TO 10", code: "23351008403", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura"},
-      {name: "GPS CHIMDI", code: "23351011601", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS DENDUPURA", code: "23351011901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS GUVADI 1 TO 8", code: "23351012102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-      {name: "GOVT. HSS DHAPADA 1 TO 12", code: "23351012204", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bhoura"},
-      {name: "GMS NEW CHIKHALDA BUJURG 1 TO 8", code: "23351012302", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-      {name: "GPS(U) KOYAL BUDDI", code: "23351015501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) DHAPADA RAIYAT", code: "23351016701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS NAYA NISHAN 1 TO 8", code: "23351017202", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-      {name: "GPS HANDIPANI", code: "23351002901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS NEW HANDIPANI", code: "23351002902", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-      {name: "GPS SONADHEH", code: "23351003001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) JHIRIYA DOL", code: "23351003002", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS BANABEHDA", code: "23351003101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS BANABEHDA", code: "23351003102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-      {name: "GPS TWD KALAPANI", code: "23351004803", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS KOYLARI", code: "23351005001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS KOYLARI", code: "23351005003", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-      {name: "GPS JHAPDI", code: "23351005101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS JHAPDI", code: "23351005102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-      {name: "GPS(U) MAGRA PURA", code: "23351005103", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GOVT. HS KACHHAR 1 TO 10", code: "23351005204", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura"},
-      {name: "GPS KHAPA JHAPDI", code: "23351005301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) KHAPA DHANA", code: "23351005302", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) KOCHAMAU", code: "23351005303", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS (U) VIRGUWADI", code: "23351005304", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS BEHRAPURA", code: "23351005401", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS MANSINGPURA", code: "23351005501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) NAYAPURA", code: "23351005502", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) SEMALPURA", code: "23351005503", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS SALIMET 1 TO 8", code: "23351005602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-      {name: "GPS(U) POLAPATHAR", code: "23351005603", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS(U) BODIPANI", code: "23351005604", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS JODIYAMAU", code: "23351005701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS BHORADHANA", code: "23351008003", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GPS GIRLS ASHRAM BHORA", code: "23351008006", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-      {name: "GMS GIRLS BHORA 1 TO 8", code: "23351008008", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-      {name: "GOVT. HSS GIRL'S BHOURA 6 TO 12", code: "23351008014", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Bhoura"},
-      {name: "GMS KOTHA 1 TO 8", code: "23351003502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
-      {name: "GPS(U) JAKA DHANA", code: "23351005803", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GOVT.HSS BIJADEHI 1 TO 12", code: "23351005804", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bijadehi"},
-      {name: "GPS KANJITALAB", code: "23351005901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "MS KANJITALAB", code: "23351005902", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-      {name: "GPS SELDA", code: "23351006001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS KAJLI", code: "23351006101", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GMS KAJLI", code: "23351006102", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-      {name: "GPS DUDAR", code: "23351006201", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS MENDHAKHEDA", code: "23351006301", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS SITADONGRI", code: "23351006401", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GMS SITADONGRI", code: "23351006402", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-      {name: "GPS(U) TANGNA RAIYAT", code: "23351006502", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GNMS TANGNAMAL 1 TO 8", code: "23351006504", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
-      {name: "GPS TENDUKHEDA", code: "23351006701", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GMS TENDUKHEDA", code: "23351006703", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-      {name: "GMS BARJORPUR 1 TO 8", code: "23351006802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
-      {name: "GPS RATAMDHANA", code: "23351006901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS KAWLIKHEDA", code: "23351007001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS DHAMNYA", code: "23351001801", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS(U) CHAK SANGWANI", code: "23351001902", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS PANDAJHIRI", code: "23351002001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-      {name: "GPS PHOPHLYA (MAL)", code: "23351016601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GMS TARAMKHEDA RAIYAT 1 TO 8", code: "23351017001", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-      {name: "GMS BOD 1 TO 8", code: "23351003602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-      {name: "GPS DHODHARAMAHU", code: "23351007101", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS(U) BHIMPURA", code: "23351007103", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS(U) PANDRA SEL", code: "23351007104", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GOVT. HS DHODHRAMAU 6 TO 10", code: "23351007105", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau"},
-      {name: "GPS KHARWAR", code: "23351007201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS(U) BANDIDHANA", code: "23351007302", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GMS TIMARNI 1 TO 8", code: "23351007303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-      {name: "GMS PAT 1 TO 8", code: "23351007402", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-      {name: "GOVT. HS DABRI 1 to 10", code: "23351007503", category: "Primary to High School (Class 1 to 10)", jsk: "Dhodhramau"},
-      {name: "GPS(U) RUMAKOL", code: "23351007504", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS(U) DONDIYA KAU", code: "23351007505", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS DHANVAR", code: "23351007601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS TARAMKHEDA", code: "23351007701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS SAWRIDA", code: "23351007801", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS DHUTTAPURA", code: "23351007901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS PHOPHLYA", code: "23351001601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GOVT. HS PHOPHLYA 6 TO 10", code: "23351001604", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau"},
-      {name: "GPS NIMIYA", code: "23351001701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "PS SANGWANI", code: "23351001901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GPS BUDIMAI", code: "23351002201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-      {name: "GMS KESIYA 1 TO 8", code: "23351008502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-      {name: "GPS(U) PINJARA DHANA", code: "23351008503", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS(U) OOJHA DHANA", code: "23351008504", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS BONDRI", code: "23351008601", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GMS SEHRA 1 TO 8", code: "23351008702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-      {name: "GMS KANHEGAON 1 TO 8", code: "23351008803", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-      {name: "GPS(U) GONDIDHANA", code: "23351009002", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS(U) TEKRI DHANA", code: "23351009004", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GOVT. HS MANDAI BUJURGE 1 to 10", code: "23351009005", category: "Primary to High School (Class 1 to 10)", jsk: "Kesiya"},
-      {name: "GPS BHAGUDHANA", code: "23351009701", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS DHOLYADHANA", code: "23351010001", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GOVT. HSS RAMPUR MAL 1 TO 12", code: "23351010903", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Kesiya"},
-      {name: "GMS KHOKRA 1 TO 8", code: "23351011002", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-      {name: "GPS(U) NAKADHANA", code: "23351011003", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GMS SITALJHIRI 1 TO 8", code: "23351011102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-      {name: "GPS(U) NAVALSINGH DHANA", code: "23351011103", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS THAPPA", code: "23351011201", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS(U) KHEDA DHANA", code: "23351011202", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS HATHIKUND", code: "23351011301", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS RAMPUR RAIYAT", code: "23351011401", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS(U) BADA DHANA", code: "23351011402", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS TEMRA", code: "23351011501", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GMS NEW TEMRA MAL", code: "23351011503", category: "Middle School (Class 6 to 8)", jsk: "Kesiya"},
-      {name: "GPS(U) TEMRA RAIYAT", code: "23351014201", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS(U) GAOLIDHANA", code: "23351017101", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-      {name: "GPS (S) NAVRANGDHANA", code: "23351010103", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GOVT. HS KUNDI 1 TO 10", code: "23351010104", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
-      {name: "GPS MAGARDOH", code: "23351010201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS KAMTI", code: "23351010301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS BANKAKHODRI", code: "23351010401", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS(U) KHODRI", code: "23351010402", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS (U) THANIKHEDA", code: "23351010403", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS NEW BANKAKHODRI", code: "23351010404", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-      {name: "GPS KUSMARI", code: "23351010501", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS MARDANPUR 1 TO 8", code: "23351010602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-      {name: "GPS DAODI", code: "23351010701", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS BHUMKADHANA", code: "23351010801", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS NEW DHASAI 1 TO 8", code: "23351011702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-      {name: "GMS RANAPURA 1 TO 8", code: "23351011802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-      {name: "GPS BHATNA", code: "23351012001", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS(U) HEERAWADI", code: "23351015001", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS(U) JAMNAGRI", code: "23351015201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS KUPPA 1 TO 8", code: "23351003303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-      {name: "GPS TETARMAL", code: "23351003401", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS BANKABHARDA", code: "23351004301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS PATWAPURA", code: "23351000103", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-      {name: "GPS CHIKHALDA (KHURD)", code: "23351000201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "PS CHAPDA (RAIYAT)", code: "23351000301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS JHILPA", code: "23351000501", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS PHAWADI", code: "23351000601", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS PHAWADI", code: "23351000602", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-      {name: "PS(U) CHILAM TEKRI", code: "23351000603", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS(U) TEKRIPURA", code: "23351000704", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GOVT. HS RAIPUR 1 TO 10", code: "23351000705", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
-      {name: "GPS JAMUNDHANA", code: "23351000801", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS JAMUNDHANA", code: "23351000802", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-      {name: "GPS SEMARPUR", code: "23351000901", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GOVT. HS PAWAR JHANDA 1 TO 10", code: "23351001004", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
-      {name: "GPS MUDHA", code: "23351001101", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GMS MUDHA", code: "23351001102", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-      {name: "GPS(SATT) MUDHA", code: "23351001103", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS AAMDHANA", code: "23351001201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-      {name: "GPS(U) GAONAPUR", code: "23351012401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS(U) CHAOKIDHANA", code: "23351002304", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS(U) JILERI", code: "23351002305", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GOVT HS BHAYAWADI 1 TO 10", code: "23351002307", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur"},
-      {name: "GPS DESHAWADI", code: "23351002401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GMS DESHAWADI", code: "23351002402", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
-      {name: "GPS(U) ADMADHANA", code: "23351002403", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS MOKHAMAL", code: "23351002501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS MOKHARAIYAT", code: "23351002601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS(U) CHITARIBAD", code: "23351002602", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GMS MALI SILPATI 1 TO 8", code: "23351002702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
-      {name: "GPS BARETHA", code: "23351002801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GMS BARETHA", code: "23351002802", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
-      {name: "GPS NISHANA", code: "23351003701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS(U) DEHRI PATHAR", code: "23351003804", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GOVT. HS SILPATI 1 TO 10", code: "23351003807", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur"},
-      {name: "GMS BOYS SHAHPUR 1 TO 8", code: "23351003907", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
-      {name: "GPS SOHAGPUR DHANA", code: "23351004001", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS KOTMI", code: "23351004101", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GMS KOTMI 1 TO 8", code: "23351004102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
-      {name: "GPS KANTAWADI", code: "23351004201", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GMS KANTAWADI", code: "23351004202", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
-      {name: "GPS BHAKTANDHANA", code: "23351004501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS PATAI", code: "23351004601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GOVT. HS PATAI 6 TO 10", code: "23351004603", category: "Middle to High School (Class 6 to 10)", jsk: "Shahpur"},
-      {name: "GPS PALASPANI", code: "23351004701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS KALAPANI", code: "23351004801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GPS GENDIDHANA", code: "23351004901", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GOVT.HSS MODEL (RMSA) SHAHPUR (Hindi)", code: "23351003914", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Shahpur"},
-      {name: "GOVT.HSS MODEL (RMSA) SHAHPUR (English)", code: "23351003914", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Shahpur"},
-      {name: "GPS BARBATPUR", code: "23351000401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-      {name: "GOVT. HS GHISIBAGLA 6 TO 10", code: "23351009103", category: "Middle to High School (Class 6 to 10)", jsk: "Tara"},
-      {name: "GPS(U) RUMA DHANA", code: "23351008802", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS AAVRIYA", code: "23351008901", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS(U) MADIYA DHANA", code: "23351009003", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS GHISIBAGLA", code: "23351009101", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS TARA", code: "23351009201", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GMS TARA", code: "23351009202", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-      {name: "GPS(U) BATTI DHANA", code: "23351009203", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS(U) TENDUDHANA", code: "23351009204", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS CHIKHALI RAIYAT", code: "23351009301", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GMS CHIKHALI RAIYAT", code: "23351009302", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-      {name: "GPS(U) JARGAL DHANA", code: "23351009303", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS(U) BAGAT DHANA", code: "23351009304", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS CHIKHALI MAL", code: "23351009401", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GMS CHIKHALI MAL", code: "23351009402", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-      {name: "GPS THUMKA", code: "23351009501", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS(U) GAOLAN DHANA", code: "23351009502", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GMS THUMKA RAIYAT", code: "23351009504", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-      {name: "GPS KAODIYA", code: "23351009601", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GPS BAGLADHANA", code: "23351009801", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-      {name: "GMS MANJIRADHANA 1 TO 8", code: "23351009902", category: "Primary with Middle School (Class 1 to 8)", jsk: "Tara"},
-      {name: "GPS(U) MATHI GARH", code: "23351016501", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
-    ],
-
     async init() {
+      if (!window.MASTER_SCHOOLS) {
+        setTimeout(() => this.init(), 200);
+        return;
+      }
+      this.allSchools = window.MASTER_SCHOOLS;
       await this.fetchCloudCwsnData();
       this.checkAdminRole();
       this.switchTab('dashboard');
@@ -529,7 +341,6 @@
       }
     },
 
-    // Admin Bulk Upload Handler for cwsn.xlsx format
     handleBulkUpload(event) {
       let file = event.target.files[0];
       if (!file) return;
@@ -543,10 +354,6 @@
           let worksheet = workbook.Sheets[firstSheet];
           let jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-          // Row 0 is header, rows 1 onwards are data based on cwsn.xlsx structure
-          // Columns: Sr. No.(0), School Name(1), Dise_code(2), JSK(3), Samagra Id(4), Student Name(5), 
-          // Father Name(6), Mother Name(7), Gender(8), CAST Category(9), Class(10), Mobile(11), UDID(12), Aadhar(13), DOB(14), Disability Type(15), Cert(16), Percent(17), Equipment(18), Address(19), Pin(20), Bank(21), IFSC(22), AccNo(23), Teacher(24), TeacherMob(25)
-          
           let schoolMap = {};
 
           for (let i = 1; i < jsonRows.length; i++) {
@@ -567,6 +374,7 @@
             }
 
             schoolMap[udise].students.push({
+              samagra: r[4] ? String(r[4]).trim() : "",
               name: r[5] ? String(r[5]).trim() : "",
               father: r[6] ? String(r[6]).trim() : "",
               mother: r[7] ? String(r[7]).trim() : "",
@@ -591,7 +399,6 @@
             });
           }
 
-          // Save each school data into localStorage and mark as 'yes'
           let count = 0;
           for (let udise in schoolMap) {
             let sData = schoolMap[udise];
@@ -614,9 +421,9 @@
             count++;
           }
 
-          CwsnApp.syncToCloud();
+          this.syncToCloud();
           alert(`Successfully imported CWSN data for ${count} schools from Excel!`);
-          CwsnApp.switchTab('dashboard');
+          this.switchTab('dashboard');
         } catch (err) {
           alert("Error parsing Excel file: " + err.message);
         }
@@ -634,14 +441,14 @@
       let filtered = this.allSchools.filter(s => {
         let jsk = s.jsk || "Bhoura";
         let name = (s.name || "").toLowerCase();
-        let code = (s.code || "").toLowerCase();
+        let code = (s.udise || "").toLowerCase();
         if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return false;
         if (keyword && !name.includes(keyword) && !code.includes(keyword)) return false;
         return true;
       });
 
       filtered.forEach(s => {
-        let udise = s.code;
+        let udise = s.udise;
         let cwsnStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
 
         tbody.innerHTML += `
@@ -676,7 +483,7 @@
       select.innerHTML = '<option value="">-- Select CWSN School --</option>';
 
       let yesSchools = this.allSchools.filter(s => {
-        return localStorage.getItem("brc_cwsn_has_" + s.code) === 'yes';
+        return localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes';
       });
 
       if (yesSchools.length === 0) {
@@ -686,8 +493,8 @@
 
       yesSchools.forEach(s => {
         let el = document.createElement('option');
-        el.value = s.code;
-        el.textContent = `${s.name} (${s.code}) - JSK: ${s.jsk}`;
+        el.value = s.udise;
+        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
         select.appendChild(el);
       });
     },
@@ -696,13 +503,14 @@
       let udise = document.getElementById('cwsnSchoolSelect').value;
       if (!udise) return;
 
-      let school = this.allSchools.find(s => s.code === udise);
+      let school = this.allSchools.find(s => s.udise === udise);
       if (!school) return;
 
       document.getElementById('lblSchoolName').textContent = school.name;
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
+      // R2 enrollment automatic fetch & sync link
       let r2Data = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || "{}");
       let r2Total = r2Data.grandTotal || 0;
       document.getElementById('lblR2Total').textContent = r2Total;
@@ -713,7 +521,6 @@
 
     addNewStudentRow() {
       let tbody = document.getElementById('studentRowsBody');
-      // If placeholder text is present, clear it
       if (tbody.querySelector('td[colspan]')) {
         tbody.innerHTML = '';
       }
@@ -722,30 +529,41 @@
       tr.className = 'student-row';
       tr.innerHTML = `
         <td>${idx}</td>
-        <td><input type="text" class="s-name" placeholder="Student Name" style="width:100%; padding:4px;"></td>
-        <td><input type="text" class="s-father" placeholder="Father Name" style="width:100%; padding:4px;"></td>
-        <td><input type="text" class="s-mother" placeholder="Mother Name" style="width:100%; padding:4px;"></td>
+        <td><input type="text" class="s-samagra" placeholder="Samagra ID" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-name" placeholder="Student Name" style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-father" placeholder="Father Name" style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-mother" placeholder="Mother Name" style="width:120px; padding:4px;"></td>
         <td>
-          <select class="s-gender" style="width:100%; padding:4px;">
+          <select class="s-gender" style="width:70px; padding:4px;">
             <option value="Boy">Boy</option>
             <option value="Girl">Girl</option>
           </select>
         </td>
+        <td><input type="text" class="s-cast" placeholder="Category" style="width:80px; padding:4px;"></td>
         <td>
-          <select class="s-class" style="width:100%; padding:4px;">
+          <select class="s-class" style="width:90px; padding:4px;">
             ${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}">${c}</option>`).join('')}
           </select>
         </td>
+        <td><input type="text" class="s-mobile" placeholder="Mobile" style="width:90px; padding:4px;"></td>
+        <td><input type="text" class="s-udid" placeholder="UDID No." style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-aadhar" placeholder="Aadhar" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-dob" placeholder="DOB" style="width:90px; padding:4px;"></td>
         <td>
-          <select class="s-dis" style="width:100%; padding:4px;">
+          <select class="s-dis" style="width:140px; padding:4px;">
             ${this.disabilityTypes.map(d => `<option value="${d}">${d}</option>`).join('')}
           </select>
         </td>
-        <td><input type="text" class="s-percent" placeholder="0-39 Percent" style="width:90px; padding:4px;"></td>
-        <td><input type="text" class="s-udid" placeholder="UDID No." style="width:100px; padding:4px;"></td>
-        <td><input type="text" class="s-bank" placeholder="Bank" style="width:70px; padding:4px;"></td>
-        <td><input type="text" class="s-ifsc" placeholder="IFSC" style="width:100px; padding:4px;"></td>
-        <td><input type="text" class="s-acc" placeholder="Account No." style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-cert" placeholder="Yes/No" style="width:70px; padding:4px;"></td>
+        <td><input type="text" class="s-percent" placeholder="Percent" style="width:80px; padding:4px;"></td>
+        <td><input type="text" class="s-equip" placeholder="Equipment" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-address" placeholder="Address" style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-pin" placeholder="Pin" style="width:70px; padding:4px;"></td>
+        <td><input type="text" class="s-bank" placeholder="Bank" style="width:80px; padding:4px;"></td>
+        <td><input type="text" class="s-ifsc" placeholder="IFSC" style="width:90px; padding:4px;"></td>
+        <td><input type="text" class="s-acc" placeholder="Account No." style="width:110px; padding:4px;"></td>
+        <td><input type="text" class="s-teacher" placeholder="Teacher Name" style="width:110px; padding:4px;"></td>
+        <td><input type="text" class="s-teachermob" placeholder="Teacher Mob" style="width:100px; padding:4px;"></td>
         <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
       `;
       tbody.appendChild(tr);
@@ -756,7 +574,7 @@
       tbody.innerHTML = '';
 
       if (!students || students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="13" style="padding:20px; color:#64748b;">No CWSN students added yet. Click 'Add Student' above.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="24" style="padding:20px; color:#64748b;">No CWSN students added yet. Click 'Add Student' above.</td></tr>`;
         return;
       }
 
@@ -765,30 +583,41 @@
         tr.className = 'student-row';
         tr.innerHTML = `
           <td>${i+1}</td>
-          <td><input type="text" class="s-name" value="${st.name || ''}" style="width:100%; padding:4px;"></td>
-          <td><input type="text" class="s-father" value="${st.father || ''}" style="width:100%; padding:4px;"></td>
-          <td><input type="text" class="s-mother" value="${st.mother || ''}" style="width:100%; padding:4px;"></td>
+          <td><input type="text" class="s-samagra" value="${st.samagra || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-name" value="${st.name || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-father" value="${st.father || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-mother" value="${st.mother || ''}" style="width:120px; padding:4px;"></td>
           <td>
-            <select class="s-gender" style="width:100%; padding:4px;">
+            <select class="s-gender" style="width:70px; padding:4px;">
               <option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option>
               <option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option>
             </select>
           </td>
+          <td><input type="text" class="s-cast" value="${st.cast || ''}" style="width:80px; padding:4px;"></td>
           <td>
-            <select class="s-class" style="width:100%; padding:4px;">
+            <select class="s-class" style="width:90px; padding:4px;">
               ${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}
             </select>
           </td>
+          <td><input type="text" class="s-mobile" value="${st.mobile || ''}" style="width:90px; padding:4px;"></td>
+          <td><input type="text" class="s-udid" value="${st.udid || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-aadhar" value="${st.aadhar || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-dob" value="${st.dob || ''}" style="width:90px; padding:4px;"></td>
           <td>
-            <select class="s-dis" style="width:100%; padding:4px;">
+            <select class="s-dis" style="width:140px; padding:4px;">
               ${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}
             </select>
           </td>
-          <td><input type="text" class="s-percent" value="${st.percent || ''}" style="width:90px; padding:4px;"></td>
-          <td><input type="text" class="s-udid" value="${st.udid || ''}" style="width:100px; padding:4px;"></td>
-          <td><input type="text" class="s-bank" value="${st.bank || ''}" style="width:70px; padding:4px;"></td>
-          <td><input type="text" class="s-ifsc" value="${st.ifsc || ''}" style="width:100px; padding:4px;"></td>
-          <td><input type="text" class="s-acc" value="${st.accNo || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-cert" value="${st.cert || ''}" style="width:70px; padding:4px;"></td>
+          <td><input type="text" class="s-percent" value="${st.percent || ''}" style="width:80px; padding:4px;"></td>
+          <td><input type="text" class="s-equip" value="${st.equipment || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-address" value="${st.address || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-pin" value="${st.pin || ''}" style="width:70px; padding:4px;"></td>
+          <td><input type="text" class="s-bank" value="${st.bank || ''}" style="width:80px; padding:4px;"></td>
+          <td><input type="text" class="s-ifsc" value="${st.ifsc || ''}" style="width:90px; padding:4px;"></td>
+          <td><input type="text" class="s-acc" value="${st.accNo || ''}" style="width:110px; padding:4px;"></td>
+          <td><input type="text" class="s-teacher" value="${st.teacher || ''}" style="width:110px; padding:4px;"></td>
+          <td><input type="text" class="s-teachermob" value="${st.teacherMob || ''}" style="width:100px; padding:4px;"></td>
           <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
         `;
         tbody.appendChild(tr);
@@ -803,21 +632,32 @@
         return;
       }
 
-      let school = this.allSchools.find(s => s.code === udise);
+      let school = this.allSchools.find(s => s.udise === udise);
       let students = [];
       document.querySelectorAll('.student-row').forEach(row => {
         students.push({
+          samagra: row.querySelector('.s-samagra').value,
           name: row.querySelector('.s-name').value,
           father: row.querySelector('.s-father').value,
           mother: row.querySelector('.s-mother').value,
           gender: row.querySelector('.s-gender').value,
+          cast: row.querySelector('.s-cast').value,
           cls: row.querySelector('.s-class').value,
-          disability: row.querySelector('.s-dis').value,
-          percent: row.querySelector('.s-percent').value,
+          mobile: row.querySelector('.s-mobile').value,
           udid: row.querySelector('.s-udid').value,
+          aadhar: row.querySelector('.s-aadhar').value,
+          dob: row.querySelector('.s-dob').value,
+          disability: row.querySelector('.s-dis').value,
+          cert: row.querySelector('.s-cert').value,
+          percent: row.querySelector('.s-percent').value,
+          equipment: row.querySelector('.s-equip').value,
+          address: row.querySelector('.s-address').value,
+          pin: row.querySelector('.s-pin').value,
           bank: row.querySelector('.s-bank').value,
           ifsc: row.querySelector('.s-ifsc').value,
-          accNo: row.querySelector('.s-acc').value
+          accNo: row.querySelector('.s-acc').value,
+          teacher: row.querySelector('.s-teacher').value,
+          teacherMob: row.querySelector('.s-teachermob').value
         });
       });
 
@@ -856,7 +696,7 @@
         if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
         jskMap[jsk].schools++;
 
-        let udise = s.code;
+        let udise = s.udise;
         if (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes') {
           yesCount++;
           jskMap[jsk].yesSchools++;
@@ -931,17 +771,28 @@
             <th>School Name</th>
             <th>Dise_code</th>
             <th>JSK</th>
+            <th>Samagra Id</th>
             <th>Student Name</th>
             <th>Father Name</th>
             <th>Mother Name</th>
             <th>Gender</th>
+            <th>CAST Category</th>
             <th>Class</th>
-            <th>Disability Type</th>
-            <th>Disability Percent</th>
+            <th>Parent's Mobile n.</th>
             <th>UDID NO.</th>
+            <th>Aadhar Number</th>
+            <th>DOB</th>
+            <th>Disability Type</th>
+            <th>Certificate yes/No</th>
+            <th>Disability Percent</th>
+            <th>Necessary Equipment Materials</th>
+            <th>address</th>
+            <th>pin code</th>
             <th>Bank Name</th>
-            <th>IFSC Code</th>
-            <th>Account No.</th>
+            <th>Bank IFSC Code</th>
+            <th>Bank Account No.</th>
+            <th>Teacher name</th>
+            <th>Teacher mobile no.</th>
           </tr>
         </thead>
         <tbody>
@@ -954,7 +805,7 @@
         let jsk = s.jsk;
         if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
-        let udise = s.code;
+        let udise = s.udise;
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.students && saved.students.length > 0) {
           saved.students.forEach(st => {
@@ -966,17 +817,28 @@
                 <td style="text-align:left;">${s.name}</td>
                 <td>${udise}</td>
                 <td>${jsk}</td>
+                <td>${st.samagra || '-'}</td>
                 <td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
                 <td style="text-align:left;">${st.father || '-'}</td>
                 <td style="text-align:left;">${st.mother || '-'}</td>
-                <td>${st.gender}</td>
-                <td>${st.cls}</td>
-                <td style="text-align:left;">${st.disability}</td>
-                <td>${st.percent || '-'}</td>
+                <td>${st.gender || '-'}</td>
+                <td>${st.cast || '-'}</td>
+                <td>${st.cls || '-'}</td>
+                <td>${st.mobile || '-'}</td>
                 <td>${st.udid || '-'}</td>
+                <td>${st.aadhar || '-'}</td>
+                <td>${st.dob || '-'}</td>
+                <td style="text-align:left;">${st.disability || '-'}</td>
+                <td>${st.cert || '-'}</td>
+                <td>${st.percent || '-'}</td>
+                <td>${st.equipment || '-'}</td>
+                <td>${st.address || '-'}</td>
+                <td>${st.pin || '-'}</td>
                 <td>${st.bank || '-'}</td>
                 <td>${st.ifsc || '-'}</td>
                 <td>${st.accNo || '-'}</td>
+                <td>${st.teacher || '-'}</td>
+                <td>${st.teacherMob || '-'}</td>
               </tr>
             `;
           });
@@ -984,7 +846,7 @@
       });
 
       if (!found) {
-        html += `<tr><td colspan="15" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
+        html += `<tr><td colspan="26" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
       }
 
       html += `</tbody>`;
@@ -1001,10 +863,6 @@
       XLSX.writeFile(wb, "BRC_CWSN_Compilation_Report.xlsx");
     }
   };
-
-  document.addEventListener("DOMContentLoaded", () => {
-    CwsnApp.init();
-  });
 </script>
 
 </body>
