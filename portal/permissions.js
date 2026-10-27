@@ -1,4 +1,4 @@
-// Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced + Multi-Tab Auto Sync)
+// Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced + Anti-Cache Live Sync)
 const FeaturePermissions = {
   // Aapki npoint.io ki live cloud sync link
   cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb", 
@@ -40,7 +40,8 @@ const FeaturePermissions = {
 
   async fetchCloudSettings() {
     try {
-      let response = await fetch(this.cloudApiUrl);
+      // ?t=... lagane se browser cache bypass hota hai aur live npoint data turant milta hai
+      let response = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
       if (response.ok) {
         let remoteSettings = await response.json();
         if (remoteSettings && typeof remoteSettings === 'object') {
