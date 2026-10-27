@@ -1,4 +1,4 @@
-// Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced with JSK Data Entry)
+// Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced + Multi-Tab Auto Sync)
 const FeaturePermissions = {
   // Aapki npoint.io ki live cloud sync link
   cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb", 
@@ -166,9 +166,25 @@ const FeaturePermissions = {
 window.FeaturePermissions = FeaturePermissions;
 window.AdminLocks = FeaturePermissions;
 
+// Page load hote hi cloud se latest data fetch karega
 document.addEventListener("DOMContentLoaded", () => {
   FeaturePermissions.fetchCloudSettings();
   setTimeout(() => {
     FeaturePermissions.enforceUI();
   }, 300);
+});
+
+// Jab bhi user doosre tab se wapas is tab par aaye, turant cloud se sync kare
+window.addEventListener("focus", () => {
+  FeaturePermissions.fetchCloudSettings();
+});
+
+// Ek hi browser ke do alag tabs mein agar data change ho toh turant UI update ho jaye
+window.addEventListener("storage", (event) => {
+  if (event.key === "brc_feature_permissions" || event.key === "brc_active_session") {
+    FeaturePermissions.enforceUI();
+    if (typeof SessionManager !== 'undefined' && SessionManager.renderDropdown) {
+      SessionManager.renderDropdown();
+    }
+  }
 });
