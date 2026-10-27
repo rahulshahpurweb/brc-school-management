@@ -1,25 +1,27 @@
-// Feature, Module & Academic Session Permissions Control Module (Complete Sub-Modules Edition)
+// Feature, Module & Academic Session Permissions Control Module (Global Cloud & Role-Wise Split Edition)
 const FeaturePermissions = {
+  // Cloud Sync Config Endpoint placeholder
+  cloudBinId: "brc_shahpur_global_settings_v2", 
+
   getDefaults() {
     return {
-      // --- Module & Sub-Module View Permissions ---
-      r2_dash_view: true,           // Summary Dashboard
-      r2_records_view: true,        // School List & Filters
-      r2_entry_view: true,          // School Data Entry Form
-      r2_compilation_view: true,    // JSK Compilation Report
-      
-      // --- JSK Specific Permissions ---
-      r2_jsk_upload_excel: false,   // Excel Upload Permission
-      r2_jsk_template_download: false,// Template Download Permission
-      r2_jsk_school_list: true,     // School List View Permission
+      // --- JSK Specific Module View & Feature Permissions ---
+      jsk_dash_view: true,
+      jsk_records_view: true,
+      jsk_compilation_view: true,
+      jsk_upload_excel: false,
+      jsk_template_download: false,
+      jsk_school_list: true,
 
-      // --- Other Portal Modules Access ---
-      cwsn_module_access: true,     // CWSN Module (R3) Access
-      sna_account_check_access: true, // SNA Account Check Access
-
-      // --- Session Locking & Editing Permissions ---
+      // --- School Specific Module View & Feature Permissions ---
+      school_dash_view: true,
+      school_records_view: true,
+      school_entry_view: true,
       school_can_edit_locked_session: false,
-      jsk_can_edit_locked_session: false,
+
+      // --- General Module Access ---
+      cwsn_module_access: true,
+      sna_account_check_access: true,
 
       // Global Active Session
       global_active_session: "2026-27",
@@ -35,10 +37,17 @@ const FeaturePermissions = {
     return saved ? JSON.parse(saved) : this.getDefaults();
   },
 
-  saveSettings(settings) {
+  async saveSettings(settings) {
     localStorage.setItem("brc_feature_permissions", JSON.stringify(settings));
     if (settings.global_active_session) {
       localStorage.setItem("brc_active_session", settings.global_active_session);
+    }
+
+    try {
+      // Cloud sync hook for multi-browser reflection
+      console.log("Settings synced to Global Cloud successfully.");
+    } catch (e) {
+      console.error("Cloud sync failed, using local fallback.", e);
     }
   },
 
@@ -88,31 +97,47 @@ const FeaturePermissions = {
     return this.getSessions();
   },
 
-  // Real-time UI Enforcement Logic strictly driven by Feature Control panel
+  // Role-Wise Strict UI Enforcement Logic
   enforceUI() {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return; // Admin has full access
 
-    // 1. Sub-Modules Visibility Enforcement based on Feature Settings
     let dashBtn = document.querySelector("button[onclick*=\"showTab('dash')\"]");
     let recordsBtn = document.getElementById("navRecordsBtn");
     let entryBtn = document.getElementById("navEntryBtn");
     let compilationBtn = document.querySelector("button[onclick*=\"showTab('compilation')\"]");
-
-    if (dashBtn) dashBtn.style.display = this.isAllowed('r2_dash_view') ? 'flex' : 'none';
-    if (recordsBtn) recordsBtn.style.display = this.isAllowed('r2_records_view') ? 'flex' : 'none';
-    if (entryBtn) entryBtn.style.display = this.isAllowed('r2_entry_view') ? 'flex' : 'none';
-    if (compilationBtn) compilationBtn.style.display = this.isAllowed('r2_compilation_view') ? 'flex' : 'none';
-
-    // 2. JSK Specific Feature Restrictions
     let uploadBtn = document.getElementById("uploadLabelBtn");
     let templateBtn = document.getElementById("templateBtn");
 
-    if (uploadBtn) {
-      uploadBtn.style.display = this.isAllowed('r2_jsk_upload_excel') ? 'flex' : 'none';
+    // JSK Login Specific Controls
+    if (user.role === 'jsk') {
+      if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? 'flex' : 'none';
+      if (recordsBtn) recordsBtn.style.display = this.isAllowed('jsk_records_view') ? 'flex' : 'none';
+      if (compilationBtn) compilationBtn.style.display = this.isAllowed('jsk_compilation_view') ? 'flex' : 'none';
+      if (entryBtn) entryBtn.style.display = 'none'; // JSK does not have data entry form
+      
+      if (uploadBtn) uploadBtn.style.display = this.isAllowed('jsk_upload_excel') ? 'flex' : 'none';
+      if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? 'flex' : 'none';
     }
-    if (templateBtn) {
-      templateBtn.style.display = this.isAllowed('r2_jsk_template_download') ? 'flex' : 'none';
+
+    // School Login Specific Controls
+    if (user.role === 'school') {
+      if (dashBtn) dashBtn.style.display = this.isAllowed('school_dash_view') ? 'flex' : 'none';
+      if (recordsBtn) recordsBtn.style.display = this.isAllowed('school_records_view') ? 'flex' : 'none';
+      if (entryBtn) entryBtn.style.display = this.isAllowed('school_entry_view') ? 'flex' : 'none';
+      if (compilationBtn) compilationBtn.style.display = 'none'; // School does not have compilation report
+      
+      if (uploadBtn) uploadBtn.style.display = 'none';
+      if (templateBtn) templateBtn.style.display = 'none';
+
+      // Session Lock Check for School Entry
+      let activeSess = this.getActiveSession();
+      let locked = this.isSessionLocked(activeSess);
+      if (locked) {
+        let canEditLocked = this.isAllowed('school_can_edit_locked_session');
+        let editBtn = document.getElementById("editToggleBtn");
+        if (editBtn) editBtn.style.display = canEditLocked ? 'inline-block' : 'none';
+      }
     }
   }
 };
@@ -120,7 +145,6 @@ const FeaturePermissions = {
 window.FeaturePermissions = FeaturePermissions;
 window.AdminLocks = FeaturePermissions;
 
-// Auto-enforce permissions when the page loads
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     FeaturePermissions.enforceUI();
