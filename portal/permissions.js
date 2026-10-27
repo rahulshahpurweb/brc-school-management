@@ -1,11 +1,10 @@
-// Feature, Module & Academic Session Permissions Control Module (Global Cloud & Role-Wise Split Edition)
+// Feature, Module & Academic Session Permissions Control Module (100% npoint.io Cloud Sync)
 const FeaturePermissions = {
-  // Cloud Sync Config Endpoint placeholder
-  cloudBinId: "brc_shahpur_global_settings_v2", 
+  // Aapki npoint.io ki live cloud sync link yahan set ho gayi hai
+  cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb",
 
   getDefaults() {
     return {
-      // --- JSK Specific Module View & Feature Permissions ---
       jsk_dash_view: true,
       jsk_records_view: true,
       jsk_compilation_view: true,
@@ -13,17 +12,14 @@ const FeaturePermissions = {
       jsk_template_download: false,
       jsk_school_list: true,
 
-      // --- School Specific Module View & Feature Permissions ---
       school_dash_view: true,
       school_records_view: true,
       school_entry_view: true,
       school_can_edit_locked_session: false,
 
-      // --- General Module Access ---
       cwsn_module_access: true,
       sna_account_check_access: true,
 
-      // Global Active Session
       global_active_session: "2026-27",
 
       session_2026_27: false,
@@ -37,6 +33,27 @@ const FeaturePermissions = {
     return saved ? JSON.parse(saved) : this.getDefaults();
   },
 
+  async fetchCloudSettings() {
+    try {
+      if (this.cloudApiUrl.includes("YOUR_BIN_ID")) return;
+      let response = await fetch(this.cloudApiUrl);
+      if (response.ok) {
+        let remoteSettings = await response.json();
+        if (remoteSettings) {
+          localStorage.setItem("brc_feature_permissions", JSON.stringify(remoteSettings));
+          if (remoteSettings.global_active_session) {
+            localStorage.setItem("brc_active_session", remoteSettings.global_active_session);
+          }
+          if (typeof this.enforceUI === 'function') {
+            this.enforceUI();
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Cloud fetch error, using local storage fallback.", e);
+    }
+  },
+
   async saveSettings(settings) {
     localStorage.setItem("brc_feature_permissions", JSON.stringify(settings));
     if (settings.global_active_session) {
@@ -44,10 +61,18 @@ const FeaturePermissions = {
     }
 
     try {
-      // Cloud sync hook for multi-browser reflection
-      console.log("Settings synced to Global Cloud successfully.");
+      if (!this.cloudApiUrl.includes("YOUR_BIN_ID")) {
+        await fetch(this.cloudApiUrl, {
+          method: "POST", // npoint.io updates ke liye POST use karta hai
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(settings)
+        });
+        console.log("Settings successfully pushed to npoint Cloud!");
+      }
     } catch (e) {
-      console.error("Cloud sync failed, using local fallback.", e);
+      console.error("Cloud save failed.", e);
     }
   },
 
@@ -97,10 +122,9 @@ const FeaturePermissions = {
     return this.getSessions();
   },
 
-  // Role-Wise Strict UI Enforcement Logic
   enforceUI() {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-    if (user.role === 'admin') return; // Admin has full access
+    if (user.role === 'admin') return;
 
     let dashBtn = document.querySelector("button[onclick*=\"showTab('dash')\"]");
     let recordsBtn = document.getElementById("navRecordsBtn");
@@ -109,28 +133,25 @@ const FeaturePermissions = {
     let uploadBtn = document.getElementById("uploadLabelBtn");
     let templateBtn = document.getElementById("templateBtn");
 
-    // JSK Login Specific Controls
     if (user.role === 'jsk') {
       if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? 'flex' : 'none';
       if (recordsBtn) recordsBtn.style.display = this.isAllowed('jsk_records_view') ? 'flex' : 'none';
       if (compilationBtn) compilationBtn.style.display = this.isAllowed('jsk_compilation_view') ? 'flex' : 'none';
-      if (entryBtn) entryBtn.style.display = 'none'; // JSK does not have data entry form
+      if (entryBtn) entryBtn.style.display = 'none'; 
       
       if (uploadBtn) uploadBtn.style.display = this.isAllowed('jsk_upload_excel') ? 'flex' : 'none';
       if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? 'flex' : 'none';
     }
 
-    // School Login Specific Controls
     if (user.role === 'school') {
       if (dashBtn) dashBtn.style.display = this.isAllowed('school_dash_view') ? 'flex' : 'none';
       if (recordsBtn) recordsBtn.style.display = this.isAllowed('school_records_view') ? 'flex' : 'none';
       if (entryBtn) entryBtn.style.display = this.isAllowed('school_entry_view') ? 'flex' : 'none';
-      if (compilationBtn) compilationBtn.style.display = 'none'; // School does not have compilation report
+      if (compilationBtn) compilationBtn.style.display = 'none'; 
       
       if (uploadBtn) uploadBtn.style.display = 'none';
       if (templateBtn) templateBtn.style.display = 'none';
 
-      // Session Lock Check for School Entry
       let activeSess = this.getActiveSession();
       let locked = this.isSessionLocked(activeSess);
       if (locked) {
@@ -146,6 +167,7 @@ window.FeaturePermissions = FeaturePermissions;
 window.AdminLocks = FeaturePermissions;
 
 document.addEventListener("DOMContentLoaded", () => {
+  FeaturePermissions.fetchCloudSettings();
   setTimeout(() => {
     FeaturePermissions.enforceUI();
   }, 300);
