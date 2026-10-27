@@ -8,122 +8,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="permissions.js"></script>
 <style>
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, sans-serif;
-    background: #f4f7fb;
-    color: #172033;
-  }
-  .module-header {
-    background: #071b38;
-    color: #fff;
-    padding: 12px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #f4b400;
-  }
-  .module-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: #ffd21c;
-  }
-  .sub-nav {
-    display: flex;
-    gap: 10px;
-    background: #ffffff;
-    padding: 10px 20px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .sub-nav-btn {
-    background: #0b2854;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .sub-nav-btn.active {
-    background: #f4b400;
-    color: #071b38;
-  }
-  .content-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 15px;
-  }
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
-  }
-  .grid-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-  .stat-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border-left: 5px solid #1d4ed8;
-    text-align: center;
-  }
-  .stat-card .num {
-    font-size: 28px;
-    font-weight: bold;
-    color: #1d4ed8;
-    margin-top: 5px;
-  }
-  .filter-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-    background: #f8fafc;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 13px;
-  }
-  th, td {
-    border: 1px solid #cbd5e1;
-    padding: 8px 10px;
-    text-align: center;
-  }
-  th {
-    background: #071b38;
-    color: #fff;
-  }
-  .tablewrap {
-    overflow-x: auto;
-    max-height: 500px;
-  }
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
+  .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; }
+  .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
+  .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
+  .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+  .sub-nav-btn.active { background: #f4b400; color: #071b38; }
+  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+  .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+  .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+  .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1d4ed8; text-align: center; }
+  .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: center; }
+  th { background: #071b38; color: #fff; }
+  .tablewrap { overflow-x: auto; max-height: 500px; }
   @media print {
-    .module-header, .sub-nav, .filter-bar, button, select, input {
-      display: none !important;
-    }
-    body, html, main, .content-container, .card {
-      background: #fff !important;
-      color: #000 !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
+    .module-header, .sub-nav, .filter-bar, button, select, input { display: none !important; }
+    body, html, main, .content-container, .card { background: #fff !important; color: #000 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
     table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
     th, td { border: 1px solid #000 !important; padding: 5px !important; color: #000 !important; }
     @page { size: landscape; margin: 10mm; }
@@ -134,12 +37,13 @@
 
 <div class="module-header">
   <div class="module-title">♿ CWSN Module & Report Management (R3)</div>
-  <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Back to Main Portal (R2)</button>
+  <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Main Portal (R2)</button>
 </div>
 
-<!-- CWSN Sub-Bar -->
+<!-- Sub-Nav Bar -->
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 CWSN Dashboard</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School CWSN Yes/No Setup</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ CWSN Data Entry</button>
   <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 CWSN Reports</button>
   <div style="margin-left:auto; display:flex; gap:8px;">
@@ -157,16 +61,16 @@
         <div class="num" id="statTotalSchools">203</div>
       </div>
       <div class="stat-card" style="border-left-color: #16a34a;">
-        <div>CWSN Entry Completed</div>
-        <div class="num" id="statCompleted" style="color:#16a34a;">0</div>
-      </div>
-      <div class="stat-card" style="border-left-color: #dc2626;">
-        <div>Pending Schools</div>
-        <div class="num" id="statPending" style="color:#dc2626;">203</div>
+        <div>Schools with CWSN (Yes)</div>
+        <div class="num" id="statCwsnYes" style="color:#16a34a;">0</div>
       </div>
       <div class="stat-card" style="border-left-color: #b45309;">
+        <div>Entry Completed</div>
+        <div class="num" id="statCompleted" style="color:#b45309;">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #dc2626;">
         <div>Total CWSN Enrolled</div>
-        <div class="num" id="statTotalCwsn" style="color:#b45309;">0</div>
+        <div class="num" id="statTotalCwsn" style="color:#dc2626;">0</div>
       </div>
     </div>
     <div class="card">
@@ -178,13 +82,53 @@
               <th>S.No.</th>
               <th>Sankul (JSK)</th>
               <th>Total Schools</th>
-              <th>Completed Entry</th>
-              <th>Total CWSN Boys</th>
-              <th>Total CWSN Girls</th>
-              <th>Grand Total CWSN</th>
+              <th>CWSN Yes Schools</th>
+              <th>Entry Done</th>
+              <th>Boys</th>
+              <th>Girls</th>
+              <th>Grand Total</th>
             </tr>
           </thead>
           <tbody id="dashSummaryTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- School Selection (Yes/No) Setup Section -->
+  <section id="cwsnSelection" class="cwsn-section" style="display:none;">
+    <div class="card">
+      <h3>🏫 School-wise CWSN Availability Setup (Yes / No)</h3>
+      <p style="font-size:13px; color:#64748b;">Jis school mein CWSN bachhe hain, uske samne <b>YES</b> select karein. Sirf 'YES' wale schools hi Data Entry drop-down list mein aayenge.</p>
+      
+      <div class="filter-bar">
+        <label><b>JSK Filter:</b></label>
+        <select id="selJskFilter" onchange="CwsnApp.renderSchoolSelectionTable()" style="padding:6px; font-weight:bold; border-radius:4px;">
+          <option value="ALL">-- All Sankul --</option>
+          <option value="Bhoura">Bhoura</option>
+          <option value="Bijadehi">Bijadehi</option>
+          <option value="Dhodhramau">Dhodhramau</option>
+          <option value="Kesiya">Kesiya</option>
+          <option value="Kundi">Kundi</option>
+          <option value="Shahpur">Shahpur</option>
+          <option value="Tara">Tara</option>
+        </select>
+        <input type="text" id="selSearchBox" placeholder="Search school name or UDISE..." onkeyup="CwsnApp.renderSchoolSelectionTable()" style="flex:1; min-width:200px; padding:6px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>School Name</th>
+              <th>UDISE Code</th>
+              <th>Category</th>
+              <th>JSK</th>
+              <th>Has CWSN Students? (Yes / No)</th>
+            </tr>
+          </thead>
+          <tbody id="schoolSelectionTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -195,24 +139,20 @@
     <div class="card">
       <h3>✍️ School CWSN Data Entry Module</h3>
       <div class="filter-bar">
-        <input type="text" id="cwsnSearchBox" placeholder="🔍 Search school name or UDISE..." onkeyup="CwsnApp.filterSchools()" style="flex:1; min-width:220px; padding:8px; border:1px solid #ccc; border-radius:6px;">
-        <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:250px; padding:8px; font-weight:bold; border-radius:6px;"></select>
+        <label><b>Select School (CWSN Yes Only):</b></label>
+        <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
       </div>
 
       <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
-        <p style="margin:0 0 10px 0; font-weight:bold; color:#071b38;">🏫 School Enrollment Auto-Fetched from R2:</p>
-        <div style="display:flex; gap:20px; font-size:14px;">
+        <div style="display:flex; gap:20px; font-size:14px; flex-wrap:wrap;">
           <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
           <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
           <span><b>JSK:</b> <span id="lblJsk">-</span></span>
-          <span><b>R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
+          <span><b>R2 Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
         </div>
       </div>
 
-      <h4 style="color:#071b38; margin-bottom:8px;">Disability-wise Student Details Entry</h4>
-      <p style="font-size:12px; color:#64748b; margin-top:0;">Pehle disability ke anusaar sankhya bharein, fir niche diye gaye rows mein bachhon ki details enter karein.</p>
-
-      <!-- Disability Summary Count Inputs -->
+      <h4 style="color:#071b38; margin-bottom:8px;">Disability-wise Student Count Summary</h4>
       <div class="tablewrap" style="margin-bottom:15px;">
         <table>
           <thead>
@@ -227,7 +167,7 @@
         </table>
       </div>
 
-      <h4 style="color:#071b38; margin-top:20px; margin-bottom:8px;">Student-wise Specific Details (Auto-generated rows)</h4>
+      <h4 style="color:#071b38; margin-top:20px; margin-bottom:8px;">Student-wise Specific Details</h4>
       <div class="tablewrap">
         <table>
           <thead>
@@ -239,11 +179,11 @@
               <th>Gender</th>
               <th>Disability Category</th>
               <th>Age</th>
-              <th>Remarks / UDID No.</th>
+              <th>UDID / Remarks</th>
             </tr>
           </thead>
           <tbody id="studentRowsBody">
-            <tr><td colspan="8" style="padding:20px; color:#64748b;">Please select a school to start CWSN entry.</td></tr>
+            <tr><td colspan="8" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
           </tbody>
         </table>
       </div>
@@ -274,13 +214,13 @@
         <label style="margin-left:10px;"><b>Disability Filter:</b></label>
         <select id="reportDisabilityFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
           <option value="ALL">-- All Disabilities --</option>
-          <option value="Locomotor">Locomotor Disability</option>
-          <option value="Visual">Visual Impairment</option>
-          <option value="Hearing">Hearing Impairment</option>
-          <option value="Speech">Speech & Language</option>
-          <option value="Mental">Mental Retardation / Intellectual</option>
-          <option value="Autism">Autism Spectrum</option>
-          <option value="Multiple">Multiple Disabilities</option>
+          <option value="Locomotor Disability">Locomotor Disability</option>
+          <option value="Visual Impairment">Visual Impairment</option>
+          <option value="Hearing Impairment">Hearing Impairment</option>
+          <option value="Speech & Language">Speech & Language</option>
+          <option value="Mental Retardation / Intellectual">Mental Retardation / Intellectual</option>
+          <option value="Autism Spectrum">Autism Spectrum</option>
+          <option value="Multiple Disabilities">Multiple Disabilities</option>
         </select>
       </div>
 
@@ -293,6 +233,7 @@
 
 <script>
   const CwsnApp = {
+    cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb", // Aap chahe toh CWSN ke liye alag npoint bin link yahan daal sakte hain
     disabilityTypes: [
       "Locomotor Disability",
       "Visual Impairment",
@@ -304,32 +245,64 @@
     ],
 
     allSchools: [],
-    allSchoolOptions: [],
-    currentUdise: null,
 
-    init() {
-      // R2 localStorage se schools data load karna
+    async init() {
+      // Load schools master data from R2 localStorage or fallback
       let savedMaster = localStorage.getItem("brc_master_schools");
       if (savedMaster) {
         try { this.allSchools = JSON.parse(savedMaster); } catch(e){}
       }
-      
-      // Agar master nahi mila toh default 203 schools structure bana lo ya app.js se le lo
+
       if (this.allSchools.length === 0 && window.SchoolData && window.SchoolData.schools) {
         this.allSchools = window.SchoolData.schools;
       }
 
-      // Agar phir bhi empty ho toh fallback list
       if (this.allSchools.length === 0) {
         this.allSchools = [
-          { name: "GPS DHODHARAMOHAR", code: "23351008101", jsk: "Bhoura", total: 48 },
-          { name: "GPS(U) HAWAL DARDHANA", code: "23351008202", jsk: "Bhoura", total: 14 },
-          { name: "GMS GURGUNDA 1 TO 8", code: "23351008203", jsk: "Bhoura", total: 103 }
+          { name: "GPS DHODHARAMOHAR", code: "23351008101", category: "Primary School", jsk: "Bhoura", total: 48 },
+          { name: "GPS(U) HAWAL DARDHANA", code: "23351008202", category: "Primary School", jsk: "Bhoura", total: 14 },
+          { name: "GMS GURGUNDA 1 TO 8", code: "23351008203", category: "Middle School", jsk: "Bhoura", total: 103 }
         ];
       }
 
-      this.populateSchoolDropdown();
-      this.renderDashboard();
+      // Cloud se CWSN sync data fetch karna
+      await this.fetchCloudCwsnData();
+      this.switchTab('dashboard');
+    },
+
+    async fetchCloudCwsnData() {
+      try {
+        let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
+        if (res.ok) {
+          let data = await res.json();
+          if (data && data.cwsn_records) {
+            localStorage.setItem("brc_cwsn_cloud_store", JSON.stringify(data.cwsn_records));
+          }
+        }
+      } catch(e) {
+        console.error("Cloud fetch failed, using local storage cache.", e);
+      }
+    },
+
+    async syncToCloud() {
+      // Local storage se saara Cwsn data collect karke cloud par push karna
+      try {
+        let allData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          let key = localStorage.key(i);
+          if (key && (key.startsWith("brc_cwsn_"))) {
+            allData[key] = localStorage.getItem(key);
+          }
+        }
+        // Cloud par POST request
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cwsn_records: allData })
+        });
+      } catch(e) {
+        console.error("Cloud sync failed.", e);
+      }
     },
 
     switchTab(tab) {
@@ -340,9 +313,14 @@
         document.getElementById('cwsnDash').style.display = 'block';
         document.getElementById('navDashBtn').classList.add('active');
         this.renderDashboard();
+      } else if (tab === 'selection') {
+        document.getElementById('cwsnSelection').style.display = 'block';
+        document.getElementById('navSelectionBtn').classList.add('active');
+        this.renderSchoolSelectionTable();
       } else if (tab === 'entry') {
         document.getElementById('cwsnEntry').style.display = 'block';
         document.getElementById('navEntryBtn').classList.add('active');
+        this.populateCwsnDropdown();
       } else if (tab === 'reports') {
         document.getElementById('cwsnReports').style.display = 'block';
         document.getElementById('navReportsBtn').classList.add('active');
@@ -350,48 +328,90 @@
       }
     },
 
-    populateSchoolDropdown() {
-      let select = document.getElementById('cwsnSchoolSelect');
-      if (!select) return;
-      select.innerHTML = '<option value="">-- Select School --</option>';
-      this.allSchoolOptions = this.allSchools.map(s => ({
-        value: s.code || s.school_code,
-        text: `${s.name || s.school_name} (${s.code || s.school_code}) - JSK: ${s.jsk}`
-      }));
-      this.allSchoolOptions.forEach(opt => {
-        let el = document.createElement('option');
-        el.value = opt.value;
-        el.textContent = opt.text;
-        select.appendChild(el);
+    renderSchoolSelectionTable() {
+      let jskFilter = document.getElementById('selJskFilter').value;
+      let keyword = document.getElementById('selSearchBox').value.toLowerCase();
+      let tbody = document.getElementById('schoolSelectionTableBody');
+      tbody.innerHTML = '';
+
+      let idx = 1;
+      let filtered = this.allSchools.filter(s => {
+        let jsk = s.jsk || "Bhoura";
+        let name = (s.name || s.school_name || "").toLowerCase();
+        let code = (s.code || s.school_code || "").toLowerCase();
+        if (jskFilter !== "ALL" && jsk !== jskFilter) return false;
+        if (keyword && !name.includes(keyword) && !code.includes(keyword)) return false;
+        return true;
+      });
+
+      filtered.forEach(s => {
+        let udise = s.code || s.school_code;
+        let cwsnStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${idx++}</td>
+            <td style="text-align:left; font-weight:bold;">${s.name || s.school_name}</td>
+            <td>${udise}</td>
+            <td>${s.category || '-'}</td>
+            <td>${s.jsk || '-'}</td>
+            <td>
+              <label style="margin-right:15px; cursor:pointer; font-weight:bold; color:${cwsnStatus === 'yes' ? '#16a34a' : '#64748b'};">
+                <input type="radio" name="cwsn_chk_${udise}" value="yes" ${cwsnStatus === 'yes' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'yes')"> YES
+              </label>
+              <label style="cursor:pointer; font-weight:bold; color:${cwsnStatus === 'no' ? '#dc2626' : '#64748b'};">
+                <input type="radio" name="cwsn_chk_${udise}" value="no" ${cwsnStatus === 'no' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'no')"> NO
+              </label>
+            </td>
+          </tr>
+        `;
       });
     },
 
-    filterSchools() {
-      let keyword = document.getElementById('cwsnSearchBox').value.toLowerCase();
-      let select = document.getElementById('cwsnSchoolSelect');
-      select.innerHTML = '';
-      let filtered = this.allSchoolOptions.filter(o => o.text.toLowerCase().includes(keyword));
-      if (filtered.length === 0) {
-        let el = document.createElement('option');
-        el.value = '';
-        el.textContent = '-- No School Found --';
-        select.appendChild(el);
-      } else {
-        filtered.forEach(opt => {
-          let el = document.createElement('option');
-          el.value = opt.value;
-          el.textContent = opt.text;
-          select.appendChild(el);
-        });
-        select.value = filtered[0].value;
-        this.loadSchoolForm();
+    setSchoolCwsn(udise, status) {
+      let savedData = localStorage.getItem("brc_cwsn_" + udise);
+      if (status === 'no' && savedData) {
+        let parsed = JSON.parse(savedData);
+        if (parsed && parsed.completed && parsed.grandTotal > 0) {
+          let confirmNo = confirm("⚠️ Is school ke paas pehle se CWSN entries saved hain (Total: " + parsed.grandTotal + "). Kya aap ise 'NO' karna chahte hain?");
+          if (!confirmNo) {
+            this.renderSchoolSelectionTable();
+            return;
+          }
+        }
       }
+      localStorage.setItem("brc_cwsn_has_" + udise, status);
+      this.syncToCloud();
+      this.renderSchoolSelectionTable();
+    },
+
+    populateCwsnDropdown() {
+      let select = document.getElementById('cwsnSchoolSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Select CWSN School --</option>';
+
+      let yesSchools = this.allSchools.filter(s => {
+        let udise = s.code || s.school_code;
+        return localStorage.getItem("brc_cwsn_has_" + udise) === 'yes';
+      });
+
+      if (yesSchools.length === 0) {
+        select.innerHTML = '<option value="">-- No Schools marked as YES. Go to "School CWSN Yes/No Setup" first --</option>';
+        return;
+      }
+
+      yesSchools.forEach(s => {
+        let udise = s.code || s.school_code;
+        let el = document.createElement('option');
+        el.value = udise;
+        el.textContent = `${s.name || s.school_name} (${udise}) - JSK: ${s.jsk}`;
+        select.appendChild(el);
+      });
     },
 
     loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
       if (!udise) return;
-      this.currentUdise = udise;
 
       let school = this.allSchools.find(s => (s.code || s.school_code) === udise);
       if (!school) return;
@@ -400,15 +420,12 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // R2 enrollment automatic fetch
       let r2Data = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || "{}");
       let r2Total = school.total || r2Data.grandTotal || 0;
       document.getElementById('lblR2Total').textContent = r2Total;
 
-      // Load saved CWSN data if exists
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
 
-      // Render disability summary table
       let tbody = document.getElementById('disabilitySummaryBody');
       tbody.innerHTML = '';
       this.disabilityTypes.forEach((dis, idx) => {
@@ -416,33 +433,14 @@
         tbody.innerHTML += `
           <tr>
             <td style="text-align:left; font-weight:bold;">${dis}</td>
-            <td><input type="number" min="0" class="dis-boys" data-idx="${idx}" value="${savedDis.boys}" onchange="CwsnApp.updateStudentRows()" style="width:70px; text-align:center; padding:5px;"></td>
-            <td><input type="number" min="0" class="dis-girls" data-idx="${idx}" value="${savedDis.girls}" onchange="CwsnApp.updateStudentRows()" style="width:70px; text-align:center; padding:5px;"></td>
+            <td><input type="number" min="0" class="dis-boys" data-idx="${idx}" value="${savedDis.boys}" onchange="CwsnApp.renderStudentRows()" style="width:70px; text-align:center; padding:5px;"></td>
+            <td><input type="number" min="0" class="dis-girls" data-idx="${idx}" value="${savedDis.girls}" onchange="CwsnApp.renderStudentRows()" style="width:70px; text-align:center; padding:5px;"></td>
             <td><span class="dis-total-${idx}" style="font-weight:bold; color:#1d4ed8;">${Number(savedDis.boys) + Number(savedDis.girls)}</span></td>
           </tr>
         `;
       });
 
       this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
-    },
-
-    updateStudentRows() {
-      // Recalculate totals and rebuild student rows dynamically based on counts entered
-      let students = [];
-      // Collect existing student inputs if any
-      document.querySelectorAll('.student-row').forEach(row => {
-        students.push({
-          name: row.querySelector('.s-name').value,
-          father: row.querySelector('.s-father').value,
-          cls: row.querySelector('.s-class').value,
-          gender: row.querySelector('.s-gender').value,
-          disability: row.querySelector('.s-dis').value,
-          age: row.querySelector('.s-age').value,
-          remarks: row.querySelector('.s-rem').value
-        });
-      });
-      // We can also intelligently generate rows based on summary counts
-      this.renderStudentRows(students);
     },
 
     renderStudentRows(existingStudents = []) {
@@ -455,7 +453,8 @@
         let b = parseInt(document.querySelectorAll('.dis-boys')[idx]?.value || 0);
         let g = parseInt(document.querySelectorAll('.dis-girls')[idx]?.value || 0);
         let tot = b + g;
-        document.querySelector(`.dis-total-${idx}`).textContent = tot;
+        let totSpan = document.querySelector(`.dis-total-${idx}`);
+        if(totSpan) totSpan.textContent = tot;
         totalCount += tot;
         for(let i=0; i<tot; i++) {
           summaryData.push(dis);
@@ -463,7 +462,7 @@
       });
 
       if (totalCount === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; color:#64748b;">No CWSN students specified in summary above. Enter boys/girls count to add student entries.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; color:#64748b;">No CWSN students specified in summary above.</td></tr>`;
         return;
       }
 
@@ -498,7 +497,9 @@
     },
 
     saveData() {
-      if (!this.currentUdise) {
+      let select = document.getElementById('cwsnSchoolSelect');
+      let udise = select ? select.value : null;
+      if (!udise) {
         alert("Please select a school first!");
         return;
       }
@@ -527,7 +528,7 @@
       });
 
       let payload = {
-        udise: this.currentUdise,
+        udise: udise,
         summaries: summaries,
         students: students,
         totalBoys: totalBoys,
@@ -536,26 +537,33 @@
         completed: (totalBoys + totalGirls) > 0 || students.length > 0
       };
 
-      localStorage.setItem("brc_cwsn_" + this.currentUdise, JSON.stringify(payload));
-      alert("CWSN Data Saved Successfully!");
-      this.renderDashboard();
+      localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
+      this.syncToCloud();
+      alert("CWSN Data Saved & Synced to Cloud Successfully!");
+      this.switchTab('dashboard');
     },
 
     renderDashboard() {
+      let yesCount = 0;
       let completedCount = 0;
       let totalCwsn = 0;
       let jskMap = {};
 
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
-        jskMap[jsk] = { schools: 0, completed: 0, boys: 0, girls: 0 };
+        jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
       });
 
       this.allSchools.forEach(s => {
         let jsk = s.jsk || "Bhoura";
-        if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, completed: 0, boys: 0, girls: 0 };
+        if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
         jskMap[jsk].schools++;
 
         let udise = s.code || s.school_code;
+        if (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes') {
+          yesCount++;
+          jskMap[jsk].yesSchools++;
+        }
+
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.completed) {
           completedCount++;
@@ -567,19 +575,20 @@
       });
 
       document.getElementById('statTotalSchools').textContent = this.allSchools.length;
+      document.getElementById('statCwsnYes').textContent = yesCount;
       document.getElementById('statCompleted').textContent = completedCount;
-      document.getElementById('statPending').textContent = this.allSchools.length - completedCount;
       document.getElementById('statTotalCwsn').textContent = totalCwsn;
 
       let tbody = document.getElementById('dashSummaryTable');
       tbody.innerHTML = '';
       let i = 1;
-      let tSch = 0, tComp = 0, tB = 0, tG = 0, tTot = 0;
+      let tSch = 0, tYes = 0, tComp = 0, tB = 0, tG = 0, tTot = 0;
 
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
         let tot = d.boys + d.girls;
         tSch += d.schools;
+        tYes += d.yesSchools;
         tComp += d.completed;
         tB += d.boys;
         tG += d.girls;
@@ -590,7 +599,8 @@
             <td>${i++}</td>
             <td style="text-align:left; font-weight:bold;">${jsk}</td>
             <td>${d.schools}</td>
-            <td style="color:#16a34a; font-weight:bold;">${d.completed}</td>
+            <td style="color:#16a34a; font-weight:bold;">${d.yesSchools}</td>
+            <td>${d.completed}</td>
             <td>${d.boys}</td>
             <td>${d.girls}</td>
             <td style="font-weight:bold; color:#1d4ed8;">${tot}</td>
@@ -602,6 +612,7 @@
         <tr style="background:#f1f5f9; font-weight:bold;">
           <td colspan="2">Grand Total</td>
           <td>${tSch}</td>
+          <td>${tYes}</td>
           <td>${tComp}</td>
           <td>${tB}</td>
           <td>${tG}</td>
@@ -628,7 +639,7 @@
             <th>Gender</th>
             <th>Disability Category</th>
             <th>Age</th>
-            <th>Remarks / UDID</th>
+            <th>UDID / Remarks</th>
           </tr>
         </thead>
         <tbody>
