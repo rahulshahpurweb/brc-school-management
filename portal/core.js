@@ -210,7 +210,7 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-    // 🌐 Pure Synchronous Enrollment Fetcher (No Promises, Instant Number)
+  // 🌐 Smart Debugger Live Enrollment Fetcher
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
@@ -218,17 +218,25 @@ window.CoreApp = {
       
       if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
         let schools = SessionManager.getData();
+        console.log("CoreApp Debug - Total schools in SessionManager:", schools ? schools.length : 0);
+        
         if (Array.isArray(schools) && schools.length > 0) {
           let school = schools.find(s => String(s.udise || "").trim() === targetUdise);
-          if (school && school.classes) {
-            let total = 0;
-            for (let c in school.classes) {
-              let cl = school.classes[c];
-              let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-              let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-              total += (bSum + gSum);
+          if (school) {
+            console.log("CoreApp Debug - School Found:", school.name, school.classes);
+            if (school.classes) {
+              let total = 0;
+              for (let c in school.classes) {
+                let cl = school.classes[c];
+                let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
+                let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
+                total += (bSum + gSum);
+              }
+              console.log("CoreApp Debug - Calculated Total:", total);
+              if (total > 0) return total;
             }
-            if (total > 0) return total;
+          } else {
+            console.log("CoreApp Debug - School NOT found for UDISE:", targetUdise);
           }
         }
       }
@@ -239,7 +247,7 @@ window.CoreApp = {
       return 0;
     }
   },
-
+  
   async fetchCloudData() {
     try {
       let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
