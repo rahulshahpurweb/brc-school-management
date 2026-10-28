@@ -1,6 +1,6 @@
 // core.js - Central Source of Truth & Live R2 Hub for BRC Shahpur Portal
 window.CoreApp = {
-  // Google Apps Script Live Web App URL (SessionManager ke sath 100% synchronized)
+  // Google Apps Script Live Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
   
   // Saare 203 Schools ka Master Data
@@ -210,13 +210,12 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-// 🌐 Excel VLOOKUP Style Bulletproof Live Enrollment Fetcher
+  // 🌐 Excel VLOOKUP Style Bulletproof Live Enrollment Fetcher
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       
-      // Helper function to calculate total from school classes object
       let calculateSchoolTotal = function(school) {
         if (!school || !school.classes) return 0;
         let total = 0;
@@ -229,7 +228,7 @@ window.CoreApp = {
         return total;
       };
 
-      // 1. SessionManager ke live memory data se check karein (VLOOKUP exact match)
+      // 1. SessionManager check
       if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
         let schools = SessionManager.getData();
         if (Array.isArray(schools) && schools.length > 0) {
@@ -242,7 +241,7 @@ window.CoreApp = {
         }
       }
 
-      // 2. Fallback: LocalStorage ke saare items ko scan karke exact VLOOKUP match karein
+      // 2. LocalStorage VLOOKUP Scan
       for (let i = 0; i < localStorage.length; i++) {
         let key = localStorage.key(i);
         if (key) {
@@ -258,7 +257,6 @@ window.CoreApp = {
                 let total = calculateSchoolTotal(school);
                 if (total > 0) return total;
               } else if (data && typeof data === 'object') {
-                // Agar object ke andar array ho
                 let keys = Object.keys(data);
                 for (let k of keys) {
                   let item = data[k];
@@ -282,7 +280,7 @@ window.CoreApp = {
       return 0;
     }
   },
-  
+
   async fetchCloudData() {
     try {
       let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
