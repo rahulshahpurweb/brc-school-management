@@ -1,4 +1,4 @@
-// core.js - Central Source of Truth for BRC Shahpur Portal
+// core.js - Central Source of Truth & Live R2 Hub for BRC Shahpur Portal
 window.CoreApp = {
   cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb",
   
@@ -209,7 +209,28 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // Cloud se live R2 enrollment data fetch karne ka central function
+  // 🌐 R2 se Live Enrollment uthane ka Central Function (R3, R4, R5 sabhi ke liye)
+  getLiveEnrollment(udise) {
+    try {
+      // 1. Pehle Local Storage se check karein (agar R2 ne turant save kiya ho)
+      let localData = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || localStorage.getItem("brc_school_" + udise) || "{}");
+      let total = localData.grandTotal || localData.total || localData.overallTotal || 0;
+      if (total > 0) return total;
+
+      // 2. Agar local mein na mile toh global/window data se check karein
+      if (window.R2EnrollmentCache && window.R2EnrollmentCache[udise]) {
+        let cached = window.R2EnrollmentCache[udise];
+        return cached.grandTotal || cached.total || 0;
+      }
+
+      return 0;
+    } catch(e) {
+      console.error("Error fetching live enrollment for UDISE " + udise, e);
+      return 0;
+    }
+  },
+
+  // Cloud se live data fetch karne ka function
   async fetchCloudData() {
     try {
       let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
