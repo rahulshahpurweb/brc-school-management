@@ -209,51 +209,47 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // 🌐 Universal Live Enrollment Fetcher (R2 Hub)
+  // 🌐 Robust Live Enrollment Fetcher (Reads from R2 LocalStorage & Cloud)
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       
-      // 1. Direct standard keys check karein
-      let directKeys = [
-        "brc_enrollment_" + udise,
-        "brc_school_" + udise,
-        "school_" + udise,
-        udise
-      ];
-      
-      for (let k of directKeys) {
-        let raw = localStorage.getItem(k);
-        if (raw) {
-          try {
-            let val = JSON.parse(raw);
-            let t = Number(val.grandTotal || val.total || val.overallTotal || val.sum || 0);
-            if (t > 0) return t;
-          } catch(e) {}
-        }
-      }
-
-      // 2. Universal Deep Scan: LocalStorage ki har key check karein jisme UDISE code ho
+      // 1. LocalStorage ke saare items ko scan karein (SessionManager data)
       for (let i = 0; i < localStorage.length; i++) {
         let key = localStorage.key(i);
-        if (key && key.includes(String(udise))) {
+        if (key) {
           let raw = localStorage.getItem(key);
           if (raw) {
             try {
-              let val = JSON.parse(raw);
-              if (val && typeof val === 'object') {
-                let t = Number(val.grandTotal || val.total || val.overallTotal || val.sum || 0);
-                if (t > 0) return t;
+              let data = JSON.parse(raw);
+              
+              // Agar yeh schools ka array hai (jaise SessionManager save karta hai)
+              if (Array.isArray(data)) {
+                let school = data.find(s => String(s.udise).trim() === String(udise).trim());
+                if (school && school.classes) {
+                  let total = 0;
+                  for (let c in school.classes) {
+                    let cl = school.classes[c];
+                    total += (parseInt(cl.scB) || 0) + (parseInt(cl.scG) || 0) + 
+                             (parseInt(cl.stB) || 0) + (parseInt(cl.stG) || 0) + 
+                             (parseInt(cl.obcB) || 0) + (parseInt(cl.obcG) || 0) + 
+                             (parseInt(cl.genB) || 0) + (parseInt(cl.genG) || 0);
+                  }
+                  if (total > 0) return total;
+                }
+              }
+              
+              // Agar yeh single school object ya enrollment record hai
+              if (data && typeof data === 'object') {
+                let targetUdise = String(data.udise || data.dise_code || "").trim();
+                if (targetUdise === String(udise).trim()) {
+                  let t = Number(data.grandTotal || data.total || data.overallTotal || data.sum || 0);
+                  if (t > 0) return t;
+                }
               }
             } catch(e) {}
           }
         }
-      }
-
-      // 3. Window Cache check karein
-      if (window.R2EnrollmentCache && window.R2EnrollmentCache[udise]) {
-        let cached = window.R2EnrollmentCache[udise];
-        return Number(cached.grandTotal || cached.total || 0);
       }
 
       return 0;
