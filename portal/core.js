@@ -210,33 +210,53 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // 🌐 Smart Debugger Live Enrollment Fetcher
+ // 🌐 CORS-Proof Live Enrollment Fetcher
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       
+      // 1. SessionManager ke live memory data se check karein
       if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
         let schools = SessionManager.getData();
-        console.log("CoreApp Debug - Total schools in SessionManager:", schools ? schools.length : 0);
-        
         if (Array.isArray(schools) && schools.length > 0) {
           let school = schools.find(s => String(s.udise || "").trim() === targetUdise);
-          if (school) {
-            console.log("CoreApp Debug - School Found:", school.name, school.classes);
-            if (school.classes) {
-              let total = 0;
-              for (let c in school.classes) {
-                let cl = school.classes[c];
-                let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-                let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-                total += (bSum + gSum);
-              }
-              console.log("CoreApp Debug - Calculated Total:", total);
-              if (total > 0) return total;
+          if (school && school.classes) {
+            let total = 0;
+            for (let c in school.classes) {
+              let cl = school.classes[c];
+              let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
+              let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
+              total += (bSum + gSum);
             }
-          } else {
-            console.log("CoreApp Debug - School NOT found for UDISE:", targetUdise);
+            if (total > 0) return total;
+          }
+        }
+      }
+
+      // 2. Fallback: Agar SessionManager khali ho, toh localStorage ki har key ko scan karo (CORS free!)
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key) {
+          let raw = localStorage.getItem(key);
+          if (raw && raw.includes(targetUdise)) {
+            try {
+              let data = JSON.parse(raw);
+              if (Array.isArray(data)) {
+                let school = data.find(s => String(s.udise || "").trim() === targetUdise);
+                if (school && school.classes) {
+                  let total = 0;
+                  for (let c in school.classes) {
+                    let cl = school.classes[c];
+                    total += (parseInt(cl.scB) || 0) + (parseInt(cl.scG) || 0) + 
+                             (parseInt(cl.stB) || 0) + (parseInt(cl.stG) || 0) + 
+                             (parseInt(cl.obcB) || 0) + (parseInt(cl.obcG) || 0) + 
+                             (parseInt(cl.genB) || 0) + (parseInt(cl.genG) || 0);
+                  }
+                  if (total > 0) return total;
+                }
+              }
+            } catch(e) {}
           }
         }
       }
