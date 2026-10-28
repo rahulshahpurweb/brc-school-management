@@ -210,36 +210,16 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // 🌐 Direct Synchronization Bridge with SessionManager & Cloud
-  async getLiveEnrollment(udise) {
+    // 🌐 Pure Synchronous Enrollment Fetcher (No Promises, Instant Number)
+  getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       
-      // 1. Check SessionManager live memory array first (Fastest & Local)
       if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
         let schools = SessionManager.getData();
         if (Array.isArray(schools) && schools.length > 0) {
           let school = schools.find(s => String(s.udise || "").trim() === targetUdise);
-          if (school && school.classes) {
-            let total = 0;
-            for (let c in school.classes) {
-              let cl = school.classes[c];
-              let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-              let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-              total += (bSum + gSum);
-            }
-            if (total > 0) return total;
-          }
-        }
-      }
-
-      // 2. Fallback: Fetch directly from Google Apps Script Cloud if needed
-      let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
-      if (res.ok) {
-        let cloudData = await res.json();
-        if (Array.isArray(cloudData)) {
-          let school = cloudData.find(s => String(s.udise || "").trim() === targetUdise);
           if (school && school.classes) {
             let total = 0;
             for (let c in school.classes) {
