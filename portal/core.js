@@ -209,18 +209,51 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // 🌐 R2 se Live Enrollment uthane ka Central Function (R3, R4, R5 sabhi ke liye)
+  // 🌐 Universal Live Enrollment Fetcher (R2 Hub)
   getLiveEnrollment(udise) {
     try {
-      // 1. Pehle Local Storage se check karein (agar R2 ne turant save kiya ho)
-      let localData = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || localStorage.getItem("brc_school_" + udise) || "{}");
-      let total = localData.grandTotal || localData.total || localData.overallTotal || 0;
-      if (total > 0) return total;
+      if (!udise) return 0;
+      
+      // 1. Direct standard keys check karein
+      let directKeys = [
+        "brc_enrollment_" + udise,
+        "brc_school_" + udise,
+        "school_" + udise,
+        udise
+      ];
+      
+      for (let k of directKeys) {
+        let raw = localStorage.getItem(k);
+        if (raw) {
+          try {
+            let val = JSON.parse(raw);
+            let t = Number(val.grandTotal || val.total || val.overallTotal || val.sum || 0);
+            if (t > 0) return t;
+          } catch(e) {}
+        }
+      }
 
-      // 2. Agar local mein na mile toh global/window data se check karein
+      // 2. Universal Deep Scan: LocalStorage ki har key check karein jisme UDISE code ho
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && key.includes(String(udise))) {
+          let raw = localStorage.getItem(key);
+          if (raw) {
+            try {
+              let val = JSON.parse(raw);
+              if (val && typeof val === 'object') {
+                let t = Number(val.grandTotal || val.total || val.overallTotal || val.sum || 0);
+                if (t > 0) return t;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      // 3. Window Cache check karein
       if (window.R2EnrollmentCache && window.R2EnrollmentCache[udise]) {
         let cached = window.R2EnrollmentCache[udise];
-        return cached.grandTotal || cached.total || 0;
+        return Number(cached.grandTotal || cached.total || 0);
       }
 
       return 0;
