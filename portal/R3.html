@@ -139,7 +139,7 @@
     <div class="card">
       <h3>✍️ School CWSN Data Entry Module</h3>
       <div class="filter-bar">
-        <label><b>Select School:</b></label>
+        <label><b>Select School (CWSN Yes Only):</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
       </div>
 
@@ -464,15 +464,19 @@
     populateCwsnDropdown() {
       let select = document.getElementById('cwsnSchoolSelect');
       if (!select) return;
-      select.innerHTML = '<option value="">-- Select School --</option>';
+      select.innerHTML = '<option value="">-- Select CWSN School --</option>';
 
-      // Saare 203 schools R2 ki tarah identical populate honge
-      this.allSchools.forEach(s => {
+      // Purana aur sahi tareeqa: Sirf YES mark kiye hue schools hi dropdown mein aayenge
+      let yesSchools = this.allSchools.filter(s => localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes');
+      if (yesSchools.length === 0) {
+        select.innerHTML = '<option value="">-- No Schools marked as YES. Go to Setup or Bulk Upload --</option>';
+        return;
+      }
+
+      yesSchools.forEach(s => {
         let el = document.createElement('option');
         el.value = s.udise;
-        let isYes = localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes';
-        let badge = isYes ? ' [CWSN: YES]' : '';
-        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}${badge}`;
+        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
         select.appendChild(el);
       });
     },
@@ -578,23 +582,19 @@
       let school = this.allSchools.find(s => s.udise === udise);
       let students = [];
       document.querySelectorAll('.student-row').forEach(row => {
-        let samagra = row.querySelector('.s-samagra').value.trim();
-        let name = row.querySelector('.s-name').value.trim();
-        if (samagra || name) {
-          students.push({
-            samagra: samagra, name: name,
-            father: row.querySelector('.s-father').value, mother: row.querySelector('.s-mother').value,
-            gender: row.querySelector('.s-gender').value, cast: row.querySelector('.s-cast').value,
-            cls: row.querySelector('.s-class').value, mobile: row.querySelector('.s-mobile').value,
-            udid: row.querySelector('.s-udid').value, aadhar: row.querySelector('.s-aadhar').value,
-            dob: row.querySelector('.s-dob').value, disability: row.querySelector('.s-dis').value,
-            cert: row.querySelector('.s-cert').value, percent: row.querySelector('.s-percent').value,
-            equipment: row.querySelector('.s-equip').value, address: row.querySelector('.s-address').value,
-            pin: row.querySelector('.s-pin').value, bank: row.querySelector('.s-bank').value,
-            ifsc: row.querySelector('.s-ifsc').value, accNo: row.querySelector('.s-acc').value,
-            teacher: row.querySelector('.s-teacher').value, teacherMob: row.querySelector('.s-teachermob').value
-          });
-        }
+        students.push({
+          samagra: row.querySelector('.s-samagra').value, name: row.querySelector('.s-name').value,
+          father: row.querySelector('.s-father').value, mother: row.querySelector('.s-mother').value,
+          gender: row.querySelector('.s-gender').value, cast: row.querySelector('.s-cast').value,
+          cls: row.querySelector('.s-class').value, mobile: row.querySelector('.s-mobile').value,
+          udid: row.querySelector('.s-udid').value, aadhar: row.querySelector('.s-aadhar').value,
+          dob: row.querySelector('.s-dob').value, disability: row.querySelector('.s-dis').value,
+          cert: row.querySelector('.s-cert').value, percent: row.querySelector('.s-percent').value,
+          equipment: row.querySelector('.s-equip').value, address: row.querySelector('.s-address').value,
+          pin: row.querySelector('.s-pin').value, bank: row.querySelector('.s-bank').value,
+          ifsc: row.querySelector('.s-ifsc').value, accNo: row.querySelector('.s-acc').value,
+          teacher: row.querySelector('.s-teacher').value, teacherMob: row.querySelector('.s-teachermob').value
+        });
       });
 
       let boys = students.filter(st => st.gender === 'Boy').length;
@@ -604,10 +604,6 @@
         udise: udise, schoolName: school.name, jsk: school.jsk, students: students,
         totalBoys: boys, totalGirls: girls, grandTotal: students.length, completed: students.length > 0
       };
-
-      if (students.length > 0) {
-        localStorage.setItem("brc_cwsn_has_" + udise, "yes");
-      }
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
       this.syncToCloud();
