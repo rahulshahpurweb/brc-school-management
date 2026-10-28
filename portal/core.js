@@ -1,6 +1,7 @@
 // core.js - Central Source of Truth & Live R2 Hub for BRC Shahpur Portal
 window.CoreApp = {
-  cloudApiUrl: "https://api.npoint.io/b6f7fc30b23ec0e8aefb",
+  // Google Apps Script Live Web App URL (SessionManager ke sath 100% synchronized)
+  cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
   
   // Saare 203 Schools ka Master Data
   MASTER_SCHOOLS: [
@@ -209,16 +210,17 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // 🌐 Direct Cloud & SessionManager Bridge
-  getLiveEnrollment(udise) {
+  // 🌐 Direct Synchronization Bridge with SessionManager & Cloud
+  async getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
+      let targetUdise = String(udise).trim();
       
-      // 1. Check SessionManager data directly if available
+      // 1. Check SessionManager live memory array first (Fastest & Local)
       if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
         let schools = SessionManager.getData();
         if (Array.isArray(schools) && schools.length > 0) {
-          let school = schools.find(s => String(s.udise).trim() === String(udise).trim());
+          let school = schools.find(s => String(s.udise || "").trim() === targetUdise);
           if (school && school.classes) {
             let total = 0;
             for (let c in school.classes) {
@@ -232,29 +234,21 @@ window.CoreApp = {
         }
       }
 
-      // 2. Fallback: Scan LocalStorage for any cached school arrays
-      for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key) {
-          let raw = localStorage.getItem(key);
-          if (raw && raw.includes(udise)) {
-            try {
-              let data = JSON.parse(raw);
-              if (Array.isArray(data)) {
-                let school = data.find(s => String(s.udise).trim() === String(udise).trim());
-                if (school && school.classes) {
-                  let total = 0;
-                  for (let c in school.classes) {
-                    let cl = school.classes[c];
-                    total += (parseInt(cl.scB) || 0) + (parseInt(cl.scG) || 0) + 
-                             (parseInt(cl.stB) || 0) + (parseInt(cl.stG) || 0) + 
-                             (parseInt(cl.obcB) || 0) + (parseInt(cl.obcG) || 0) + 
-                             (parseInt(cl.genB) || 0) + (parseInt(cl.genG) || 0);
-                  }
-                  if (total > 0) return total;
-                }
-              }
-            } catch(e) {}
+      // 2. Fallback: Fetch directly from Google Apps Script Cloud if needed
+      let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
+      if (res.ok) {
+        let cloudData = await res.json();
+        if (Array.isArray(cloudData)) {
+          let school = cloudData.find(s => String(s.udise || "").trim() === targetUdise);
+          if (school && school.classes) {
+            let total = 0;
+            for (let c in school.classes) {
+              let cl = school.classes[c];
+              let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
+              let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
+              total += (bSum + gSum);
+            }
+            if (total > 0) return total;
           }
         }
       }
@@ -266,7 +260,6 @@ window.CoreApp = {
     }
   },
 
-  // Cloud se live data fetch karne ka function
   async fetchCloudData() {
     try {
       let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
