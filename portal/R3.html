@@ -148,7 +148,8 @@
           <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
           <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
           <span><b>JSK:</b> <span id="lblJsk">-</span></span>
-          <span><b>Cloud R2 Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">Loading...</span></span>
+          <!-- Yahan CoreApp ka getLiveEnrollment function direct R2 live data uthayega -->
+          <span><b>Live R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
         </div>
       </div>
 
@@ -241,21 +242,15 @@
       "Speech & Language", "Intellectual Disability", "Specific Learning Disabilities", 
       "Autism Spectrum", "Multiple Disabilities", "Blindness", "Low Vision"
     ],
-    cloudEnrollmentData: {},
 
     async init() {
       this.allSchools = window.CoreApp.MASTER_SCHOOLS;
       
-      // Cloud se live data fetch karein (R2 enrollment + CWSN records)
+      // Cloud se live data fetch karein
       let cloudData = await window.CoreApp.fetchCloudData();
-      if (cloudData) {
-        if (cloudData.enrollment_records) {
-          this.cloudEnrollmentData = cloudData.enrollment_records;
-        }
-        if (cloudData.cwsn_records) {
-          for (let key in cloudData.cwsn_records) {
-            localStorage.setItem(key, cloudData.cwsn_records[key]);
-          }
+      if (cloudData && cloudData.cwsn_records) {
+        for (let key in cloudData.cwsn_records) {
+          localStorage.setItem(key, cloudData.cwsn_records[key]);
         }
       }
 
@@ -284,7 +279,6 @@
             allCwsn[key] = localStorage.getItem(key);
           }
         }
-        // Current cloud data fetch karke merge karein taaki enrollment data overwrite na ho
         let currentCloud = await window.CoreApp.fetchCloudData() || {};
         currentCloud.cwsn_records = allCwsn;
 
@@ -499,12 +493,9 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // Seedha Cloud se R2 enrollment uthayega (Cloud-to-Cloud sync)
-      let cloudR2 = this.cloudEnrollmentData["brc_enrollment_" + udise] || this.cloudEnrollmentData["brc_school_" + udise];
-      let localR2 = JSON.parse(localStorage.getItem("brc_enrollment_" + udise) || "{}");
-      
-      let totalEnrolled = (cloudR2 ? (cloudR2.grandTotal || cloudR2.total || 0) : 0) || (localR2.grandTotal || localR2.total || 0);
-      document.getElementById('lblR2Total').textContent = totalEnrolled;
+      // 🌟 Yahan seedha CoreApp ka getLiveEnrollment function call ho raha hai jo R2 ka live data uthayega
+      let liveTotal = window.CoreApp.getLiveEnrollment(udise);
+      document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
       this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
