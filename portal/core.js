@@ -210,64 +210,61 @@ window.CoreApp = {
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
   MASTER_SCHOOLS: window.MASTER_SCHOOLS,
 
-  // Ultimate Live Enrollment Fetcher (Checks LocalStorage, SessionManager & Cloud API)
-    // Ultimate Robust Enrollment Calculator with Fallback
+  // Strict Live Enrollment Fetcher from Session Storage / Local Storage (No Hard-coded estimates)
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       let schools = [];
 
-      // 1. Scan LocalStorage keys
-      for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key && (key.includes("portal") || key.includes("school") || key.includes("data") || key.includes("r2"))) {
-          try {
-            let val = JSON.parse(localStorage.getItem(key));
-            if (Array.isArray(val) && val.length > 0) {
-              schools = val;
-              break;
-            }
-          } catch(e) {}
+      // 1. Check Session active storage first
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let sessionKey = "brc_schools_" + activeSess;
+      let sessionData = localStorage.getItem(sessionKey);
+      
+      if (sessionData) {
+        try {
+          let parsed = JSON.parse(sessionData);
+          if (Array.isArray(parsed)) schools = parsed;
+        } catch(e) {}
+      }
+
+      // 2. Fallback to other saved school keys if session data is empty
+      if (schools.length === 0) {
+        for (let i = 0; i < localStorage.length; i++) {
+          let key = localStorage.key(i);
+          if (key && (key.includes("brc_schools") || key.includes("saved_schools"))) {
+            try {
+              let val = JSON.parse(localStorage.getItem(key));
+              if (Array.isArray(val) && val.length > 0) {
+                schools = val;
+                break;
+              }
+            } catch(e) {}
+          }
         }
       }
 
-      // 2. Fallback to Master List if localStorage is empty
-      if (!Array.isArray(schools) || schools.length === 0) {
+      if (schools.length === 0) {
         schools = window.MASTER_SCHOOLS || [];
       }
 
-      let school = schools.find(s => {
-        let sUdise = String(s.udise || s.dise_code || s.udise_code || "").trim();
-        return sUdise === targetUdise;
-      });
+      let school = schools.find(s => String(s.udise || "").trim() === targetUdise);
+      if (!school || !school.classes) return 0;
 
-      if (!school) return 0;
-
-      // If classes data exists, calculate sum
-      if (school.classes) {
-        let total = 0;
-        for (let c in school.classes) {
-          let cl = school.classes[c] || {};
-          let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-          let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-          total += (bSum + gSum);
-        }
-        if (total > 0) return total;
+      let total = 0;
+      for (let c in school.classes) {
+        let cl = school.classes[c] || {};
+        let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
+        let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
+        total += (bSum + gSum);
       }
-
-      // 3. Fallback default estimated enrollment based on school category if classes data not entered yet in R2
-      let cat = (school.category || "").toLowerCase();
-      if (cat.includes("higher secondary") || cat.includes("1 to 12")) return 150;
-      if (cat.includes("high school") || cat.includes("1 to 10") || cat.includes("6 to 10")) return 100;
-      if (cat.includes("middle") || cat.includes("1 to 8") || cat.includes("6 to 8")) return 60;
-      return 30; // Default for Primary School
+      return total;
 
     } catch (e) {
-      return 30;
+      return 0;
     }
   },
-  
 
   async fetchCloudData() {
     try {
