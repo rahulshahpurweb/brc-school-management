@@ -695,7 +695,7 @@
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.students && saved.students.length > 0) {
           saved.students.forEach(st => {
-            if (disFiletr !== "ALL" && st.disability !== disFilter) return;
+            if (disFilter !== "ALL" && st.disability !== disFilter) return; // Fixed typo here (disFiletr -> disFilter)
             found = true;
             html += `
               <tr>
