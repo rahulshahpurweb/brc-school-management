@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
 <script src="permissions.js"></script>  
 <style>  
-  /* Anti-Flicker: Page load hote waqt jab tak data ready na ho, hidden rahega taaki flash na ho */
+  /* Anti-Flicker */
   body { visibility: hidden; }
 
   .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }  
@@ -172,7 +172,7 @@
   <div id="internalDropdownMenu" class="internal-dropdown">  
     <button class="hide-for-jsk" onclick="showTab('dash'); toggleInternalMenu();">📊 Summary Dashboard</button>  
     <button id="navRecordsBtn" onclick="showTab('records'); toggleInternalMenu();">📋 School List & Filters</button>  
-    <button class="hide-for-jsk" id="navEntryBtn" onclick="showTab('entry'); toggleInternalMenu();">✍️ Data Entry Form</button>  
+    <button class="hide-for-school" id="navEntryBtn" onclick="showTab('entry'); toggleInternalMenu();">✍️ Data Entry Form</button>  
     <button class="hide-for-school" onclick="showTab('compilation'); toggleInternalMenu();">📑 JSK Compilation Report</button>  
     <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:4px 0;">  
     <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate(); toggleInternalMenu();" style="background:#16a34a; color:#fff;">📥 Template_EFG</button>  
@@ -308,6 +308,18 @@
     }, 1200);
   });
 
+  // Strict Class Range Rule Function based on user request
+  window.getClassesForSchoolCategory = function(category) {
+    let cat = (category || "").toLowerCase();
+    if (cat.includes("6 to 12") || cat.includes("6 to 8")) {
+      return [6, 7, 8];
+    }
+    if (cat.includes("1 to 12") || cat.includes("1 to 10") || cat.includes("1 to 8")) {
+      return [1, 2, 3, 4, 5, 6, 7, 8];
+    }
+    return [1, 2, 3, 4, 5];
+  };
+
   function filterSchoolDropdown() {
     let keyword = document.getElementById("entrySearchBox").value.toLowerCase();
     let select = document.getElementById("schoolSelect");
@@ -356,7 +368,6 @@
     let container = document.getElementById("permissionListContainer");  
     container.innerHTML = "";  
   
-    // 1. JSK Specific Controls Section
     container.innerHTML += `<div style="font-weight:bold; color:#0284c7; margin-top:5px; border-bottom:2px solid #0284c7; padding-bottom:3px;">📊 JSK Specific Controls</div>`;  
     ['jsk_dash_view', 'jsk_records_view', 'jsk_compilation_view', 'jsk_entry_view', 'jsk_upload_excel', 'jsk_template_download'].forEach(key => {
       if(settings[key] !== undefined) {
@@ -369,7 +380,6 @@
       }
     });
 
-    // 2. School Specific Controls Section
     container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Specific Controls</div>`;  
     ['school_dash_view', 'school_records_view', 'school_entry_view', 'school_can_edit_locked_session'].forEach(key => {
       if(settings[key] !== undefined) {
@@ -382,7 +392,6 @@
       }
     });
 
-    // 3. General Module Access Section
     container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:10px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">🌐 General Portal Modules</div>`;  
     ['cwsn_module_access', 'sna_account_check_access'].forEach(key => {
       if(settings[key] !== undefined) {
@@ -395,7 +404,6 @@
       }
     });
   
-    // 4. Academic Session Lock / Unlock Section
     container.innerHTML += `<div style="font-weight:bold; color:#b45309; margin-top:10px; border-bottom:2px solid #b45309; padding-bottom:3px;">🔒 Academic Session Lock / Unlock</div>`;  
     sessions.forEach(s => {  
       let lockStatusText = s.locked ? "🔒 Locked" : "🔓 Active";  
@@ -434,7 +442,6 @@
     location.reload();  
   }  
   
-  // WebView & Browser compatible Excel Export Function
   function ExportAnyTable(filename = "BRC_Report.xlsx") {  
     try {  
       let activeSection = document.querySelector("main section.active");  
@@ -464,7 +471,6 @@
     }  
   };  
 
-  // WebView & Browser compatible Print Handler
   window.PrintHandler = {
     printPage() {
       let activeSection = document.querySelector("main section.active");
