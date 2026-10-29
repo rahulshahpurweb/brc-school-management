@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="r2-styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="permissions.js"></script>
-<script src="core.js"></script> <!-- Central Core Architecture Link -->
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
   
@@ -40,7 +39,7 @@
 <body>
 
 <div class="module-header">
-  <div class="module-title">♿ CWSN Module & Report Management (R3 - Centralized Cloud)</div>
+  <div class="module-title">♿ CWSN Module & Report Management (R3 - Independent)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
     <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
     <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
@@ -237,7 +236,10 @@
   </section>
 </main>
 
-<script>
+<script type="module">
+  import { MASTER_SCHOOLS } from './schools-data.js';
+  import { SessionManager } from './session-manager.js';
+
   window.CwsnApp = {
     disabilityTypes: [
       "Locomotor Disability", "Visual Impairment", "Hearing Impairment", 
@@ -245,21 +247,10 @@
       "Autism Spectrum", "Multiple Disabilities", "Blindness", "Low Vision"
     ],
 
-    async init() {
-      this.allSchools = window.MASTER_SCHOOLS || (window.CoreApp && window.CoreApp.MASTER_SCHOOLS) || [];
-      
-      try {
-        if (window.CoreApp && typeof window.CoreApp.fetchCloudData === 'function') {
-          let cloudData = await window.CoreApp.fetchCloudData();
-          if (cloudData && cloudData.cwsn_records) {
-            for (let key in cloudData.cwsn_records) {
-              localStorage.setItem(key, cloudData.cwsn_records[key]);
-            }
-          }
-        }
-      } catch(e) {
-        console.log("Cloud fetch skipped safely.");
-      }
+    init() {
+      // Direct local session data fetch (No core.js dependency)
+      let sessionData = SessionManager.getData();
+      this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
 
       this.checkAdminRole();
       this.switchTab('dashboard');
@@ -274,45 +265,6 @@
         } else {
           bulkBtn.style.display = 'none';
         }
-      }
-    },
-
-    async syncToCloud() {
-      try {
-        let allCwsn = {};
-        for (let i = 0; i < localStorage.length; i++) {
-          let key = localStorage.key(i);
-          if (key && key.startsWith("brc_cwsn_")) {
-            allCwsn[key] = localStorage.getItem(key);
-          }
-        }
-        
-        let apiUrl = window.CoreApp && window.CoreApp.cloudApiUrl ? window.CoreApp.cloudApiUrl : "";
-        if (!apiUrl) return;
-
-        let currentCloud = {};
-        try {
-          let res = await fetch(apiUrl + "?t=" + new Date().getTime());
-          if (res.ok) {
-            let textData = await res.text();
-            if (textData) currentCloud = JSON.parse(textData);
-          }
-        } catch(err) {
-          console.log("Cloud read warning, proceeding with local payload.");
-        }
-
-        if (typeof currentCloud !== 'object' || currentCloud === null) {
-          currentCloud = {};
-        }
-        currentCloud.cwsn_records = allCwsn;
-
-        await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(currentCloud)
-        });
-      } catch(e) {
-        console.log("Cloud sync handled safely without crashing.");
       }
     },
 
@@ -432,7 +384,6 @@
             count++;
           }
 
-          this.syncToCloud();
           alert(`Successfully imported CWSN data for ${count} schools from Excel!`);
           this.switchTab('dashboard');
         } catch (err) {
@@ -483,7 +434,6 @@
 
     setSchoolCwsn(udise, status) {
       localStorage.setItem("brc_cwsn_has_" + udise, status);
-      this.syncToCloud();
       this.renderSchoolSelectionTable();
     },
 
@@ -506,7 +456,7 @@
       });
     },
 
-            loadSchoolForm() {
+    loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
       if (!udise) return;
 
@@ -517,39 +467,19 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // Live R2 Total Enrollment calculation with SessionManager & Core fallback
+      // Direct live sum from SessionManager data
       let liveTotal = 0;
-      try {
-        let schoolsList = [];
-        if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
-          schoolsList = SessionManager.getData();
-        } else {
-          schoolsList = JSON.parse(localStorage.getItem("brc_saved_schools") || localStorage.getItem("brc_schools_data") || "[]");
-        }
-        
-        let found = schoolsList.find(s => String(s.udise) === String(udise));
-        if (found && found.classes) {
-          Object.keys(found.classes).forEach(cName => {
-            let cl = found.classes[cName] || {};
-            liveTotal += (cl.scB||0) + (cl.scG||0) + (cl.stB||0) + (cl.stG||0) + (cl.obcB||0) + (cl.obcG||0) + (cl.genB||0) + (cl.genG||0);
-          });
-        }
-      } catch(e) {
-        console.log("Error fetching local schools data:", e);
+      if (school.classes) {
+        Object.keys(school.classes).forEach(cName => {
+          let cl = school.classes[cName] || {};
+          liveTotal += (cl.scB||0) + (cl.scG||0) + (cl.stB||0) + (cl.stG||0) + (cl.obcB||0) + (cl.obcG||0) + (cl.genB||0) + (cl.genG||0);
+        });
       }
-
-      // Fallback to CoreApp method if liveTotal is still 0
-      if (liveTotal === 0 && window.CoreApp && typeof window.CoreApp.getLiveEnrollment === 'function') {
-        liveTotal = window.CoreApp.getLiveEnrollment(udise) || 0;
-      }
-      
       document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
       this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
     },
-    
-    
 
     addNewStudentRow() {
       let tbody = document.getElementById('studentRowsBody');
@@ -565,7 +495,7 @@
         <td><input type="text" class="s-mother" placeholder="Mother Name" style="width:120px; padding:4px;"></td>
         <td><select class="s-gender" style="width:70px; padding:4px;"><option value="Boy">Boy</option><option value="Girl">Girl</option></select></td>
         <td><input type="text" class="s-cast" placeholder="Category" style="width:80px; padding:4px;"></td>
-        <td><select class="s-class" style="width:90px; padding:4px;">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
+        <td><select class="s-class" style="width:90px; padding:4px;">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
         <td><input type="text" class="s-mobile" placeholder="Mobile" style="width:90px; padding:4px;"></td>
         <td><input type="text" class="s-udid" placeholder="UDID No." style="width:100px; padding:4px;"></td>
         <td><input type="text" class="s-aadhar" placeholder="Aadhar" style="width:100px; padding:4px;"></td>
@@ -604,7 +534,7 @@
           <td><input type="text" class="s-mother" value="${st.mother || ''}" style="width:120px; padding:4px;"></td>
           <td><select class="s-gender" style="width:70px; padding:4px;"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></td>
           <td><input type="text" class="s-cast" value="${st.cast || ''}" style="width:80px; padding:4px;"></td>
-          <td><select class="s-class" style="width:90px; padding:4px;">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
+          <td><select class="s-class" style="width:90px; padding:4px;">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
           <td><input type="text" class="s-mobile" value="${st.mobile || ''}" style="width:90px; padding:4px;"></td>
           <td><input type="text" class="s-udid" value="${st.udid || ''}" style="width:100px; padding:4px;"></td>
           <td><input type="text" class="s-aadhar" value="${st.aadhar || ''}" style="width:100px; padding:4px;"></td>
@@ -658,8 +588,7 @@
       };
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
-      this.syncToCloud();
-      alert("CWSN Data Saved & Synced to Cloud Successfully!");
+      alert("CWSN Data Saved Successfully!");
       this.switchTab('dashboard');
     },
 
