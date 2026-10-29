@@ -29,18 +29,25 @@ export const EntryModule = {
   getClassesForSchool(category) {
     let cat = (category || "").toUpperCase().trim();
     
-    // Agar school category 6 se shuru hoti hai (jaise 6 to 12, 6 to 10, 6 to 8)
-    if (cat.includes("6 TO") || cat.includes("6-")) {
+    // 1. Agar category 6 se shuru hoti hai (jaise 6 to 12, 6 to 10, 6 to 8, ya UPS/Middle)
+    if (cat.includes("6 TO") || cat.includes("6-") || cat.includes("MIDDLE") || cat === "UPS" || (cat.includes("6 TO 12") && !cat.includes("1 TO"))) {
       return ["Class 6", "Class 7", "Class 8"];
     }
     
-    // Agar school category 1 se shuru hoti hai aur badi hai (1 to 12, 1 to 10, 1 to 8)
-    if (cat.includes("1 TO 12") || cat.includes("1 TO 10") || cat.includes("1 TO 8") || cat.includes("1-12") || cat.includes("1-10") || cat.includes("1-8")) {
+    // 2. Agar category mein 1 se lekar 8, 10, ya 12 tak hai (jaise 1 to 10, 1 to 12, 1 to 8, High School, Primary to High)
+    if (cat.includes("1 TO 12") || cat.includes("1 TO 10") || cat.includes("1 TO 8") || 
+        cat.includes("1-12") || cat.includes("1-10") || cat.includes("1-8") ||
+        cat.includes("HIGH SCHOOL") || cat.includes("HIGHER SECONDARY") || cat.includes("PRIMARY TO HIGH")) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
     
-    // Default Primary School (1 to 5)
-    return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
+    // 3. Strict Primary / PS ke liye
+    if (cat === "PS" || (cat.includes("PRIMARY") && !cat.includes("TO") && !cat.includes("-") && !cat.includes("HIGH"))) {
+      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
+    }
+
+    // Default safe fallback (Class 1 se 8)
+    return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
   },
 
   loadForm() {
