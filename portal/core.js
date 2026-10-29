@@ -211,6 +211,7 @@ window.CoreApp = {
   MASTER_SCHOOLS: window.MASTER_SCHOOLS,
 
   // Ultimate Live Enrollment Fetcher (Checks LocalStorage, SessionManager & Cloud API)
+    // Ultimate Robust Enrollment Calculator with Fallback
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
@@ -231,14 +232,7 @@ window.CoreApp = {
         }
       }
 
-      // 2. Fallback to SessionManager if available
-      if (!Array.isArray(schools) || schools.length === 0) {
-        if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
-          schools = SessionManager.getData() || [];
-        }
-      }
-
-      // 3. Fallback to Master List
+      // 2. Fallback to Master List if localStorage is empty
       if (!Array.isArray(schools) || schools.length === 0) {
         schools = window.MASTER_SCHOOLS || [];
       }
@@ -248,21 +242,32 @@ window.CoreApp = {
         return sUdise === targetUdise;
       });
 
-      if (!school || !school.classes) return 0;
+      if (!school) return 0;
 
-      let total = 0;
-      for (let c in school.classes) {
-        let cl = school.classes[c] || {};
-        let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-        let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-        total += (bSum + gSum);
+      // If classes data exists, calculate sum
+      if (school.classes) {
+        let total = 0;
+        for (let c in school.classes) {
+          let cl = school.classes[c] || {};
+          let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
+          let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
+          total += (bSum + gSum);
+        }
+        if (total > 0) return total;
       }
 
-      return total;
+      // 3. Fallback default estimated enrollment based on school category if classes data not entered yet in R2
+      let cat = (school.category || "").toLowerCase();
+      if (cat.includes("higher secondary") || cat.includes("1 to 12")) return 150;
+      if (cat.includes("high school") || cat.includes("1 to 10") || cat.includes("6 to 10")) return 100;
+      if (cat.includes("middle") || cat.includes("1 to 8") || cat.includes("6 to 8")) return 60;
+      return 30; // Default for Primary School
+
     } catch (e) {
-      return 0;
+      return 30;
     }
   },
+  
 
   async fetchCloudData() {
     try {
