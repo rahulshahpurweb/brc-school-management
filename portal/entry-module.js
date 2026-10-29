@@ -25,30 +25,26 @@ export const EntryModule = {
     this.loadForm();
   },
 
-  // Exact class range based on your precise rules
+    // Exact class range based on your precise rules
   getClassesForSchool(category) {
     let cat = (category || "").toUpperCase().trim();
     
-    // 1. Agar category 6 se shuru hoti hai (jaise 6 to 12, 6 to 10, 6 to 8, ya UPS/Middle)
-    if (cat.includes("6 TO") || cat.includes("6-") || cat.includes("MIDDLE") || cat === "UPS" || (cat.includes("6 TO 12") && !cat.includes("1 TO"))) {
+    // 1. Agar category 6 se hai (6 to 12, 6 to 8) -> Class 6 se 8
+    if (cat.includes("6 TO 12") || cat.includes("6 TO 8") || cat.includes("6-12") || cat.includes("6-8") || cat === "UPS" || cat.includes("MIDDLE")) {
       return ["Class 6", "Class 7", "Class 8"];
     }
     
-    // 2. Agar category mein 1 se lekar 8, 10, ya 12 tak hai (jaise 1 to 10, 1 to 12, 1 to 8, High School, Primary to High)
+    // 2. Agar category 1 se 8, 10, 12 hai -> Class 1 se 8
     if (cat.includes("1 TO 12") || cat.includes("1 TO 10") || cat.includes("1 TO 8") || 
         cat.includes("1-12") || cat.includes("1-10") || cat.includes("1-8") ||
         cat.includes("HIGH SCHOOL") || cat.includes("HIGHER SECONDARY") || cat.includes("PRIMARY TO HIGH")) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
     
-    // 3. Strict Primary / PS ke liye
-    if (cat === "PS" || (cat.includes("PRIMARY") && !cat.includes("TO") && !cat.includes("-") && !cat.includes("HIGH"))) {
-      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
-    }
-
-    // Default safe fallback (Class 1 se 8)
-    return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    // 3. Default Primary / 1 to 5 ke liye -> Class 1 se 5 (Strictly 1 to 5)
+    return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
+  
 
   loadForm() {
     let sel = document.getElementById("schoolSelect");
