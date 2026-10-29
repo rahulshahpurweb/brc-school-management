@@ -211,23 +211,30 @@ window.CoreApp = {
   ],
 
   // 🔗 Live Cloud & SessionManager Bridge for R3 Enrollment
+  
+  // Live Enrollment Calculator (Robust R3 Fix)
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       let schools = [];
 
-      // 1. Check SessionManager data first (Cloud Data Memory)
-      if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
-        let sessionData = SessionManager.getData();
-        if (Array.isArray(sessionData) && sessionData.length > 0) {
-          schools = sessionData;
+      // Check multiple possible localStorage keys used across modules
+      let savedData = localStorage.getItem("brc_portal_schools") || localStorage.getItem("brc_portal_data") || localStorage.getItem("brc_schools");
+      if (savedData) {
+        try {
+          schools = JSON.parse(savedData);
+        } catch(err) {}
+      }
+
+      if (!Array.isArray(schools) || schools.length === 0) {
+        if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
+          schools = SessionManager.getData() || [];
         }
       }
 
-      // 2. Fallback to MASTER_SCHOOLS if session data is empty
-      if (!schools || schools.length === 0) {
-        schools = this.MASTER_SCHOOLS;
+      if (!Array.isArray(schools) || schools.length === 0) {
+        schools = window.MASTER_SCHOOLS || MASTER_SCHOOLS || [];
       }
 
       let school = schools.find(s => {
@@ -246,11 +253,11 @@ window.CoreApp = {
       }
 
       return total;
-    } catch(e) {
-      console.error("Error fetching live enrollment for UDISE " + udise, e);
+    } catch (e) {
+      console.error("Error calculating live enrollment for UDISE: " + udise, e);
       return 0;
     }
-  },
+  }
 
   async fetchCloudData() {
     try {
