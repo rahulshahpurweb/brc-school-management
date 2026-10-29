@@ -80,7 +80,7 @@
 <body>
 
 <div class="module-header">
-  <div class="module-title">♿ CWSN Module & Report Management (R3 - Live Cloud Connected)</div>
+  <div class="module-title">♿ CWSN Module & Report Management (R3 - Secured & Validated)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
     <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
     <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
@@ -180,23 +180,27 @@
 
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module</h3>
+      <h3>✍️ School CWSN Data Entry Module (Edit-Only Access)</h3>
       <div class="filter-bar">
         <label><b>Select School (CWSN Yes Only):</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
       </div>
 
       <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
-        <div style="display:flex; gap:20px; font-size:14px; flex-wrap:wrap;">
+        <div style="display:flex; gap:20px; font-size:14px; flex-wrap:wrap; align-items:center;">
           <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
           <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
           <span><b>JSK:</b> <span id="lblJsk">-</span></span>
           <span><b>Live R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
+          <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+            <label style="font-weight:bold; color:#b45309;">Expected CWSN Total Count:</label>
+            <input type="number" id="expectedCwsnTotal" min="1" max="100" style="width:70px; padding:5px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="e.g. 5" onchange="CwsnApp.updateExpectedCount(this.value)">
+          </div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="color:#071b38; margin:0;">Student Details Entry (Card View)[span_1](start_span)[span_1](end_span)</h4>
+        <h4 style="color:#071b38; margin:0;">Student Details Entry (Card View)</h4>
         <button type="button" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Naya Student Jodein</button>
       </div>
 
@@ -320,16 +324,16 @@
       let headers = [
         "Sr. No.", "School Name", "Dise_code", "JSK", "Samagra Id", 
         "Student Name", "Father Name", "Mother Name", "Gender", "CAST Category", 
-        "Class", "Parent's Mobile n.", "UDID NO.", "Aadhar No.", "DOB", 
+        "Class", "Parent's Mobile n.", "UDID NO.", "Aadhar Number", "DOB", 
         "Disability Type", "Certificate yes/No", "Disability Percent", 
         "Necessary Equipment Materials", "address", "pin code", "Bank Name", 
-        "Bank IFSC Code", "Bank Account No.", "Teacher name", "Teacher Mob.No."
+        "Bank IFSC Code", "Bank Account No.", "Teacher name", "Teacher mobile no."
       ];
       let sample = [
         1, "GHSS MODEL SHAHPUR(6 to 12)", "23351003914", "Shahpur", "302877484",
         "Chetan Verma", "Sard", "Rina", "Boy", "SC",
-        "Class - 6", "9876543210", "UDID123", "Aadhar123", "2012-05-15",
-        "Specific Learning Disabilities", "Yes", "0 - 39 Percent", "Hearing Aid",
+        "Class - 6", "9876543210", "UDID123", "123456789012", "15082012",
+        "Specific Learning Disabilities", "Yes", "40 Percent", "Hearing Aid",
         "Shahpur", "460440", "CBI", "CBIN0280760", "2227888040",
         "Ramesh Kumar", "9425012345"
       ];
@@ -395,13 +399,14 @@
           let count = 0;
           for (let udise in schoolMap) {
             let sData = schoolMap[udise];
-            let boys = sData.students.filter(st => st.gender.toLowerCase().includes('boy')).length;
-            let girls = sData.students.filter(st => st.gender.toLowerCase().includes('girl')).length;
+            let boys = sData.students.filter(st => st.gender && st.gender.toLowerCase().includes('boy')).length;
+            let girls = sData.students.filter(st => st.gender && st.gender.toLowerCase().includes('girl')).length;
 
             let payload = {
               udise: udise, schoolName: sData.schoolName, jsk: sData.jsk,
               students: sData.students, totalBoys: boys, totalGirls: girls,
-              grandTotal: sData.students.length, completed: sData.students.length > 0
+              grandTotal: sData.students.length, completed: sData.students.length > 0,
+              expectedTotal: sData.students.length
             };
 
             localStorage.setItem("brc_cwsn_has_" + udise, "yes");
@@ -409,10 +414,10 @@
             count++;
           }
 
-          alert(`Successfully imported CWSN data for ${count} schools from Excel!`);
+          alert(`Admin dwara template ke madhyam se ${count} schools ka data safalta-purnaiv upload kar diya gaya hai[span_0](start_span)[span_0](end_span)!`);
           this.switchTab('dashboard');
         } catch (err) {
-          alert("Error parsing Excel file: " + err.message);
+          alert("Excel file padhne mein samasya aayi: " + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -503,11 +508,24 @@
       document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+      document.getElementById('expectedCwsnTotal').value = cwsnSaved ? (cwsnSaved.expectedTotal || cwsnSaved.students.length) : 1;
       this.renderStudentCards(cwsnSaved ? cwsnSaved.students : []);
+    },
+
+    updateExpectedCount(val) {
+      // Optional callback when expected count changes
     },
 
     addNewStudentCard(st = {}) {
       let container = document.getElementById('studentCardsContainer');
+      let expectedCount = parseInt(document.getElementById('expectedCwsnTotal').value) || 1;
+      let currentCards = container.querySelectorAll('.student-card').length;
+
+      if (currentCards >= expectedCount) {
+        alert(`Aapne expected total CWSN sankhya (${expectedCount}) ki limit poori kar li hai! Isse zyada student add nahi ho sakte.`);
+        return;
+      }
+
       if (container.querySelector('div[style*="text-align:center"]')) {
         container.innerHTML = '';
       }
@@ -518,8 +536,7 @@
       
       card.innerHTML = `
         <div class="student-card-header">
-          <span>Student #${idx} Record</span>
-          <button type="button" onclick="this.closest('.student-card').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hataayein</button>
+          <span>Student #${idx} Record (Edit Only)</span>
         </div>
         <div class="form-grid">
           <div class="form-group"><label>Samagra ID</label><input type="text" class="s-samagra" value="${st.samagra || ''}" placeholder="Samagra ID"></div>
@@ -534,10 +551,10 @@
             <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
           </select></div>
           <div class="form-group"><label>Class</label><select class="s-class">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-          <div class="form-group"><label>Mobile No.</label><input type="text" class="s-mobile" value="${st.mobile || ''}" placeholder="Mobile"></div>
+          <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
           <div class="form-group"><label>UDID No.</label><input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No."></div>
-          <div class="form-group"><label>Aadhar No.</label><input type="text" class="s-aadhar" value="${st.aadhar || ''}" placeholder="Aadhar"></div>
-          <div class="form-group"><label>DOB</label><input type="text" class="s-dob" value="${st.dob || ''}" placeholder="YYYY-MM-DD"></div>
+          <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
+          <div class="form-group"><label>DOB (DDMMYYYY)</label><input type="text" class="s-dob" maxlength="8" value="${st.dob || ''}" placeholder="DDMMYYYY"></div>
           <div class="form-group"><label>Disability Type</label><select class="s-dis">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
           <div class="form-group"><label>Certificate (Yes/No)</label><input type="text" class="s-cert" value="${st.cert || ''}" placeholder="Yes/No"></div>
           <div class="form-group"><label>Disability %</label><input type="text" class="s-percent" value="${st.percent || ''}" placeholder="%"></div>
@@ -548,7 +565,7 @@
           <div class="form-group"><label>IFSC Code</label><input type="text" class="s-ifsc" value="${st.ifsc || ''}" placeholder="IFSC"></div>
           <div class="form-group"><label>Account No.</label><input type="text" class="s-acc" value="${st.accNo || ''}" placeholder="Account No."></div>
           <div class="form-group"><label>Teacher Name</label><input type="text" class="s-teacher" value="${st.teacher || ''}" placeholder="Teacher Name"></div>
-          <div class="form-group"><label>Teacher Mobile</label><input type="text" class="s-teachermob" value="${st.teacherMob || ''}" placeholder="Teacher Mobile"></div>
+          <div class="form-group"><label>Teacher Mobile</label><input type="text" class="s-teachermob" maxlength="10" value="${st.teacherMob || ''}" placeholder="Teacher Mob"></div>
         </div>
       `;
       container.appendChild(card);
@@ -571,10 +588,38 @@
       let udise = select ? select.value : null;
       if (!udise) { alert("Kripya pehle school select karein!"); return; }
 
+      let expectedCount = parseInt(document.getElementById('expectedCwsnTotal').value) || 1;
+      let cards = document.querySelectorAll('.student-card');
+      
+      // Strict Validations Check
+      for (let card of cards) {
+        let aadhar = card.querySelector('.s-aadhar').value.trim();
+        let mobile = card.querySelector('.s-mobile').value.trim();
+        let dob = card.querySelector('.s-dob').value.trim();
+        let teacherMob = card.querySelector('.s-teachermob').value.trim();
+
+        if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) {
+          alert("Aadhar card number theek 12 digits ka hona chahiye!");
+          return;
+        }
+        if (mobile !== "" && !(/^\d{10}$/.test(mobile))) {
+          alert("Mobile number theek 10 digits ka hona chahiye!");
+          return;
+        }
+        if (teacherMob !== "" && !(/^\d{10}$/.test(teacherMob))) {
+          alert("Teacher ka mobile number theek 10 digits ka hona chahiye!");
+          return;
+        }
+        if (dob !== "" && !(/^\d{8}$/.test(dob))) {
+          alert("DOB ka format DDMMYYYY (e.g., 15082012) hona chahiye!");
+          return;
+        }
+      }
+
       let school = this.allSchools.find(s => String(s.udise) === String(udise));
       let students = [];
       
-      document.querySelectorAll('.student-card').forEach(card => {
+      cards.forEach(card => {
         students.push({
           samagra: card.querySelector('.s-samagra').value, name: card.querySelector('.s-name').value,
           father: card.querySelector('.s-father').value, mother: card.querySelector('.s-mother').value,
@@ -595,7 +640,8 @@
 
       let payload = {
         udise: udise, schoolName: school.name, jsk: school.jsk, students: students,
-        totalBoys: boys, totalGirls: girls, grandTotal: students.length, completed: students.length > 0
+        totalBoys: boys, totalGirls: girls, grandTotal: students.length, completed: students.length > 0,
+        expectedTotal: expectedCount
       };
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
