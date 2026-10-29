@@ -213,20 +213,28 @@ window.CoreApp = {
   // 🔗 Live Cloud & SessionManager Bridge for R3 Enrollment
   
   // Live Enrollment Calculator (Robust R3 Fix)
+    // Live Enrollment Calculator (Ultimate Fix for R3)
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       let schools = [];
 
-      // Check multiple possible localStorage keys used across modules
-      let savedData = localStorage.getItem("brc_portal_schools") || localStorage.getItem("brc_portal_data") || localStorage.getItem("brc_schools");
-      if (savedData) {
-        try {
-          schools = JSON.parse(savedData);
-        } catch(err) {}
+      // 1. Check all possible localStorage keys where R2 data might reside
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && (key.includes("portal") || key.includes("school") || key.includes("data") || key.includes("r2"))) {
+          try {
+            let val = JSON.parse(localStorage.getItem(key));
+            if (Array.isArray(val) && val.length > 0 && (val[0].classes || val[0].udise)) {
+              schools = val;
+              break;
+            }
+          } catch(e) {}
+        }
       }
 
+      // 2. Fallback to window or SessionManager
       if (!Array.isArray(schools) || schools.length === 0) {
         if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
           schools = SessionManager.getData() || [];
@@ -258,7 +266,7 @@ window.CoreApp = {
       return 0;
     }
   },
-
+  
   async fetchCloudData() {
     try {
       let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
