@@ -25,7 +25,7 @@ export const EntryModule = {
     this.loadForm();
   },
 
-  // Safe and robust class range function
+  // Perfect Category & Name based class range logic matching your master data
   getClassesForSchool(schoolInput) {
     let cat = "";
     let name = "";
@@ -39,21 +39,20 @@ export const EntryModule = {
     
     let combined = cat + " " + name;
     
-    // 1. 1 to 12, 1 to 10, 1 to 8 -> Class 1 to 8
-    if (combined.includes("1 TO 12") || combined.includes("1 TO 10") || combined.includes("1 TO 8") || 
-        combined.includes("1-12") || combined.includes("1-10") || combined.includes("1-8") ||
-        combined.includes("HIGH SCHOOL") || combined.includes("HIGHER SECONDARY") || combined.includes("PRIMARY TO HIGH")) {
-      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
-    }
-    
-    // 2. 6 to 12, 6 to 10, 6 to 8 -> Class 6 to 8
-    if (combined.includes("6 TO 12") || combined.includes("6 TO 10") || combined.includes("6 TO 8") || 
-        combined.includes("6-12") || combined.includes("6-10") || combined.includes("6-8") || 
-        combined === "UPS" || combined.includes("MIDDLE")) {
+    // 1. Agar 6 se shuru hone wali category ya naam hai (Middle to High / Middle to Higher Secondary / Middle School / 6 TO ...) -> Class 6 to 8
+    if (combined.includes("MIDDLE TO HIGH") || combined.includes("MIDDLE TO HIGHER SECONDARY") || 
+        combined.includes("MIDDLE SCHOOL") || combined.includes("6 TO") || combined.includes("6-")) {
       return ["Class 6", "Class 7", "Class 8"];
     }
     
-    // 3. Default Primary / 1 to 5 -> Class 1 to 5
+    // 2. Agar 1 se shuru hone wali ya primary-to-high/middle range hai (Primary to High / Primary with Middle / 1 TO ...) -> Class 1 to 8
+    if (combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
+        combined.includes("PRIMARY WITH MIDDLE") || combined.includes("1 TO") || combined.includes("1-") || 
+        combined.includes("HIGH SCHOOL") || combined.includes("HIGHER SECONDARY")) {
+      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    }
+    
+    // 3. Default Primary School (Class 1 to 5)
     return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
 
