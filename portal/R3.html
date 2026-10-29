@@ -24,7 +24,6 @@
   .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
   
-  /* Mobile Friendly Card Design for Student Data Entry */
   .student-card {
     background: #ffffff;
     border: 1px solid #cbd5e1;
@@ -80,7 +79,7 @@
 <body>
 
 <div class="module-header">
-  <div class="module-title">♿ CWSN Module & Report Management (R3 - Secured & Validated)</div>
+  <div class="module-title">♿ CWSN Module & Report Management (R3 - Cloud Synced)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
     <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
     <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
@@ -180,7 +179,7 @@
 
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module (Edit-Only Access)</h3>
+      <h3>✍️ School CWSN Data Entry Module</h3>
       <div class="filter-bar">
         <label><b>Select School (CWSN Yes Only):</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -194,23 +193,23 @@
           <span><b>Live R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
           <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
             <label style="font-weight:bold; color:#b45309;">Expected CWSN Total Count:</label>
-            <input type="number" id="expectedCwsnTotal" min="1" max="100" style="width:70px; padding:5px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="e.g. 5" onchange="CwsnApp.updateExpectedCount(this.value)">
+            <input type="number" id="expectedCwsnTotal" min="1" max="100" style="width:70px; padding:5px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="e.g. 5" disabled>
           </div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h4 style="color:#071b38; margin:0;">Student Details Entry (Card View)</h4>
-        <button type="button" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Naya Student Jodein</button>
+        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#94a3b8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:not-allowed;" disabled>➕ Naya Student Jodein</button>
       </div>
 
       <!-- Card Container for Mobile-Friendly Entry -->
       <div id="studentCardsContainer">
-        <div style="padding:20px; color:#64748b; text-align:center;">Kripya school select karein.</div>
+        <div style="padding:20px; color:#64748b; text-align:center;">Kripya pehle upar diye gaye dropdown se school select karein. Tabhi entry khulegi.</div>
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
-        <button type="button" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:10px 22px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save CWSN Data</button>
+        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#94a3b8; color:#fff; padding:10px 22px; border:none; border-radius:8px; font-weight:bold; cursor:not-allowed;" disabled>💾 Save CWSN Data</button>
       </div>
     </div>
   </section>
@@ -414,7 +413,7 @@
             count++;
           }
 
-          alert(`Admin dwara template ke madhyam se ${count} schools ka data safalta-purnaiv upload kar diya gaya hai[span_0](start_span)[span_0](end_span)!`);
+          alert(`Admin dwara template ke madhyam se ${count} schools ka data safalta-purnaiv upload kar diya gaya hai!`);
           this.switchTab('dashboard');
         } catch (err) {
           alert("Excel file padhne mein samasya aayi: " + err.message);
@@ -488,7 +487,36 @@
 
     loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
-      if (!udise) return;
+      let expInput = document.getElementById('expectedCwsnTotal');
+      let addBtn = document.getElementById('addStudentBtn');
+      let saveBtn = document.getElementById('saveDataBtn');
+      let container = document.getElementById('studentCardsContainer');
+
+      if (!udise) {
+        document.getElementById('lblSchoolName').textContent = "-";
+        document.getElementById('lblUdise').textContent = "-";
+        document.getElementById('lblJsk').textContent = "-";
+        document.getElementById('lblR2Total').textContent = "0";
+        expInput.value = "";
+        expInput.disabled = true;
+        addBtn.disabled = true;
+        addBtn.style.background = "#94a3b8";
+        addBtn.style.cursor = "not-allowed";
+        saveBtn.disabled = true;
+        saveBtn.style.background = "#94a3b8";
+        saveBtn.style.cursor = "not-allowed";
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Kripya pehle upar diye gaye dropdown se school select karein. Tabhi entry khulegi.</div>`;
+        return;
+      }
+
+      // Enable inputs once school is selected
+      expInput.disabled = false;
+      addBtn.disabled = false;
+      addBtn.style.background = "#1d4ed8";
+      addBtn.style.cursor = "pointer";
+      saveBtn.disabled = false;
+      saveBtn.style.background = "#16a34a";
+      saveBtn.style.cursor = "pointer";
 
       let school = this.allSchools.find(s => String(s.udise) === String(udise));
       if (!school) return;
@@ -508,12 +536,8 @@
       document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
-      document.getElementById('expectedCwsnTotal').value = cwsnSaved ? (cwsnSaved.expectedTotal || cwsnSaved.students.length) : 1;
+      expInput.value = cwsnSaved ? (cwsnSaved.expectedTotal || cwsnSaved.students.length) : 1;
       this.renderStudentCards(cwsnSaved ? cwsnSaved.students : []);
-    },
-
-    updateExpectedCount(val) {
-      // Optional callback when expected count changes
     },
 
     addNewStudentCard(st = {}) {
@@ -583,7 +607,7 @@
       });
     },
 
-    saveData() {
+    async saveData() {
       let select = document.getElementById('cwsnSchoolSelect');
       let udise = select ? select.value : null;
       if (!udise) { alert("Kripya pehle school select karein!"); return; }
@@ -591,7 +615,6 @@
       let expectedCount = parseInt(document.getElementById('expectedCwsnTotal').value) || 1;
       let cards = document.querySelectorAll('.student-card');
       
-      // Strict Validations Check
       for (let card of cards) {
         let aadhar = card.querySelector('.s-aadhar').value.trim();
         let mobile = card.querySelector('.s-mobile').value.trim();
@@ -644,8 +667,33 @@
         expectedTotal: expectedCount
       };
 
+      // 1. Save to local storage for instant view
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
-      alert("CWSN Data Safalta-purnaiv Save ho gaya hai!");
+
+      // 2. Push to Google Sheet Cloud (Live Sync across browsers)
+      try {
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        let response = await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "saveCwsnData",
+            session: activeSess,
+            udise: udise,
+            payload: JSON.stringify(payload)
+          })
+        });
+        let result = await response.json();
+        if(result.status === "success" || result.success) {
+          alert("CWSN Data Safalta-purnaiv Google Sheet par Cloud Sync ho gaya hai!");
+        } else {
+          alert("Data Local Save ho gaya hai, lekin Cloud Sync mein response check karein.");
+        }
+      } catch(err) {
+        console.log("Cloud sync error:", err);
+        alert("Data Local Storage par save ho gaya hai!");
+      }
+
       this.switchTab('dashboard');
     },
 
