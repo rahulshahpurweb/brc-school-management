@@ -25,28 +25,28 @@ export const EntryModule = {
     this.loadForm();
   },
   // Exact class range with correct priority
-      // Exact class range with 6 to 10 rule added
+    // Final Corrected Priority Logic for Classes Range
   getClassesForSchool(category) {
     let cat = (category || "").toUpperCase().trim();
     
-    // 1. Agar category 1 se shuru ho (1 to 12, 1 to 10, 1 to 8) -> Class 1 se 8
-    if (cat.includes("1 TO 12") || cat.includes("1 TO 10") || cat.includes("1 TO 8") || 
-        cat.includes("1-12") || cat.includes("1-10") || cat.includes("1-8") ||
-        cat.includes("HIGH SCHOOL") || cat.includes("HIGHER SECONDARY") || cat.includes("PRIMARY TO HIGH")) {
-      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
-    }
-    
-    // 2. Agar category 6 se ho (6 to 12, 6 to 10, 6 to 8) -> Class 6 se 8
+    // 1. Sabse pehle 6 se shuru hone walon ko check karein (6 to 12, 6 to 10, 6 to 8) -> Strictly Class 6 se 8
     if (cat.includes("6 TO 12") || cat.includes("6 TO 10") || cat.includes("6 TO 8") || 
         cat.includes("6-12") || cat.includes("6-10") || cat.includes("6-8") || 
-        cat === "UPS" || cat.includes("MIDDLE")) {
+        cat === "UPS" || cat.includes("MIDDLE") || cat.startsWith("6")) {
       return ["Class 6", "Class 7", "Class 8"];
     }
     
-    // 3. Default Primary / 1 to 5 ke liye -> Class 1 se 5
+    // 2. Phir 1 se shuru hone walon ko check karein (1 to 12, 1 to 10, 1 to 8) -> Class 1 se 8
+    if (cat.includes("1 TO 12") || cat.includes("1 TO 10") || cat.includes("1 TO 8") || 
+        cat.includes("1-12") || cat.includes("1-10") || cat.includes("1-8") ||
+        cat.includes("HIGH SCHOOL") || cat.includes("HIGHER SECONDARY") || cat.includes("PRIMARY TO HIGH") || cat.startsWith("1")) {
+      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+    }
+    
+    // 3. Baaki sabhi Primary / 1 to 5 ke liye -> Class 1 se 5
     return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
-
+  
   
 
   loadForm() {
