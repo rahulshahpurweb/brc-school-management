@@ -1,9 +1,9 @@
-// core.js - Central Source of Truth & Cloud Architecture for BRC Shahpur Portal
+// core.js - Central Source of Truth & Live Bridge for BRC Shahpur Portal
 window.CoreApp = {
-  // Aapka authentic Google Apps Script Cloud URL
+  // Aapka authentic Google Apps Script Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
   
-  // Saare 203 Schools ka Master Data
+  // Master Schools List (Fallback ke liye)
   MASTER_SCHOOLS: [
     {name: "GPS DHODHARAMOHAR", udise: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
     {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
@@ -210,48 +210,44 @@ window.CoreApp = {
     {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
   ],
 
-  // Cloud & Browser Sync Fetcher for R2 Enrollment Data
+  // 🔗 Live Cloud & SessionManager Bridge for R3 Enrollment
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
-      let total = 0;
+      let schools = [];
 
-      for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key) {
-          let raw = localStorage.getItem(key);
-          if (raw && (raw.includes(targetUdise) || raw.includes("classes"))) {
-            try {
-              let data = JSON.parse(raw);
-              let schoolsArray = [];
-              if (Array.isArray(data)) {
-                schoolsArray = data;
-              } else if (data && typeof data === 'object') {
-                schoolsArray = Object.values(data);
-              }
-
-              for (let school of schoolsArray) {
-                if (school && typeof school === 'object') {
-                  let sUdise = String(school.udise || school.dise_code || school.udise_code || "").trim();
-                  if (sUdise === targetUdise && school.classes) {
-                    for (let c in school.classes) {
-                      let cl = school.classes[c];
-                      let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-                      let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-                      total += (bSum + gSum);
-                    }
-                    if (total > 0) return total;
-                  }
-                }
-              }
-            } catch(err) {}
-          }
+      // 1. Check SessionManager data first (Cloud Data Memory)
+      if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
+        let sessionData = SessionManager.getData();
+        if (Array.isArray(sessionData) && sessionData.length > 0) {
+          schools = sessionData;
         }
       }
+
+      // 2. Fallback to MASTER_SCHOOLS if session data is empty
+      if (!schools || schools.length === 0) {
+        schools = this.MASTER_SCHOOLS;
+      }
+
+      let school = schools.find(s => {
+        let sUdise = String(s.udise || s.dise_code || s.udise_code || "").trim();
+        return sUdise === targetUdise;
+      });
+
+      if (!school || !school.classes) return 0;
+
+      let total = 0;
+      for (let c in school.classes) {
+        let cl = school.classes[c] || {};
+        let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
+        let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
+        total += (bSum + gSum);
+      }
+
       return total;
     } catch(e) {
-      console.error("Error in getLiveEnrollment:", e);
+      console.error("Error fetching live enrollment for UDISE " + udise, e);
       return 0;
     }
   },
