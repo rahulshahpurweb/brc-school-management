@@ -246,7 +246,7 @@
     ],
 
     async init() {
-      this.allSchools = window.CoreApp.MASTER_SCHOOLS;
+      this.allSchools = window.MASTER_SCHOOLS || window.CoreApp.MASTER_SCHOOLS;
       
       let cloudData = await window.CoreApp.fetchCloudData();
       if (cloudData && cloudData.cwsn_records) {
@@ -698,7 +698,7 @@
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.students && saved.students.length > 0) {
           saved.students.forEach(st => {
-            if (disFilter !== "ALL" && st.disability !== disFilter) return; // Fixed typo here (disFiletr -> disFilter)
+            if (disFilter !== "ALL" && st.disability !== disFilter) return;
             found = true;
             html += `
               <tr>
