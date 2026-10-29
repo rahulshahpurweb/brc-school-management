@@ -506,7 +506,7 @@
       });
     },
 
-        loadSchoolForm() {
+            loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
       if (!udise) return;
 
@@ -517,19 +517,30 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // Calculate live total directly from saved R2 school classes data to avoid any mismatch
+      // Live R2 Total Enrollment calculation with SessionManager & Core fallback
       let liveTotal = 0;
       try {
-        let savedSchools = JSON.parse(localStorage.getItem("brc_saved_schools") || "[]");
-        let foundSaved = savedSchools.find(s => s.udise === udise) || school;
-        if (foundSaved && foundSaved.classes) {
-          Object.keys(foundSaved.classes).forEach(cName => {
-            let cl = foundSaved.classes[cName] || {};
+        let schoolsList = [];
+        if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
+          schoolsList = SessionManager.getData();
+        } else {
+          schoolsList = JSON.parse(localStorage.getItem("brc_saved_schools") || localStorage.getItem("brc_schools_data") || "[]");
+        }
+        
+        let found = schoolsList.find(s => String(s.udise) === String(udise));
+        if (found && found.classes) {
+          Object.keys(found.classes).forEach(cName => {
+            let cl = found.classes[cName] || {};
             liveTotal += (cl.scB||0) + (cl.scG||0) + (cl.stB||0) + (cl.stG||0) + (cl.obcB||0) + (cl.obcG||0) + (cl.genB||0) + (cl.genG||0);
           });
         }
       } catch(e) {
-        liveTotal = window.CoreApp ? window.CoreApp.getLiveEnrollment(udise) : 0;
+        console.log("Error fetching local schools data:", e);
+      }
+
+      // Fallback to CoreApp method if liveTotal is still 0
+      if (liveTotal === 0 && window.CoreApp && typeof window.CoreApp.getLiveEnrollment === 'function') {
+        liveTotal = window.CoreApp.getLiveEnrollment(udise) || 0;
       }
       
       document.getElementById('lblR2Total').textContent = liveTotal;
@@ -537,6 +548,7 @@
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
       this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
     },
+    
     
 
     addNewStudentRow() {
