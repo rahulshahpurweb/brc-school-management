@@ -39,7 +39,7 @@
 <body>
 
 <div class="module-header">
-  <div class="module-title">♿ CWSN Module & Report Management (R3 - Independent)</div>
+  <div class="module-title">♿ CWSN Module & Report Management (R3 - Live Cloud Connected)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
     <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
     <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
@@ -241,16 +241,33 @@
   import { SessionManager } from './session-manager.js';
 
   window.CwsnApp = {
+    cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
     disabilityTypes: [
       "Locomotor Disability", "Visual Impairment", "Hearing Impairment", 
       "Speech & Language", "Intellectual Disability", "Specific Learning Disabilities", 
       "Autism Spectrum", "Multiple Disabilities", "Blindness", "Low Vision"
     ],
 
-    init() {
-      // Direct local session data fetch (No core.js dependency)
-      let sessionData = SessionManager.getData();
-      this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
+    async init() {
+      // 1. Fetch live data directly from Google Sheet Apps Script API
+      try {
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        let res = await fetch(this.cloudApiUrl + "?action=getAllData&session=" + activeSess + "&t=" + new Date().getTime());
+        if (res.ok) {
+          let cloudData = await res.json();
+          if (Array.isArray(cloudData) && cloudData.length > 0) {
+            this.allSchools = cloudData;
+          }
+        }
+      } catch(e) {
+        console.log("Cloud fetch fallback to session/local storage.");
+      }
+
+      // 2. Fallback to SessionManager or Master Schools if cloud data is empty
+      if (!this.allSchools || this.allSchools.length === 0) {
+        let sessionData = SessionManager.getData();
+        this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
+      }
 
       this.checkAdminRole();
       this.switchTab('dashboard');
@@ -460,19 +477,20 @@
       let udise = document.getElementById('cwsnSchoolSelect').value;
       if (!udise) return;
 
-      let school = this.allSchools.find(s => s.udise === udise);
+      let school = this.allSchools.find(s => String(s.udise) === String(udise));
       if (!school) return;
 
       document.getElementById('lblSchoolName').textContent = school.name;
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // Direct live sum from SessionManager data
+      // Calculate live total enrollment directly from Google Sheet loaded school classes data
       let liveTotal = 0;
       if (school.classes) {
         Object.keys(school.classes).forEach(cName => {
           let cl = school.classes[cName] || {};
-          liveTotal += (cl.scB||0) + (cl.scG||0) + (cl.stB||0) + (cl.stG||0) + (cl.obcB||0) + (cl.obcG||0) + (cl.genB||0) + (cl.genG||0);
+          liveTotal += (parseInt(cl.scB)||0) + (parseInt(cl.scG)||0) + (parseInt(cl.stB)||0) + (parseInt(cl.stG)||0) + 
+                       (parseInt(cl.obcB)||0) + (parseInt(cl.obcG)||0) + (parseInt(cl.genB)||0) + (parseInt(cl.genG)||0);
         });
       }
       document.getElementById('lblR2Total').textContent = liveTotal;
@@ -561,7 +579,7 @@
       let udise = select ? select.value : null;
       if (!udise) { alert("Please select a school first!"); return; }
 
-      let school = this.allSchools.find(s => s.udise === udise);
+      let school = this.allSchools.find(s => String(s.udise) === String(udise));
       let students = [];
       document.querySelectorAll('.student-row').forEach(row => {
         students.push({
