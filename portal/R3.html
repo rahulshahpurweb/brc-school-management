@@ -23,6 +23,47 @@
   .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1d4ed8; text-align: center; }
   .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  
+  /* Mobile Friendly Card Design for Student Data Entry */
+  .student-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .student-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    font-weight: bold;
+    color: #071b38;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    color: #475569;
+    margin-bottom: 3px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 7px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 12px;
+    box-sizing: border-box;
+  }
+
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; }
@@ -155,44 +196,13 @@
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="color:#071b38; margin:0;">Student Details Entry (26 Columns)</h4>
-        <button type="button" onclick="CwsnApp.addNewStudentRow()" style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add Student</button>
+        <h4 style="color:#071b38; margin:0;">Student Details Entry (Card View)[span_1](start_span)[span_1](end_span)</h4>
+        <button type="button" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Naya Student Jodein</button>
       </div>
 
-      <div class="tablewrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Samagra ID</th>
-              <th>Student Name</th>
-              <th>Father Name</th>
-              <th>Mother Name</th>
-              <th>Gender</th>
-              <th>Category</th>
-              <th>Class</th>
-              <th>Mobile No.</th>
-              <th>UDID No.</th>
-              <th>Aadhar No.</th>
-              <th>DOB</th>
-              <th>Disability Type</th>
-              <th>Cert. (Yes/No)</th>
-              <th>Disability %</th>
-              <th>Equipment</th>
-              <th>Address</th>
-              <th>Pin Code</th>
-              <th>Bank Name</th>
-              <th>IFSC Code</th>
-              <th>Account No.</th>
-              <th>Teacher Name</th>
-              <th>Teacher Mobile</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="studentRowsBody">
-            <tr><td colspan="24" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
-          </tbody>
-        </table>
+      <!-- Card Container for Mobile-Friendly Entry -->
+      <div id="studentCardsContainer">
+        <div style="padding:20px; color:#64748b; text-align:center;">Kripya school select karein.</div>
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
@@ -249,7 +259,6 @@
     ],
 
     async init() {
-      // 1. Fetch live data directly from Google Sheet Apps Script API
       try {
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let res = await fetch(this.cloudApiUrl + "?action=getAllData&session=" + activeSess + "&t=" + new Date().getTime());
@@ -263,7 +272,6 @@
         console.log("Cloud fetch fallback to session/local storage.");
       }
 
-      // 2. Fallback to SessionManager or Master Schools if cloud data is empty
       if (!this.allSchools || this.allSchools.length === 0) {
         let sessionData = SessionManager.getData();
         this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
@@ -364,8 +372,8 @@
               father: r[6] ? String(r[6]).trim() : "",
               mother: r[7] ? String(r[7]).trim() : "",
               gender: r[8] ? String(r[8]).trim() : "Boy",
-              cast: r[9] ? String(r[9]).trim() : "",
-              cls: r[10] ? String(r[10]).trim() : "Class - 1",
+              cast: r[9] ? String(r[9]).trim() : "SC",
+              cls: r[10] ? String(r[10]).trim() : "Class 1",
               mobile: r[11] ? String(r[11]).trim() : "",
               udid: r[12] ? String(r[12]).trim() : "",
               aadhar: r[13] ? String(r[13]).trim() : "",
@@ -484,7 +492,6 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      // Calculate live total enrollment directly from Google Sheet loaded school classes data
       let liveTotal = 0;
       if (school.classes) {
         Object.keys(school.classes).forEach(cName => {
@@ -496,104 +503,90 @@
       document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
-      this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
+      this.renderStudentCards(cwsnSaved ? cwsnSaved.students : []);
     },
 
-    addNewStudentRow() {
-      let tbody = document.getElementById('studentRowsBody');
-      if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
-      let idx = tbody.rows.length + 1;
-      let tr = document.createElement('tr');
-      tr.className = 'student-row';
-      tr.innerHTML = `
-        <td>${idx}</td>
-        <td><input type="text" class="s-samagra" placeholder="Samagra ID" style="width:100px; padding:4px;"></td>
-        <td><input type="text" class="s-name" placeholder="Student Name" style="width:120px; padding:4px;"></td>
-        <td><input type="text" class="s-father" placeholder="Father Name" style="width:120px; padding:4px;"></td>
-        <td><input type="text" class="s-mother" placeholder="Mother Name" style="width:120px; padding:4px;"></td>
-        <td><select class="s-gender" style="width:70px; padding:4px;"><option value="Boy">Boy</option><option value="Girl">Girl</option></select></td>
-        <td><input type="text" class="s-cast" placeholder="Category" style="width:80px; padding:4px;"></td>
-        <td><select class="s-class" style="width:90px; padding:4px;">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
-        <td><input type="text" class="s-mobile" placeholder="Mobile" style="width:90px; padding:4px;"></td>
-        <td><input type="text" class="s-udid" placeholder="UDID No." style="width:100px; padding:4px;"></td>
-        <td><input type="text" class="s-aadhar" placeholder="Aadhar" style="width:100px; padding:4px;"></td>
-        <td><input type="text" class="s-dob" placeholder="DOB" style="width:90px; padding:4px;"></td>
-        <td><select class="s-dis" style="width:140px; padding:4px;">${this.disabilityTypes.map(d => `<option value="${d}">${d}</option>`).join('')}</select></td>
-        <td><input type="text" class="s-cert" placeholder="Yes/No" style="width:70px; padding:4px;"></td>
-        <td><input type="text" class="s-percent" placeholder="Percent" style="width:80px; padding:4px;"></td>
-        <td><input type="text" class="s-equip" placeholder="Equipment" style="width:100px; padding:4px;"></td>
-        <td><input type="text" class="s-address" placeholder="Address" style="width:120px; padding:4px;"></td>
-        <td><input type="text" class="s-pin" placeholder="Pin" style="width:70px; padding:4px;"></td>
-        <td><input type="text" class="s-bank" placeholder="Bank" style="width:80px; padding:4px;"></td>
-        <td><input type="text" class="s-ifsc" placeholder="IFSC" style="width:90px; padding:4px;"></td>
-        <td><input type="text" class="s-acc" placeholder="Account No." style="width:110px; padding:4px;"></td>
-        <td><input type="text" class="s-teacher" placeholder="Teacher Name" style="width:110px; padding:4px;"></td>
-        <td><input type="text" class="s-teachermob" placeholder="Teacher Mob" style="width:100px; padding:4px;"></td>
-        <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
+    addNewStudentCard(st = {}) {
+      let container = document.getElementById('studentCardsContainer');
+      if (container.querySelector('div[style*="text-align:center"]')) {
+        container.innerHTML = '';
+      }
+      
+      let idx = container.querySelectorAll('.student-card').length + 1;
+      let card = document.createElement('div');
+      card.className = 'student-card';
+      
+      card.innerHTML = `
+        <div class="student-card-header">
+          <span>Student #${idx} Record</span>
+          <button type="button" onclick="this.closest('.student-card').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hataayein</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Samagra ID</label><input type="text" class="s-samagra" value="${st.samagra || ''}" placeholder="Samagra ID"></div>
+          <div class="form-group"><label>Student Name</label><input type="text" class="s-name" value="${st.name || ''}" placeholder="Name"></div>
+          <div class="form-group"><label>Father Name</label><input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name"></div>
+          <div class="form-group"><label>Mother Name</label><input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name"></div>
+          <div class="form-group"><label>Gender</label><select class="s-gender"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></div>
+          <div class="form-group"><label>Category</label><select class="s-cast">
+            <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
+            <option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option>
+            <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
+            <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
+          </select></div>
+          <div class="form-group"><label>Class</label><select class="s-class">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label>Mobile No.</label><input type="text" class="s-mobile" value="${st.mobile || ''}" placeholder="Mobile"></div>
+          <div class="form-group"><label>UDID No.</label><input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No."></div>
+          <div class="form-group"><label>Aadhar No.</label><input type="text" class="s-aadhar" value="${st.aadhar || ''}" placeholder="Aadhar"></div>
+          <div class="form-group"><label>DOB</label><input type="text" class="s-dob" value="${st.dob || ''}" placeholder="YYYY-MM-DD"></div>
+          <div class="form-group"><label>Disability Type</label><select class="s-dis">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+          <div class="form-group"><label>Certificate (Yes/No)</label><input type="text" class="s-cert" value="${st.cert || ''}" placeholder="Yes/No"></div>
+          <div class="form-group"><label>Disability %</label><input type="text" class="s-percent" value="${st.percent || ''}" placeholder="%"></div>
+          <div class="form-group"><label>Equipment</label><input type="text" class="s-equip" value="${st.equipment || ''}" placeholder="Equipment"></div>
+          <div class="form-group"><label>Address</label><input type="text" class="s-address" value="${st.address || ''}" placeholder="Address"></div>
+          <div class="form-group"><label>Pin Code</label><input type="text" class="s-pin" value="${st.pin || ''}" placeholder="Pin"></div>
+          <div class="form-group"><label>Bank Name</label><input type="text" class="s-bank" value="${st.bank || ''}" placeholder="Bank"></div>
+          <div class="form-group"><label>IFSC Code</label><input type="text" class="s-ifsc" value="${st.ifsc || ''}" placeholder="IFSC"></div>
+          <div class="form-group"><label>Account No.</label><input type="text" class="s-acc" value="${st.accNo || ''}" placeholder="Account No."></div>
+          <div class="form-group"><label>Teacher Name</label><input type="text" class="s-teacher" value="${st.teacher || ''}" placeholder="Teacher Name"></div>
+          <div class="form-group"><label>Teacher Mobile</label><input type="text" class="s-teachermob" value="${st.teacherMob || ''}" placeholder="Teacher Mobile"></div>
+        </div>
       `;
-      tbody.appendChild(tr);
+      container.appendChild(card);
     },
 
-    renderStudentRows(students = []) {
-      let tbody = document.getElementById('studentRowsBody');
-      tbody.innerHTML = '';
+    renderStudentCards(students = []) {
+      let container = document.getElementById('studentCardsContainer');
+      container.innerHTML = '';
       if (!students || students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="24" style="padding:20px; color:#64748b;">No CWSN students added yet. Click 'Add Student' above.</td></tr>`;
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Koi CWSN student nahi joda gaya hai. 'Naya Student Jodein' par click karein.</div>`;
         return;
       }
-      students.forEach((st, i) => {
-        let tr = document.createElement('tr');
-        tr.className = 'student-row';
-        tr.innerHTML = `
-          <td>${i+1}</td>
-          <td><input type="text" class="s-samagra" value="${st.samagra || ''}" style="width:100px; padding:4px;"></td>
-          <td><input type="text" class="s-name" value="${st.name || ''}" style="width:120px; padding:4px;"></td>
-          <td><input type="text" class="s-father" value="${st.father || ''}" style="width:120px; padding:4px;"></td>
-          <td><input type="text" class="s-mother" value="${st.mother || ''}" style="width:120px; padding:4px;"></td>
-          <td><select class="s-gender" style="width:70px; padding:4px;"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></td>
-          <td><input type="text" class="s-cast" value="${st.cast || ''}" style="width:80px; padding:4px;"></td>
-          <td><select class="s-class" style="width:90px; padding:4px;">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
-          <td><input type="text" class="s-mobile" value="${st.mobile || ''}" style="width:90px; padding:4px;"></td>
-          <td><input type="text" class="s-udid" value="${st.udid || ''}" style="width:100px; padding:4px;"></td>
-          <td><input type="text" class="s-aadhar" value="${st.aadhar || ''}" style="width:100px; padding:4px;"></td>
-          <td><input type="text" class="s-dob" value="${st.dob || ''}" style="width:90px; padding:4px;"></td>
-          <td><select class="s-dis" style="width:140px; padding:4px;">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select></td>
-          <td><input type="text" class="s-cert" value="${st.cert || ''}" style="width:70px; padding:4px;"></td>
-          <td><input type="text" class="s-percent" value="${st.percent || ''}" style="width:80px; padding:4px;"></td>
-          <td><input type="text" class="s-equip" value="${st.equipment || ''}" style="width:100px; padding:4px;"></td>
-          <td><input type="text" class="s-address" value="${st.address || ''}" style="width:120px; padding:4px;"></td>
-          <td><input type="text" class="s-pin" value="${st.pin || ''}" style="width:70px; padding:4px;"></td>
-          <td><input type="text" class="s-bank" value="${st.bank || ''}" style="width:80px; padding:4px;"></td>
-          <td><input type="text" class="s-ifsc" value="${st.ifsc || ''}" style="width:90px; padding:4px;"></td>
-          <td><input type="text" class="s-acc" value="${st.accNo || ''}" style="width:110px; padding:4px;"></td>
-          <td><input type="text" class="s-teacher" value="${st.teacher || ''}" style="width:110px; padding:4px;"></td>
-          <td><input type="text" class="s-teachermob" value="${st.teacherMob || ''}" style="width:100px; padding:4px;"></td>
-          <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
-        `;
-        tbody.appendChild(tr);
+      students.forEach(st => {
+        this.addNewStudentCard(st);
       });
     },
 
     saveData() {
       let select = document.getElementById('cwsnSchoolSelect');
       let udise = select ? select.value : null;
-      if (!udise) { alert("Please select a school first!"); return; }
+      if (!udise) { alert("Kripya pehle school select karein!"); return; }
 
       let school = this.allSchools.find(s => String(s.udise) === String(udise));
       let students = [];
-      document.querySelectorAll('.student-row').forEach(row => {
+      
+      document.querySelectorAll('.student-card').forEach(card => {
         students.push({
-          samagra: row.querySelector('.s-samagra').value, name: row.querySelector('.s-name').value,
-          father: row.querySelector('.s-father').value, mother: row.querySelector('.s-mother').value,
-          gender: row.querySelector('.s-gender').value, cast: row.querySelector('.s-cast').value,
-          cls: row.querySelector('.s-class').value, mobile: row.querySelector('.s-mobile').value,
-          udid: row.querySelector('.s-udid').value, aadhar: row.querySelector('.s-aadhar').value,
-          dob: row.querySelector('.s-dob').value, disability: row.querySelector('.s-dis').value,
-          cert: row.querySelector('.s-cert').value, percent: row.querySelector('.s-percent').value,
-          equipment: row.querySelector('.s-equip').value, address: row.querySelector('.s-address').value,
-          pin: row.querySelector('.s-pin').value, bank: row.querySelector('.s-bank').value,
-          ifsc: row.querySelector('.s-ifsc').value, accNo: row.querySelector('.s-acc').value,
-          teacher: row.querySelector('.s-teacher').value, teacherMob: row.querySelector('.s-teachermob').value
+          samagra: card.querySelector('.s-samagra').value, name: card.querySelector('.s-name').value,
+          father: card.querySelector('.s-father').value, mother: card.querySelector('.s-mother').value,
+          gender: card.querySelector('.s-gender').value, cast: card.querySelector('.s-cast').value,
+          cls: card.querySelector('.s-class').value, mobile: card.querySelector('.s-mobile').value,
+          udid: card.querySelector('.s-udid').value, aadhar: card.querySelector('.s-aadhar').value,
+          dob: card.querySelector('.s-dob').value, disability: card.querySelector('.s-dis').value,
+          cert: card.querySelector('.s-cert').value, percent: card.querySelector('.s-percent').value,
+          equipment: card.querySelector('.s-equip').value, address: card.querySelector('.s-address').value,
+          pin: card.querySelector('.s-pin').value, bank: card.querySelector('.s-bank').value,
+          ifsc: card.querySelector('.s-ifsc').value, accNo: card.querySelector('.s-acc').value,
+          teacher: card.querySelector('.s-teacher').value, teacherMob: card.querySelector('.s-teachermob').value
         });
       });
 
@@ -606,7 +599,7 @@
       };
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
-      alert("CWSN Data Saved Successfully!");
+      alert("CWSN Data Safalta-purnaiv Save ho gaya hai!");
       this.switchTab('dashboard');
     },
 
