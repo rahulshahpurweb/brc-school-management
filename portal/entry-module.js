@@ -25,19 +25,22 @@ export const EntryModule = {
     this.loadForm();
   },
 
-  // Determine exact classes based on school category
+  // Exact class range based on your precise rules
   getClassesForSchool(category) {
     let cat = (category || "").toUpperCase().trim();
     
-    if (cat === "PS" || (cat.includes("PRIMARY") && !cat.includes("MIDDLE") && !cat.includes("1-8") && !cat.includes("1 TO 8"))) {
-      return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
-    }
-    else if (cat === "UPS" || (cat.includes("MIDDLE") && !cat.includes("PRIMARY"))) {
+    // Agar school category 6 se shuru hoti hai (jaise 6 to 12, 6 to 10, 6 to 8)
+    if (cat.includes("6 TO") || cat.includes("6-")) {
       return ["Class 6", "Class 7", "Class 8"];
     }
-    else {
+    
+    // Agar school category 1 se shuru hoti hai aur badi hai (1 to 12, 1 to 10, 1 to 8)
+    if (cat.includes("1 TO 12") || cat.includes("1 TO 10") || cat.includes("1 TO 8") || cat.includes("1-12") || cat.includes("1-10") || cat.includes("1-8")) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
+    
+    // Default Primary School (1 to 5)
+    return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
 
   loadForm() {
