@@ -43,47 +43,30 @@ export const CompilationModule = {
         let c1=0, c2=0, c3=0, c4=0, c5=0, c6=0, c7=0;
 
         jskSchools.forEach(s => {
-          let cat = (s.category || "").toLowerCase();
-          
-          if (cat.includes("12") || cat.includes("higher secondary") || cat.includes("hr.sec") || cat.includes("higher")) {
-            if (cat.includes("primary") || cat.includes("1 to 12") || cat.includes("1-12")) {
-              c7++; 
-            } else {
-              c5++; 
-            }
-          } else if (cat.includes("10") || cat.includes("high school") || cat.includes("high") || cat.includes("secondary")) {
-            if (cat.includes("primary") || cat.includes("1 to 10") || cat.includes("1-10")) {
-              c6++; 
-            } else {
-              c4++; 
-            }
-          } else if (cat.includes("primary") && cat.includes("middle")) {
-            c3++; 
-          } else if (cat.includes("middle")) {
-            c2++; 
-          } else if (cat.includes("primary")) {
-            c1++; 
+          let cat = (s.category || "").toUpperCase().trim();
+          let name = (s.name || "").toUpperCase().trim();
+          let combined = cat + " " + name;
+
+          // Exact matching as per your master school categories
+          if (cat.includes("PRIMARY SCHOOL") && !cat.includes("MIDDLE") && !cat.includes("HIGH")) {
+            c1++; // Primary School (Class 1 to 5)
+          } else if (cat.includes("MIDDLE SCHOOL") || cat.includes("MIDDLE TO HIGH")) {
+            c2++; // Middle School (Class 6 to 8) or Middle to High
+          } else if (cat.includes("PRIMARY WITH MIDDLE")) {
+            c3++; // Primary with Middle School (Class 1 to 8)
+          } else if (cat.includes("MIDDLE TO HIGHER SECONDARY")) {
+            c5++; // Middle to Higher Sec. (Class 6 to 12)
+          } else if (cat.includes("PRIMARY TO HIGH")) {
+            c6++; // Primary to High School (Class 1 to 10)
+          } else if (cat.includes("PRIMARY TO HIGHER SECONDARY")) {
+            c7++; // Primary to Higher Sec. (Class 1 to 12)
           } else {
-            let classesObj = s.classes || {};
-            let has1_5 = false, has6_8 = false, has9_10 = false, has11_12 = false;
-
-            Object.keys(classesObj).forEach(cName => {
-              let cl = classesObj[cName] || {};
-              let sum = (cl.scB||0)+(cl.scG||0)+(cl.stB||0)+(cl.stG||0)+(cl.obcB||0)+(cl.obcG||0)+(cl.genB||0)+(cl.genG||0);
-              if (sum > 0) {
-                if (["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"].includes(cName)) has1_5 = true;
-                if (["Class 6", "Class 7", "Class 8"].includes(cName)) has6_8 = true;
-                if (["Class 9", "Class 10"].includes(cName)) has9_10 = true;
-                if (["Class 11", "Class 12"].includes(cName)) has11_12 = true;
-              }
-            });
-
-            if (has11_12 && has1_5) c7++;
-            else if (has9_10 && has1_5) c6++;
-            else if (has11_12) c5++;
-            else if (has9_10) c4++;
-            else if (has1_5 && has6_8) c3++;
-            else if (has6_8) c2++;
+            // Fallback check based on name/range text
+            if (combined.includes("1 TO 12") || combined.includes("1-12")) c7++;
+            else if (combined.includes("1 TO 10") || combined.includes("1-10")) c6++;
+            else if (combined.includes("6 TO 12") || combined.includes("6-12")) c5++;
+            else if (combined.includes("6 TO 10") || combined.includes("6-10")) c2++;
+            else if (combined.includes("1 TO 8") || combined.includes("1-8")) c3++;
             else c1++;
           }
         });
@@ -166,7 +149,6 @@ export const CompilationModule = {
         </tr>`;
       });
 
-      // Format 2 Grand Total Row
       html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
         <td style="${cellStyle} color:#fff; text-align:left;">Grand Total</td>
         <td style="${cellStyle}">${gTot.scB}</td><td style="${cellStyle}">${gTot.scG}</td>
@@ -238,7 +220,6 @@ export const CompilationModule = {
         </tr>`;
       });
 
-      // Format 3 Grand Total Row
       html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
         <td style="${cellStyle} color:#fff; text-align:left;">Grand Total</td>
         <td style="${cellStyle}">${f3Tot.c1}</td><td style="${cellStyle}">${f3Tot.c2}</td>
@@ -302,7 +283,6 @@ export const CompilationModule = {
         </tr>`;
       });
 
-      // Format 4 Grand Total Row
       html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
         <td colspan="5" style="${cellStyle} color:#fff; text-align:right;">Grand Total:</td>
         <td style="${cellStyle}">${f4Tot.t1}</td><td style="${cellStyle}">${f4Tot.t2}</td>
@@ -375,7 +355,6 @@ export const CompilationModule = {
         html += `</tr>`;
       });
 
-      // Format 5 Grand Total Row
       html += `<tr style="background:#1e3a8a; color:#fff; font-weight:bold;">
         <td colspan="5" style="${cellStyle} color:#fff; text-align:right;">Grand Total:</td>`;
       for(let i=1; i<=8; i++) {
