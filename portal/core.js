@@ -257,7 +257,7 @@ window.CoreApp = {
       console.error("Error calculating live enrollment for UDISE: " + udise, e);
       return 0;
     }
-  }
+  },
 
   async fetchCloudData() {
     try {
