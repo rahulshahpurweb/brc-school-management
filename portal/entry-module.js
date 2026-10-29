@@ -25,7 +25,7 @@ export const EntryModule = {
     this.loadForm();
   },
   // Exact class range with correct priority
-    // Exact class range with 6 to 10 rule added
+      // Exact class range with 6 to 10 rule added
   getClassesForSchool(category) {
     let cat = (category || "").toUpperCase().trim();
     
@@ -46,6 +46,7 @@ export const EntryModule = {
     // 3. Default Primary / 1 to 5 ke liye -> Class 1 se 5
     return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
+
   
 
   loadForm() {
