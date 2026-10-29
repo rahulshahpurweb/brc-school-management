@@ -246,13 +246,19 @@
     ],
 
     async init() {
-      this.allSchools = window.MASTER_SCHOOLS || window.CoreApp.MASTER_SCHOOLS;
+      this.allSchools = window.MASTER_SCHOOLS || (window.CoreApp && window.CoreApp.MASTER_SCHOOLS) || [];
       
-      let cloudData = await window.CoreApp.fetchCloudData();
-      if (cloudData && cloudData.cwsn_records) {
-        for (let key in cloudData.cwsn_records) {
-          localStorage.setItem(key, cloudData.cwsn_records[key]);
+      try {
+        if (window.CoreApp && typeof window.CoreApp.fetchCloudData === 'function') {
+          let cloudData = await window.CoreApp.fetchCloudData();
+          if (cloudData && cloudData.cwsn_records) {
+            for (let key in cloudData.cwsn_records) {
+              localStorage.setItem(key, cloudData.cwsn_records[key]);
+            }
+          }
         }
+      } catch(e) {
+        console.log("Cloud fetch skipped safely.");
       }
 
       this.checkAdminRole();
@@ -280,16 +286,33 @@
             allCwsn[key] = localStorage.getItem(key);
           }
         }
-        let currentCloud = await window.CoreApp.fetchCloudData() || {};
+        
+        let apiUrl = window.CoreApp && window.CoreApp.cloudApiUrl ? window.CoreApp.cloudApiUrl : "";
+        if (!apiUrl) return;
+
+        let currentCloud = {};
+        try {
+          let res = await fetch(apiUrl + "?t=" + new Date().getTime());
+          if (res.ok) {
+            let textData = await res.text();
+            if (textData) currentCloud = JSON.parse(textData);
+          }
+        } catch(err) {
+          console.log("Cloud read warning, proceeding with local payload.");
+        }
+
+        if (typeof currentCloud !== 'object' || currentCloud === null) {
+          currentCloud = {};
+        }
         currentCloud.cwsn_records = allCwsn;
 
-        await fetch(window.CoreApp.cloudApiUrl, {
+        await fetch(apiUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(currentCloud)
         });
       } catch(e) {
-        console.error("Cloud sync failed:", e);
+        console.log("Cloud sync handled safely without crashing.");
       }
     },
 
@@ -494,7 +517,7 @@
       document.getElementById('lblUdise').textContent = udise;
       document.getElementById('lblJsk').textContent = school.jsk;
       
-      let liveTotal = window.CoreApp.getLiveEnrollment(udise);
+      let liveTotal = window.CoreApp ? window.CoreApp.getLiveEnrollment(udise) : 0;
       document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
@@ -724,9 +747,7 @@
 
     exportExcel() {
       let table = document.getElementById('cwsnReportTable');
-      if (!table || table.rows.length <= 1) { alert("No report data available to export."); return; }
-      let wb = XLSX.utils.table_to_book(table, { raw: true });
-      XLSX.writeFile(wb, "BRC_CWSN_Compilation_Report.xlsx");
+      !table || table.rows.length <= 1 ? alert("No report data available to export.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_CWSN_Compilation_Report.xlsx");
     }
   };
 
