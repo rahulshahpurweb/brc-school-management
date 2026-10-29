@@ -14,6 +14,15 @@
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
   .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; flex-wrap: wrap; gap: 10px; }
   .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
+  
+  /* 3-Line Hamburger Menu Styling */
+  .menu-container { position: relative; display: inline-block; }
+  .menu-btn { background: #0b2854; color: #fff; border: 1px solid #ffd21c; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .dropdown-content { display: none; position: absolute; right: 0; background-color: #ffffff; min-width: 220px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
+  .dropdown-content button, .dropdown-content label { color: #071b38; padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 13px; box-sizing: border-box; }
+  .dropdown-content button:hover, .dropdown-content label:hover { background-color: #f1f5f9; color: #1d4ed8; }
+  .show { display: block; }
+
   .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
   .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
   .sub-nav-btn.active { background: #f4b400; color: #071b38; }
@@ -24,44 +33,11 @@
   .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
   
-  .student-card {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  }
-  .student-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-    font-weight: bold;
-    color: #071b38;
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-  }
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    font-weight: bold;
-    color: #475569;
-    margin-bottom: 3px;
-  }
-  .form-group input, .form-group select {
-    width: 100%;
-    padding: 7px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 12px;
-    box-sizing: border-box;
-  }
+  .student-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .student-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
+  .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
@@ -79,25 +55,30 @@
 <body>
 
 <div class="module-header">
-  <div class="module-title">♿ CWSN Module & Report Management (R3 - Cloud Synced)</div>
+  <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
-    <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
-      📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
-    </label>
-    <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Main Portal (R2)</button>
+    <!-- Excel Export & Print Upar Rakhe Gaye Hain -->
+    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
+    <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
+
+    <!-- 3-Line Hamburger Sub-menu -->
+    <div class="menu-container">
+      <button onclick="CwsnApp.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
+      <div id="dropdownMenu" class="dropdown-content">
+        <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template</button>
+        <label id="adminBulkUploadBtn" style="display:none; cursor:pointer;">
+          📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
+        </label>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 CWSN Dashboard</button>
-  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School CWSN Yes/No Setup</button>
-  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ CWSN Data Entry</button>
-  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 CWSN Reports</button>
-  <div style="margin-left:auto; display:flex; gap:8px;">
-    <button class="sub-nav-btn" style="background:#16a34a;" onclick="CwsnApp.exportExcel()">📥 Excel Export</button>
-    <button class="sub-nav-btn" style="background:#d97706;" onclick="window.print()">🖨️ Print / PDF</button>
-  </div>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School Setup (Yes/No)</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports</button>
 </div>
 
 <main class="content-container">
@@ -179,21 +160,27 @@
 
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module</h3>
+      <h3>✍️ School CWSN Data Entry Module (Edit-Only Access)</h3>
       <div class="filter-bar">
         <label><b>Select School (CWSN Yes Only):</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
       </div>
 
       <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
-        <div style="display:flex; gap:20px; font-size:14px; flex-wrap:wrap; align-items:center;">
+        <div style="display:flex; gap:15px; font-size:13px; flex-wrap:wrap; align-items:center;">
           <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
           <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
           <span><b>JSK:</b> <span id="lblJsk">-</span></span>
-          <span><b>Live R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
-          <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-            <label style="font-weight:bold; color:#b45309;">Expected CWSN Total Count:</label>
-            <input type="number" id="expectedCwsnTotal" min="1" max="100" style="width:70px; padding:5px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="e.g. 5" disabled>
+          <span><b>Live R2 Total:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
+          <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <div>
+              <label style="font-weight:bold; color:#1d4ed8; font-size:11px;">Expected Boys:</label>
+              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys" disabled>
+            </div>
+            <div>
+              <label style="font-weight:bold; color:#db2777; font-size:11px;">Expected Girls:</label>
+              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls" disabled>
+            </div>
           </div>
         </div>
       </div>
@@ -284,12 +271,16 @@
       this.switchTab('dashboard');
     },
 
+    toggleMenu() {
+      document.getElementById("dropdownMenu").classList.toggle("show");
+    },
+
     checkAdminRole() {
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let bulkBtn = document.getElementById("adminBulkUploadBtn");
       if (bulkBtn) {
         if (user.role === 'admin' || !user.role) {
-          bulkBtn.style.display = 'inline-block';
+          bulkBtn.style.display = 'block';
         } else {
           bulkBtn.style.display = 'none';
         }
@@ -405,7 +396,7 @@
               udise: udise, schoolName: sData.schoolName, jsk: sData.jsk,
               students: sData.students, totalBoys: boys, totalGirls: girls,
               grandTotal: sData.students.length, completed: sData.students.length > 0,
-              expectedTotal: sData.students.length
+              expectedBoys: boys, expectedGirls: girls
             };
 
             localStorage.setItem("brc_cwsn_has_" + udise, "yes");
@@ -487,7 +478,8 @@
 
     loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
-      let expInput = document.getElementById('expectedCwsnTotal');
+      let expBoys = document.getElementById('expectedBoys');
+      let expGirls = document.getElementById('expectedGirls');
       let addBtn = document.getElementById('addStudentBtn');
       let saveBtn = document.getElementById('saveDataBtn');
       let container = document.getElementById('studentCardsContainer');
@@ -497,26 +489,18 @@
         document.getElementById('lblUdise').textContent = "-";
         document.getElementById('lblJsk').textContent = "-";
         document.getElementById('lblR2Total').textContent = "0";
-        expInput.value = "";
-        expInput.disabled = true;
-        addBtn.disabled = true;
-        addBtn.style.background = "#94a3b8";
-        addBtn.style.cursor = "not-allowed";
-        saveBtn.disabled = true;
-        saveBtn.style.background = "#94a3b8";
-        saveBtn.style.cursor = "not-allowed";
+        expBoys.value = ""; expBoys.disabled = true;
+        expGirls.value = ""; expGirls.disabled = true;
+        addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
+        saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
         container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Kripya pehle upar diye gaye dropdown se school select karein. Tabhi entry khulegi.</div>`;
         return;
       }
 
-      // Enable inputs once school is selected
-      expInput.disabled = false;
-      addBtn.disabled = false;
-      addBtn.style.background = "#1d4ed8";
-      addBtn.style.cursor = "pointer";
-      saveBtn.disabled = false;
-      saveBtn.style.background = "#16a34a";
-      saveBtn.style.cursor = "pointer";
+      expBoys.disabled = false;
+      expGirls.disabled = false;
+      addBtn.disabled = false; addBtn.style.background = "#1d4ed8"; addBtn.style.cursor = "pointer";
+      saveBtn.disabled = false; saveBtn.style.background = "#16a34a"; saveBtn.style.cursor = "pointer";
 
       let school = this.allSchools.find(s => String(s.udise) === String(udise));
       if (!school) return;
@@ -536,17 +520,20 @@
       document.getElementById('lblR2Total').textContent = liveTotal;
 
       let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
-      expInput.value = cwsnSaved ? (cwsnSaved.expectedTotal || cwsnSaved.students.length) : 1;
+      expBoys.value = cwsnSaved ? (cwsnSaved.expectedBoys || 0) : 0;
+      expGirls.value = cwsnSaved ? (cwsnSaved.expectedGirls || 0) : 0;
       this.renderStudentCards(cwsnSaved ? cwsnSaved.students : []);
     },
 
     addNewStudentCard(st = {}) {
       let container = document.getElementById('studentCardsContainer');
-      let expectedCount = parseInt(document.getElementById('expectedCwsnTotal').value) || 1;
-      let currentCards = container.querySelectorAll('.student-card').length;
+      let expBoys = parseInt(document.getElementById('expectedBoys').value) || 0;
+      let expGirls = parseInt(document.getElementById('expectedGirls').value) || 0;
+      let totalAllowed = expBoys + expGirls;
 
-      if (currentCards >= expectedCount) {
-        alert(`Aapne expected total CWSN sankhya (${expectedCount}) ki limit poori kar li hai! Isse zyada student add nahi ho sakte.`);
+      let currentCards = container.querySelectorAll('.student-card').length;
+      if (currentCards >= totalAllowed) {
+        alert(`Aapne expected total Boys (${expBoys}) aur Girls (${expGirls}) ki sankhya ki limit poori kar li hai!`);
         return;
       }
 
@@ -563,8 +550,8 @@
           <span>Student #${idx} Record (Edit Only)</span>
         </div>
         <div class="form-grid">
-          <div class="form-group"><label>Samagra ID</label><input type="text" class="s-samagra" value="${st.samagra || ''}" placeholder="Samagra ID"></div>
-          <div class="form-group"><label>Student Name</label><input type="text" class="s-name" value="${st.name || ''}" placeholder="Name"></div>
+          <div class="form-group"><label>Samagra ID (9 Digits) *</label><input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID"></div>
+          <div class="form-group"><label>Student Name *</label><input type="text" class="s-name" value="${st.name || ''}" placeholder="Student Name"></div>
           <div class="form-group"><label>Father Name</label><input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name"></div>
           <div class="form-group"><label>Mother Name</label><input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name"></div>
           <div class="form-group"><label>Gender</label><select class="s-gender"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></div>
@@ -612,15 +599,27 @@
       let udise = select ? select.value : null;
       if (!udise) { alert("Kripya pehle school select karein!"); return; }
 
-      let expectedCount = parseInt(document.getElementById('expectedCwsnTotal').value) || 1;
+      let expBoys = parseInt(document.getElementById('expectedBoys').value) || 0;
+      let expGirls = parseInt(document.getElementById('expectedGirls').value) || 0;
       let cards = document.querySelectorAll('.student-card');
       
       for (let card of cards) {
+        let samagra = card.querySelector('.s-samagra').value.trim();
+        let name = card.querySelector('.s-name').value.trim();
         let aadhar = card.querySelector('.s-aadhar').value.trim();
         let mobile = card.querySelector('.s-mobile').value.trim();
         let dob = card.querySelector('.s-dob').value.trim();
         let teacherMob = card.querySelector('.s-teachermob').value.trim();
 
+        // Mandatory checks
+        if (!name) {
+          alert("Student Name bharna anivarya (mandatory) hai!");
+          return;
+        }
+        if (!(/^\d{9}$/.test(samagra))) {
+          alert("Samagra ID theek 9 digits ki honi chahiye!");
+          return;
+        }
         if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) {
           alert("Aadhar card number theek 12 digits ka hona chahiye!");
           return;
@@ -664,13 +663,13 @@
       let payload = {
         udise: udise, schoolName: school.name, jsk: school.jsk, students: students,
         totalBoys: boys, totalGirls: girls, grandTotal: students.length, completed: students.length > 0,
-        expectedTotal: expectedCount
+        expectedBoys: expBoys, expectedGirls: expGirls
       };
 
-      // 1. Save to local storage for instant view
+      // 1. Local save
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
 
-      // 2. Push to Google Sheet Cloud (Live Sync across browsers)
+      // 2. Cloud Sync to Google Sheet
       try {
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let response = await fetch(this.cloudApiUrl, {
@@ -687,7 +686,7 @@
         if(result.status === "success" || result.success) {
           alert("CWSN Data Safalta-purnaiv Google Sheet par Cloud Sync ho gaya hai!");
         } else {
-          alert("Data Local Save ho gaya hai, lekin Cloud Sync mein response check karein.");
+          alert("Data Local Save ho gaya hai.");
         }
       } catch(err) {
         console.log("Cloud sync error:", err);
@@ -811,6 +810,18 @@
       !table || table.rows.length <= 1 ? alert("No report data available to export.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_CWSN_Compilation_Report.xlsx");
     }
   };
+
+  window.onclick = function(event) {
+    if (!event.target.matches('.menu-btn')) {
+      let dropdowns = document.getElementsByClassName("dropdown-content");
+      for (let i = 0; i < dropdowns.length; i++) {
+        let openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show')) {
+          openDropdown.classList.remove('show');
+        }
+      }
+    }
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     CwsnApp.init();
