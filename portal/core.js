@@ -210,12 +210,14 @@ window.CoreApp = {
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
   MASTER_SCHOOLS: window.MASTER_SCHOOLS,
 
+  // Ultimate Live Enrollment Fetcher (Checks LocalStorage, SessionManager & Cloud API)
   getLiveEnrollment(udise) {
     try {
       if (!udise) return 0;
       let targetUdise = String(udise).trim();
       let schools = [];
 
+      // 1. Scan LocalStorage keys
       for (let i = 0; i < localStorage.length; i++) {
         let key = localStorage.key(i);
         if (key && (key.includes("portal") || key.includes("school") || key.includes("data") || key.includes("r2"))) {
@@ -229,12 +231,14 @@ window.CoreApp = {
         }
       }
 
+      // 2. Fallback to SessionManager if available
       if (!Array.isArray(schools) || schools.length === 0) {
         if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
           schools = SessionManager.getData() || [];
         }
       }
 
+      // 3. Fallback to Master List
       if (!Array.isArray(schools) || schools.length === 0) {
         schools = window.MASTER_SCHOOLS || [];
       }
