@@ -26,7 +26,7 @@ export const EntryModule = {
   },
 
   // Perfect Category & Name based class range logic matching your master data
-    // 100% Strict and Bulletproof Class Range Logic
+     // Correct Priority Class Range Logic
   getClassesForSchool(schoolInput) {
     let cat = "";
     let name = "";
@@ -40,29 +40,28 @@ export const EntryModule = {
     
     let combined = cat + " " + name;
     
-    // 1. Agar Primary School hai aur usme 1 to 8, 1 to 10, 1 to 12 ya High School nahi hai -> Sirf Class 1 se 5
-    if (cat.includes("PRIMARY SCHOOL (CLASS 1 TO 5)") || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
+    // 1. Pure Primary School (Class 1 to 5) -> Sirf Class 1 se 5
+    if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
     }
     
-    // 2. Agar Middle to High / Middle to Higher Secondary / 6 se shuru hai -> Class 6 se 8
-    if (combined.includes("MIDDLE TO HIGH") || combined.includes("MIDDLE TO HIGHER SECONDARY") || 
-        combined.includes("MIDDLE SCHOOL") || combined.includes("6 TO") || combined.includes("6-")) {
-      return ["Class 6", "Class 7", "Class 8"];
-    }
-    
-    // 3. Agar Primary to High / Primary with Middle / 1 se shuru hai -> Class 1 se 8
-    if (combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
-        combined.includes("PRIMARY WITH MIDDLE") || combined.includes("1 TO") || combined.includes("1-") || 
+    // 2. Primary with Middle (1 to 8), Primary to High (1 to 10/12) -> Class 1 se 8 (Ise pehle rakhna zaroori hai)
+    if (combined.includes("PRIMARY WITH MIDDLE") || combined.includes("PRIMARY TO HIGH") || 
+        combined.includes("PRIMARY TO HIGHER SECONDARY") || combined.includes("1 TO") || combined.includes("1-") || 
         combined.includes("HIGH SCHOOL") || combined.includes("HIGHER SECONDARY")) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
     
-    // 4. Default safe fallback for pure primary
+    // 3. Middle-only School ya 6 se shuru hone wale -> Class 6 se 8
+    if (combined.includes("MIDDLE SCHOOL") || combined.includes("MIDDLE TO HIGH") || 
+        combined.includes("MIDDLE TO HIGHER SECONDARY") || combined.includes("6 TO") || combined.includes("6-")) {
+      return ["Class 6", "Class 7", "Class 8"];
+    }
+    
+    // 4. Default fallback
     return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
   
-
   loadForm() {
     let sel = document.getElementById("schoolSelect");
     let tbody = document.getElementById("entryTableBody");
