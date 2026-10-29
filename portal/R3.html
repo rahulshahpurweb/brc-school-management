@@ -1,267 +1,736 @@
-// core.js - Central Source of Truth & Live Bridge for BRC Shahpur Portal
-window.CoreApp = {
-  // Aapka authentic Google Apps Script Web App URL
-  cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
-  
-  // Master Schools List (Fallback ke liye)
-  MASTER_SCHOOLS: [
-    {name: "GPS DHODHARAMOHAR", udise: "23351008101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) HAWAL DARDHANA", udise: "23351008202", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS GURGUNDA 1 TO 8", udise: "23351008203", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-    {name: "GPS CHIRMATEKRI", udise: "23351008301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GOVT. HS DHAR 1 TO 10", udise: "23351008403", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura"},
-    {name: "GPS CHIMDI", udise: "23351011601", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS DENDUPURA", udise: "23351011901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS GUVADI 1 TO 8", udise: "23351012102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-    {name: "GOVT. HSS DHAPADA 1 TO 12", udise: "23351012204", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bhoura"},
-    {name: "GMS NEW CHIKHALDA BUJURG 1 TO 8", udise: "23351012302", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-    {name: "GPS(U) KOYAL BUDDI", udise: "23351015501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) DHAPADA RAIYAT", udise: "23351016701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS NAYA NISHAN 1 TO 8", udise: "23351017202", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-    {name: "GPS HANDIPANI", udise: "23351002901", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS NEW HANDIPANI", udise: "23351002902", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-    {name: "GPS SONADHEH", udise: "23351003001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) JHIRIYA DOL", udise: "23351003002", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS BANABEHDA", udise: "23351003101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS BANABEHDA", udise: "23351003102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-    {name: "GPS TWD KALAPANI", udise: "23351004803", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS KOYLARI", udise: "23351005001", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS KOYLARI", udise: "23351005003", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-    {name: "GPS JHAPDI", udise: "23351005101", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS JHAPDI", udise: "23351005102", category: "Middle School (Class 6 to 8)", jsk: "Bhoura"},
-    {name: "GPS(U) MAGRA PURA", udise: "23351005103", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GOVT. HS KACHHAR 1 TO 10", udise: "23351005204", category: "Primary to High School (Class 1 to 10)", jsk: "Bhoura"},
-    {name: "GPS KHAPA JHAPDI", udise: "23351005301", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) KHAPA DHANA", udise: "23351005302", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) KOCHAMAU", udise: "23351005303", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS (U) VIRGUWADI", udise: "23351005304", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS BEHRAPURA", udise: "23351005401", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS MANSINGPURA", udise: "23351005501", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) NAYAPURA", udise: "23351005502", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) SEMALPURA", udise: "23351005503", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS SALIMET 1 TO 8", udise: "23351005602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-    {name: "GPS(U) POLAPATHAR", udise: "23351005603", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS(U) BODIPANI", udise: "23351005604", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS JODIYAMAU", udise: "23351005701", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS BHORADHANA", udise: "23351008003", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GPS GIRLS ASHRAM BHORA", udise: "23351008006", category: "Primary School (Class 1 to 5)", jsk: "Bhoura"},
-    {name: "GMS GIRLS BHORA 1 TO 8", udise: "23351008008", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bhoura"},
-    {name: "GOVT. HSS GIRL'S BHOURA 6 TO 12", udise: "23351008014", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Bhoura"},
-    {name: "GMS KOTHA 1 TO 8", udise: "23351003502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
-    {name: "GPS(U) JAKA DHANA", udise: "23351005803", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GOVT.HSS BIJADEHI 1 TO 12", udise: "23351005804", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Bijadehi"},
-    {name: "GPS KANJITALAB", udise: "23351005901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "MS KANJITALAB", udise: "23351005902", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-    {name: "GPS SELDA", udise: "23351006001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS KAJLI", udise: "23351006101", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GMS KAJLI", udise: "23351006102", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-    {name: "GPS DUDAR", udise: "23351006201", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS MENDHAKHEDA", udise: "23351006301", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS SITADONGRI", udise: "23351006401", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GMS SITADONGRI", udise: "23351006402", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-    {name: "GPS(U) TANGNA RAIYAT", udise: "23351006502", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GNMS TANGNAMAL 1 TO 8", udise: "23351006504", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
-    {name: "GPS TENDUKHEDA", udise: "23351006701", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GMS TENDUKHEDA", udise: "23351006703", category: "Middle School (Class 6 to 8)", jsk: "Bijadehi"},
-    {name: "GMS BARJORPUR 1 TO 8", udise: "23351006802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Bijadehi"},
-    {name: "GPS RATAMDHANA", udise: "23351006901", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS KAWLIKHEDA", udise: "23351007001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS DHAMNYA", udise: "23351001801", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS(U) CHAK SANGWANI", udise: "23351001902", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS PANDAJHIRI", udise: "23351002001", category: "Primary School (Class 1 to 5)", jsk: "Bijadehi"},
-    {name: "GPS PHOPHLYA (MAL)", udise: "23351016601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GMS TARAMKHEDA RAIYAT 1 TO 8", udise: "23351017001", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-    {name: "GMS BOD 1 TO 8", udise: "23351003602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-    {name: "GPS DHODHARAMAHU", udise: "23351007101", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS(U) BHIMPURA", udise: "23351007103", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS(U) PANDRA SEL", udise: "23351007104", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GOVT. HS DHODHRAMAU 6 TO 10", udise: "23351007105", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau"},
-    {name: "GPS KHARWAR", udise: "23351007201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS(U) BANDIDHANA", udise: "23351007302", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GMS TIMARNI 1 TO 8", udise: "23351007303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-    {name: "GMS PAT 1 TO 8", udise: "23351007402", category: "Primary with Middle School (Class 1 to 8)", jsk: "Dhodhramau"},
-    {name: "GOVT. HS DABRI 1 to 10", udise: "23351007503", category: "Primary to High School (Class 1 to 10)", jsk: "Dhodhramau"},
-    {name: "GPS(U) RUMAKOL", udise: "23351007504", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS(U) DONDIYA KAU", udise: "23351007505", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS DHANVAR", udise: "23351007601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS TARAMKHEDA", udise: "23351007701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS SAWRIDA", udise: "23351007801", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS DHUTTAPURA", udise: "23351007901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS PHOPHLYA", udise: "23351001601", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GOVT. HS PHOPHLYA 6 TO 10", udise: "23351001604", category: "Middle to High School (Class 6 to 10)", jsk: "Dhodhramau"},
-    {name: "GPS NIMIYA", udise: "23351001701", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "PS SANGWANI", udise: "23351001901", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GPS BUDIMAI", udise: "23351002201", category: "Primary School (Class 1 to 5)", jsk: "Dhodhramau"},
-    {name: "GMS KESIYA 1 TO 8", udise: "23351008502", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-    {name: "GPS(U) PINJARA DHANA", udise: "23351008503", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS(U) OOJHA DHANA", udise: "23351008504", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS BONDRI", udise: "23351008601", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GMS SEHRA 1 TO 8", udise: "23351008702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-    {name: "GMS KANHEGAON 1 TO 8", udise: "23351008803", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-    {name: "GPS(U) GONDIDHANA", udise: "23351009002", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS(U) TEKRI DHANA", udise: "23351009004", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GOVT. HS MANDAI BUJURGE 1 to 10", udise: "23351009005", category: "Primary to High School (Class 1 to 10)", jsk: "Kesiya"},
-    {name: "GPS BHAGUDHANA", udise: "23351009701", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS DHOLYADHANA", udise: "23351010001", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GOVT. HSS RAMPUR MAL 1 TO 12", udise: "23351010903", category: "Primary to Higher Secondary School(Class 1 to 12)", jsk: "Kesiya"},
-    {name: "GMS KHOKRA 1 TO 8", udise: "23351011002", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-    {name: "GPS(U) NAKADHANA", udise: "23351011003", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GMS SITALJHIRI 1 TO 8", udise: "23351011102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kesiya"},
-    {name: "GPS(U) NAVALSINGH DHANA", udise: "23351011103", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS THAPPA", udise: "23351011201", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS(U) KHEDA DHANA", udise: "23351011202", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS HATHIKUND", udise: "23351011301", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS RAMPUR RAIYAT", udise: "23351011401", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS(U) BADA DHANA", udise: "23351011402", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS TEMRA", udise: "23351011501", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GMS NEW TEMRA MAL", udise: "23351011503", category: "Middle School (Class 6 to 8)", jsk: "Kesiya"},
-    {name: "GPS(U) TEMRA RAIYAT", udise: "23351014201", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS(U) GAOLIDHANA", udise: "23351017101", category: "Primary School (Class 1 to 5)", jsk: "Kesiya"},
-    {name: "GPS (S) NAVRANGDHANA", udise: "23351010103", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GOVT. HS KUNDI 1 TO 10", udise: "23351010104", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
-    {name: "GPS MAGARDOH", udise: "23351010201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS KAMTI", udise: "23351010301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS BANKAKHODRI", udise: "23351010401", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS(U) KHODRI", udise: "23351010402", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS (U) THANIKHEDA", udise: "23351010403", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS NEW BANKAKHODRI", udise: "23351010404", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-    {name: "GPS KUSMARI", udise: "23351010501", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS MARDANPUR 1 TO 8", udise: "23351010602", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-    {name: "GPS DAODI", udise: "23351010701", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS BHUMKADHANA", udise: "23351010801", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS NEW DHASAI 1 TO 8", udise: "23351011702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-    {name: "GMS RANAPURA 1 TO 8", udise: "23351011802", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-    {name: "GPS BHATNA", udise: "23351012001", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS(U) HEERAWADI", udise: "23351015001", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS(U) JAMNAGRI", udise: "23351015201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS KUPPA 1 TO 8", udise: "23351003303", category: "Primary with Middle School (Class 1 to 8)", jsk: "Kundi"},
-    {name: "GPS TETARMAL", udise: "23351003401", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS BANKABHARDA", udise: "23351004301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS PATWAPURA", udise: "23351000103", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-    {name: "GPS CHIKHALDA (KHURD)", udise: "23351000201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "PS CHAPDA (RAIYAT)", udise: "23351000301", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS JHILPA", udise: "23351000501", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS PHAWADI", udise: "23351000601", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS PHAWADI", udise: "23351000602", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-    {name: "PS(U) CHILAM TEKRI", udise: "23351000603", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS(U) TEKRIPURA", udise: "23351000704", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GOVT. HS RAIPUR 1 TO 10", udise: "23351000705", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
-    {name: "GPS JAMUNDHANA", udise: "23351000801", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS JAMUNDHANA", udise: "23351000802", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-    {name: "GPS SEMARPUR", udise: "23351000901", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GOVT. HS PAWAR JHANDA 1 TO 10", udise: "23351001004", category: "Primary to High School (Class 1 to 10)", jsk: "Kundi"},
-    {name: "GPS MUDHA", udise: "23351001101", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GMS MUDHA", udise: "23351001102", category: "Middle School (Class 6 to 8)", jsk: "Kundi"},
-    {name: "GPS(SATT) MUDHA", udise: "23351001103", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS AAMDHANA", udise: "23351001201", category: "Primary School (Class 1 to 5)", jsk: "Kundi"},
-    {name: "GPS(U) GAONAPUR", udise: "23351012401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS(U) CHAOKIDHANA", udise: "23351002304", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS(U) JILERI", udise: "23351002305", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GOVT HS BHAYAWADI 1 TO 10", udise: "23351002307", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur"},
-    {name: "GPS DESHAWADI", udise: "23351002401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GMS DESHAWADI", udise: "23351002402", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
-    {name: "GPS(U) ADMADHANA", udise: "23351002403", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS MOKHAMAL", udise: "23351002501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS MOKHARAIYAT", udise: "23351002601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS(U) CHITARIBAD", udise: "23351002602", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GMS MALI SILPATI 1 TO 8", udise: "23351002702", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
-    {name: "GPS BARETHA", udise: "23351002801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GMS BARETHA", udise: "23351002802", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
-    {name: "GPS NISHANA", udise: "23351003701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS(U) DEHRI PATHAR", udise: "23351003804", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GOVT. HS SILPATI 1 TO 10", udise: "23351003807", category: "Primary to High School (Class 1 to 10)", jsk: "Shahpur"},
-    {name: "GMS BOYS SHAHPUR 1 TO 8", udise: "23351003907", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
-    {name: "GPS SOHAGPUR DHANA", udise: "23351004001", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS KOTMI", udise: "23351004101", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GMS KOTMI 1 TO 8", udise: "23351004102", category: "Primary with Middle School (Class 1 to 8)", jsk: "Shahpur"},
-    {name: "GPS KANTAWADI", udise: "23351004201", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GMS KANTAWADI", udise: "23351004202", category: "Middle School (Class 6 to 8)", jsk: "Shahpur"},
-    {name: "GPS BHAKTANDHANA", udise: "23351004501", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS PATAI", udise: "23351004601", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GOVT. HS PATAI 6 TO 10", udise: "23351004603", category: "Middle to High School (Class 6 to 10)", jsk: "Shahpur"},
-    {name: "GPS PALASPANI", udise: "23351004701", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS KALAPANI", udise: "23351004801", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GPS GENDIDHANA", udise: "23351004901", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GOVT.HSS MODEL (RMSA) SHAHPUR", udise: "23351003914", category: "Middle to Higher Secondary School (Class 6 to 12)", jsk: "Shahpur"},
-    {name: "GPS BARBATPUR", udise: "23351000401", category: "Primary School (Class 1 to 5)", jsk: "Shahpur"},
-    {name: "GOVT. HS GHISIBAGLA 6 TO 10", udise: "23351009103", category: "Middle to High School (Class 6 to 10)", jsk: "Tara"},
-    {name: "GPS(U) RUMA DHANA", udise: "23351008802", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS AAVRIYA", udise: "23351008901", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS(U) MADIYA DHANA", udise: "23351009003", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS GHISIBAGLA", udise: "23351009101", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS TARA", udise: "23351009201", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GMS TARA", udise: "23351009202", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-    {name: "GPS(U) BATTI DHANA", udise: "23351009203", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS(U) TENDUDHANA", udise: "23351009204", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS CHIKHALI RAIYAT", udise: "23351009301", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GMS CHIKHALI RAIYAT", udise: "23351009302", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-    {name: "GPS(U) JARGAL DHANA", udise: "23351009303", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS(U) BAGAT DHANA", udise: "23351009304", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS CHIKHALI MAL", udise: "23351009401", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GMS CHIKHALI MAL", udise: "23351009402", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-    {name: "GPS THUMKA", udise: "23351009501", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS(U) GAOLAN DHANA", udise: "23351009502", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GMS THUMKA RAIYAT", udise: "23351009504", category: "Middle School (Class 6 to 8)", jsk: "Tara"},
-    {name: "GPS KAODIYA", udise: "23351009601", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS BAGLADHANA", udise: "23351009801", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GMS MANJIRADHANA 1 TO 8", udise: "23351009902", category: "Primary with Middle School (Class 1 to 8)", jsk: "Tara"},
-    {name: "GPS(U) MATHI GARH", udise: "23351016501", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS CHIROTIYA", udise: "23351006601", category: "Primary School (Class 1 to 5)", jsk: "Tara"},
-    {name: "GPS KHAPARWADI", udise: "23351002101", category: "Primary School (Class 1 to 5)", jsk: "Tara"}
-  ],
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRC Shahpur - CWSN Module (R3)</title>
+<link rel="stylesheet" href="r2-styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="permissions.js"></script>
+<script src="core.js"></script> <!-- Central Core Architecture Link -->
+<style>
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
+  .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; flex-wrap: wrap; gap: 10px; }
+  .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
+  .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
+  .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+  .sub-nav-btn.active { background: #f4b400; color: #071b38; }
+  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+  .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+  .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+  .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1d4ed8; text-align: center; }
+  .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
+  th { background: #071b38; color: #fff; }
+  .tablewrap { overflow-x: auto; max-height: 500px; }
+  @media print {
+    .module-header, .sub-nav, .filter-bar, button, select, input { display: none !important; }
+    body, html, main, .content-container, .card { background: #fff !important; color: #000 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
+    th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; }
+    @page { size: landscape; margin: 8mm; }
+  }
+</style>
+</head>
+<body>
 
-  // 🔗 Live Cloud & SessionManager Bridge for R3 Enrollment
-  getLiveEnrollment(udise) {
-    try {
-      if (!udise) return 0;
-      let targetUdise = String(udise).trim();
-      let schools = [];
+<div class="module-header">
+  <div class="module-title">♿ CWSN Module & Report Management (R3 - Centralized Cloud)</div>
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <button onclick="CwsnApp.downloadTemplate()" class="sub-nav-btn" style="background:#16a34a;">📥 Download Excel Template</button>
+    <label id="adminBulkUploadBtn" class="sub-nav-btn" style="background:#d97706; display:none; cursor:pointer; margin:0;">
+      📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
+    </label>
+    <button onclick="window.location.href='R2.html'" style="background:#f4b400; color:#071b38; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🏠 Main Portal (R2)</button>
+  </div>
+</div>
 
-      // 1. Check SessionManager data first (Cloud Data Memory)
-      if (typeof SessionManager !== 'undefined' && typeof SessionManager.getData === 'function') {
-        let sessionData = SessionManager.getData();
-        if (Array.isArray(sessionData) && sessionData.length > 0) {
-          schools = sessionData;
+<div class="sub-nav">
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 CWSN Dashboard</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School CWSN Yes/No Setup</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ CWSN Data Entry</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 CWSN Reports</button>
+  <div style="margin-left:auto; display:flex; gap:8px;">
+    <button class="sub-nav-btn" style="background:#16a34a;" onclick="CwsnApp.exportExcel()">📥 Excel Export</button>
+    <button class="sub-nav-btn" style="background:#d97706;" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+</div>
+
+<main class="content-container">
+  <section id="cwsnDash" class="cwsn-section">
+    <div class="grid-stats">
+      <div class="stat-card">
+        <div>Total Schools</div>
+        <div class="num" id="statTotalSchools">203</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #16a34a;">
+        <div>Schools with CWSN (Yes)</div>
+        <div class="num" id="statCwsnYes" style="color:#16a34a;">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #b45309;">
+        <div>Entry Completed</div>
+        <div class="num" id="statCompleted" style="color:#b45309;">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #dc2626;">
+        <div>Total CWSN Enrolled</div>
+        <div class="num" id="statTotalCwsn" style="color:#dc2626;">0</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📊 CWSN Sankul-wise Summary Overview</h3>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>Sankul (JSK)</th>
+              <th>Total Schools</th>
+              <th>CWSN Yes Schools</th>
+              <th>Entry Done</th>
+              <th>Boys</th>
+              <th>Girls</th>
+              <th>Grand Total</th>
+            </tr>
+          </thead>
+          <tbody id="dashSummaryTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="cwsnSelection" class="cwsn-section" style="display:none;">
+    <div class="card">
+      <h3>🏫 School-wise CWSN Availability Setup (Yes / No)</h3>
+      <div class="filter-bar">
+        <label><b>JSK Filter:</b></label>
+        <select id="selJskFilter" onchange="CwsnApp.renderSchoolSelectionTable()" style="padding:6px; font-weight:bold; border-radius:4px;">
+          <option value="ALL">-- All Sankul --</option>
+          <option value="Bhoura">Bhoura</option>
+          <option value="Bijadehi">Bijadehi</option>
+          <option value="Dhodhramau">Dhodhramau</option>
+          <option value="Kesiya">Kesiya</option>
+          <option value="Kundi">Kundi</option>
+          <option value="Shahpur">Shahpur</option>
+          <option value="Tara">Tara</option>
+        </select>
+        <input type="text" id="selSearchBox" placeholder="Search school name or UDISE..." onkeyup="CwsnApp.renderSchoolSelectionTable()" style="flex:1; min-width:200px; padding:6px; border:1px solid #ccc; border-radius:4px;">
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>School Name</th>
+              <th>UDISE Code</th>
+              <th>Category</th>
+              <th>JSK</th>
+              <th>Has CWSN Students? (Yes / No)</th>
+            </tr>
+          </thead>
+          <tbody id="schoolSelectionTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="cwsnEntry" class="cwsn-section" style="display:none;">
+    <div class="card">
+      <h3>✍️ School CWSN Data Entry Module</h3>
+      <div class="filter-bar">
+        <label><b>Select School (CWSN Yes Only):</b></label>
+        <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
+      </div>
+
+      <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
+        <div style="display:flex; gap:20px; font-size:14px; flex-wrap:wrap;">
+          <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
+          <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
+          <span><b>JSK:</b> <span id="lblJsk">-</span></span>
+          <span><b>Live R2 Total Enrollment:</b> <span id="lblR2Total" style="color:#1d4ed8; font-weight:bold;">0</span></span>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h4 style="color:#071b38; margin:0;">Student Details Entry (26 Columns)</h4>
+        <button type="button" onclick="CwsnApp.addNewStudentRow()" style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add Student</button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Samagra ID</th>
+              <th>Student Name</th>
+              <th>Father Name</th>
+              <th>Mother Name</th>
+              <th>Gender</th>
+              <th>Category</th>
+              <th>Class</th>
+              <th>Mobile No.</th>
+              <th>UDID No.</th>
+              <th>Aadhar No.</th>
+              <th>DOB</th>
+              <th>Disability Type</th>
+              <th>Cert. (Yes/No)</th>
+              <th>Disability %</th>
+              <th>Equipment</th>
+              <th>Address</th>
+              <th>Pin Code</th>
+              <th>Bank Name</th>
+              <th>IFSC Code</th>
+              <th>Account No.</th>
+              <th>Teacher Name</th>
+              <th>Teacher Mobile</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="studentRowsBody">
+            <tr><td colspan="24" style="padding:20px; color:#64748b;">Please select a school to start entry.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:10px 22px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save CWSN Data</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="cwsnReports" class="cwsn-section" style="display:none;">
+    <div class="card">
+      <h3>📑 CWSN Compilation & Filter Reports</h3>
+      <div class="filter-bar">
+        <label><b>JSK Filter:</b></label>
+        <select id="reportJskFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Sankul --</option>
+          <option value="Bhoura">Bhoura</option>
+          <option value="Bijadehi">Bijadehi</option>
+          <option value="Dhodhramau">Dhodhramau</option>
+          <option value="Kesiya">Kesiya</option>
+          <option value="Kundi">Kundi</option>
+          <option value="Shahpur">Shahpur</option>
+          <option value="Tara">Tara</option>
+        </select>
+        <label style="margin-left:10px;"><b>Disability Filter:</b></label>
+        <select id="reportDisabilityFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Disabilities --</option>
+          <option value="Locomotor Disability">Locomotor Disability</option>
+          <option value="Visual Impairment">Visual Impairment</option>
+          <option value="Hearing Impairment">Hearing Impairment</option>
+          <option value="Speech & Language">Speech & Language</option>
+          <option value="Intellectual Disability">Intellectual Disability</option>
+          <option value="Specific Learning Disabilities">Specific Learning Disabilities</option>
+          <option value="Autism Spectrum">Autism Spectrum</option>
+          <option value="Multiple Disabilities">Multiple Disabilities</option>
+        </select>
+      </div>
+      <div class="tablewrap">
+        <table id="cwsnReportTable"></table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  window.CwsnApp = {
+    disabilityTypes: [
+      "Locomotor Disability", "Visual Impairment", "Hearing Impairment", 
+      "Speech & Language", "Intellectual Disability", "Specific Learning Disabilities", 
+      "Autism Spectrum", "Multiple Disabilities", "Blindness", "Low Vision"
+    ],
+
+    async init() {
+      this.allSchools = window.CoreApp.MASTER_SCHOOLS;
+      
+      let cloudData = await window.CoreApp.fetchCloudData();
+      if (cloudData && cloudData.cwsn_records) {
+        for (let key in cloudData.cwsn_records) {
+          localStorage.setItem(key, cloudData.cwsn_records[key]);
         }
       }
 
-      // 2. Fallback to MASTER_SCHOOLS if session data is empty
-      if (!schools || schools.length === 0) {
-        schools = this.MASTER_SCHOOLS;
-      }
+      this.checkAdminRole();
+      this.switchTab('dashboard');
+    },
 
-      let school = schools.find(s => {
-        let sUdise = String(s.udise || s.dise_code || s.udise_code || "").trim();
-        return sUdise === targetUdise;
+    checkAdminRole() {
+      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let bulkBtn = document.getElementById("adminBulkUploadBtn");
+      if (bulkBtn) {
+        if (user.role === 'admin' || !user.role) {
+          bulkBtn.style.display = 'inline-block';
+        } else {
+          bulkBtn.style.display = 'none';
+        }
+      }
+    },
+
+    async syncToCloud() {
+      try {
+        let allCwsn = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          let key = localStorage.key(i);
+          if (key && key.startsWith("brc_cwsn_")) {
+            allCwsn[key] = localStorage.getItem(key);
+          }
+        }
+        let currentCloud = await window.CoreApp.fetchCloudData() || {};
+        currentCloud.cwsn_records = allCwsn;
+
+        await fetch(window.CoreApp.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentCloud)
+        });
+      } catch(e) {
+        console.error("Cloud sync failed:", e);
+      }
+    },
+
+    switchTab(tab) {
+      document.querySelectorAll('.cwsn-section').forEach(sec => sec.style.display = 'none');
+      document.querySelectorAll('.sub-nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (tab === 'dashboard') {
+        document.getElementById('cwsnDash').style.display = 'block';
+        document.getElementById('navDashBtn').classList.add('active');
+        this.renderDashboard();
+      } else if (tab === 'selection') {
+        document.getElementById('cwsnSelection').style.display = 'block';
+        document.getElementById('navSelectionBtn').classList.add('active');
+        this.renderSchoolSelectionTable();
+      } else if (tab === 'entry') {
+        document.getElementById('cwsnEntry').style.display = 'block';
+        document.getElementById('navEntryBtn').classList.add('active');
+        this.populateCwsnDropdown();
+      } else if (tab === 'reports') {
+        document.getElementById('cwsnReports').style.display = 'block';
+        document.getElementById('navReportsBtn').classList.add('active');
+        this.renderReports();
+      }
+    },
+
+    downloadTemplate() {
+      let headers = [
+        "Sr. No.", "School Name", "Dise_code", "JSK", "Samagra Id", 
+        "Student Name", "Father Name", "Mother Name", "Gender", "CAST Category", 
+        "Class", "Parent's Mobile n.", "UDID NO.", "Aadhar No.", "DOB", 
+        "Disability Type", "Certificate yes/No", "Disability Percent", 
+        "Necessary Equipment Materials", "address", "pin code", "Bank Name", 
+        "Bank IFSC Code", "Bank Account No.", "Teacher name", "Teacher Mob.No."
+      ];
+      let sample = [
+        1, "GHSS MODEL SHAHPUR(6 to 12)", "23351003914", "Shahpur", "302877484",
+        "Chetan Verma", "Sard", "Rina", "Boy", "SC",
+        "Class - 6", "9876543210", "UDID123", "Aadhar123", "2012-05-15",
+        "Specific Learning Disabilities", "Yes", "0 - 39 Percent", "Hearing Aid",
+        "Shahpur", "460440", "CBI", "CBIN0280760", "2227888040",
+        "Ramesh Kumar", "9425012345"
+      ];
+      let wb = XLSX.utils.book_new();
+      let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
+      XLSX.utils.book_append_sheet(wb, ws, "Consolidate_Data");
+      XLSX.writeFile(wb, "CWSN_Bulk_Upload_Template.xlsx");
+    },
+
+    handleBulkUpload(event) {
+      let file = event.target.files[0];
+      if (!file) return;
+
+      let reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          let data = new Uint8Array(e.target.result);
+          let workbook = XLSX.read(data, { type: 'array' });
+          let firstSheet = workbook.SheetNames[0];
+          let worksheet = workbook.Sheets[firstSheet];
+          let jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          let schoolMap = {};
+          for (let i = 1; i < jsonRows.length; i++) {
+            let r = jsonRows[i];
+            if (!r || r.length < 3) continue;
+            let schoolName = r[1] ? String(r[1]).trim() : "";
+            let udise = r[2] ? String(r[2]).trim() : "";
+            let jsk = r[3] ? String(r[3]).trim() : "Bhoura";
+
+            if (!udise || udise === '3' || udise === 'Dise_code') continue;
+
+            if (!schoolMap[udise]) {
+              schoolMap[udise] = { schoolName: schoolName, jsk: jsk, students: [] };
+            }
+
+            schoolMap[udise].students.push({
+              samagra: r[4] ? String(r[4]).trim() : "",
+              name: r[5] ? String(r[5]).trim() : "",
+              father: r[6] ? String(r[6]).trim() : "",
+              mother: r[7] ? String(r[7]).trim() : "",
+              gender: r[8] ? String(r[8]).trim() : "Boy",
+              cast: r[9] ? String(r[9]).trim() : "",
+              cls: r[10] ? String(r[10]).trim() : "Class - 1",
+              mobile: r[11] ? String(r[11]).trim() : "",
+              udid: r[12] ? String(r[12]).trim() : "",
+              aadhar: r[13] ? String(r[13]).trim() : "",
+              dob: r[14] ? String(r[14]).trim() : "",
+              disability: r[15] ? String(r[15]).trim() : "Locomotor Disability",
+              cert: r[16] ? String(r[16]).trim() : "",
+              percent: r[17] ? String(r[17]).trim() : "",
+              equipment: r[18] ? String(r[18]).trim() : "",
+              address: r[19] ? String(r[19]).trim() : "",
+              pin: r[20] ? String(r[20]).trim() : "",
+              bank: r[21] ? String(r[21]).trim() : "",
+              ifsc: r[22] ? String(r[22]).trim() : "",
+              accNo: r[23] ? String(r[23]).trim() : "",
+              teacher: r[24] ? String(r[24]).trim() : "",
+              teacherMob: r[25] ? String(r[25]).trim() : ""
+            });
+          }
+
+          let count = 0;
+          for (let udise in schoolMap) {
+            let sData = schoolMap[udise];
+            let boys = sData.students.filter(st => st.gender.toLowerCase().includes('boy')).length;
+            let girls = sData.students.filter(st => st.gender.toLowerCase().includes('girl')).length;
+
+            let payload = {
+              udise: udise, schoolName: sData.schoolName, jsk: sData.jsk,
+              students: sData.students, totalBoys: boys, totalGirls: girls,
+              grandTotal: sData.students.length, completed: sData.students.length > 0
+            };
+
+            localStorage.setItem("brc_cwsn_has_" + udise, "yes");
+            localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
+            count++;
+          }
+
+          this.syncToCloud();
+          alert(`Successfully imported CWSN data for ${count} schools from Excel!`);
+          this.switchTab('dashboard');
+        } catch (err) {
+          alert("Error parsing Excel file: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    },
+
+    renderSchoolSelectionTable() {
+      let jskFilter = document.getElementById('selJskFilter').value;
+      let keyword = document.getElementById('selSearchBox').value.toLowerCase();
+      let tbody = document.getElementById('schoolSelectionTableBody');
+      tbody.innerHTML = '';
+
+      let idx = 1;
+      let filtered = this.allSchools.filter(s => {
+        let jsk = s.jsk || "Bhoura";
+        let name = (s.name || "").toLowerCase();
+        let code = (s.udise || "").toLowerCase();
+        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return false;
+        if (keyword && !name.includes(keyword) && !code.includes(keyword)) return false;
+        return true;
       });
 
-      if (!school || !school.classes) return 0;
+      filtered.forEach(s => {
+        let udise = s.udise;
+        let cwsnStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+        tbody.innerHTML += `
+          <tr>
+            <td>${idx++}</td>
+            <td style="text-align:left; font-weight:bold;">${s.name}</td>
+            <td>${udise}</td>
+            <td>${s.category}</td>
+            <td>${s.jsk}</td>
+            <td>
+              <label style="margin-right:15px; cursor:pointer; font-weight:bold; color:${cwsnStatus === 'yes' ? '#16a34a' : '#64748b'};">
+                <input type="radio" name="cwsn_chk_${udise}" value="yes" ${cwsnStatus === 'yes' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'yes')"> YES
+              </label>
+              <label style="cursor:pointer; font-weight:bold; color:${cwsnStatus === 'no' ? '#dc2626' : '#64748b'};">
+                <input type="radio" name="cwsn_chk_${udise}" value="no" ${cwsnStatus === 'no' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'no')"> NO
+              </label>
+            </td>
+          </tr>
+        `;
+      });
+    },
 
-      let total = 0;
-      for (let c in school.classes) {
-        let cl = school.classes[c] || {};
-        let bSum = (parseInt(cl.scB) || 0) + (parseInt(cl.stB) || 0) + (parseInt(cl.obcB) || 0) + (parseInt(cl.genB) || 0);
-        let gSum = (parseInt(cl.scG) || 0) + (parseInt(cl.stG) || 0) + (parseInt(cl.obcG) || 0) + (parseInt(cl.genG) || 0);
-        total += (bSum + gSum);
+    setSchoolCwsn(udise, status) {
+      localStorage.setItem("brc_cwsn_has_" + udise, status);
+      this.syncToCloud();
+      this.renderSchoolSelectionTable();
+    },
+
+    populateCwsnDropdown() {
+      let select = document.getElementById('cwsnSchoolSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Select CWSN School --</option>';
+
+      let yesSchools = this.allSchools.filter(s => localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes');
+      if (yesSchools.length === 0) {
+        select.innerHTML = '<option value="">-- No Schools marked as YES. Go to Setup or Bulk Upload --</option>';
+        return;
       }
 
-      return total;
-    } catch(e) {
-      console.error("Error fetching live enrollment for UDISE " + udise, e);
-      return 0;
-    }
-  },
+      yesSchools.forEach(s => {
+        let el = document.createElement('option');
+        el.value = s.udise;
+        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
+        select.appendChild(el);
+      });
+    },
 
-  async fetchCloudData() {
-    try {
-      let res = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
-      if (res.ok) {
-        let data = await res.json();
-        return data;
+    loadSchoolForm() {
+      let udise = document.getElementById('cwsnSchoolSelect').value;
+      if (!udise) return;
+
+      let school = this.allSchools.find(s => s.udise === udise);
+      if (!school) return;
+
+      document.getElementById('lblSchoolName').textContent = school.name;
+      document.getElementById('lblUdise').textContent = udise;
+      document.getElementById('lblJsk').textContent = school.jsk;
+      
+      let liveTotal = window.CoreApp.getLiveEnrollment(udise);
+      document.getElementById('lblR2Total').textContent = liveTotal;
+
+      let cwsnSaved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+      this.renderStudentRows(cwsnSaved ? cwsnSaved.students : []);
+    },
+
+    addNewStudentRow() {
+      let tbody = document.getElementById('studentRowsBody');
+      if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+      let idx = tbody.rows.length + 1;
+      let tr = document.createElement('tr');
+      tr.className = 'student-row';
+      tr.innerHTML = `
+        <td>${idx}</td>
+        <td><input type="text" class="s-samagra" placeholder="Samagra ID" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-name" placeholder="Student Name" style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-father" placeholder="Father Name" style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-mother" placeholder="Mother Name" style="width:120px; padding:4px;"></td>
+        <td><select class="s-gender" style="width:70px; padding:4px;"><option value="Boy">Boy</option><option value="Girl">Girl</option></select></td>
+        <td><input type="text" class="s-cast" placeholder="Category" style="width:80px; padding:4px;"></td>
+        <td><select class="s-class" style="width:90px; padding:4px;">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
+        <td><input type="text" class="s-mobile" placeholder="Mobile" style="width:90px; padding:4px;"></td>
+        <td><input type="text" class="s-udid" placeholder="UDID No." style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-aadhar" placeholder="Aadhar" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-dob" placeholder="DOB" style="width:90px; padding:4px;"></td>
+        <td><select class="s-dis" style="width:140px; padding:4px;">${this.disabilityTypes.map(d => `<option value="${d}">${d}</option>`).join('')}</select></td>
+        <td><input type="text" class="s-cert" placeholder="Yes/No" style="width:70px; padding:4px;"></td>
+        <td><input type="text" class="s-percent" placeholder="Percent" style="width:80px; padding:4px;"></td>
+        <td><input type="text" class="s-equip" placeholder="Equipment" style="width:100px; padding:4px;"></td>
+        <td><input type="text" class="s-address" placeholder="Address" style="width:120px; padding:4px;"></td>
+        <td><input type="text" class="s-pin" placeholder="Pin" style="width:70px; padding:4px;"></td>
+        <td><input type="text" class="s-bank" placeholder="Bank" style="width:80px; padding:4px;"></td>
+        <td><input type="text" class="s-ifsc" placeholder="IFSC" style="width:90px; padding:4px;"></td>
+        <td><input type="text" class="s-acc" placeholder="Account No." style="width:110px; padding:4px;"></td>
+        <td><input type="text" class="s-teacher" placeholder="Teacher Name" style="width:110px; padding:4px;"></td>
+        <td><input type="text" class="s-teachermob" placeholder="Teacher Mob" style="width:100px; padding:4px;"></td>
+        <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
+      `;
+      tbody.appendChild(tr);
+    },
+
+    renderStudentRows(students = []) {
+      let tbody = document.getElementById('studentRowsBody');
+      tbody.innerHTML = '';
+      if (!students || students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="24" style="padding:20px; color:#64748b;">No CWSN students added yet. Click 'Add Student' above.</td></tr>`;
+        return;
       }
-    } catch(e) {
-      console.error("Cloud fetch error:", e);
+      students.forEach((st, i) => {
+        let tr = document.createElement('tr');
+        tr.className = 'student-row';
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td><input type="text" class="s-samagra" value="${st.samagra || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-name" value="${st.name || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-father" value="${st.father || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-mother" value="${st.mother || ''}" style="width:120px; padding:4px;"></td>
+          <td><select class="s-gender" style="width:70px; padding:4px;"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></td>
+          <td><input type="text" class="s-cast" value="${st.cast || ''}" style="width:80px; padding:4px;"></td>
+          <td><select class="s-class" style="width:90px; padding:4px;">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
+          <td><input type="text" class="s-mobile" value="${st.mobile || ''}" style="width:90px; padding:4px;"></td>
+          <td><input type="text" class="s-udid" value="${st.udid || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-aadhar" value="${st.aadhar || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-dob" value="${st.dob || ''}" style="width:90px; padding:4px;"></td>
+          <td><select class="s-dis" style="width:140px; padding:4px;">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select></td>
+          <td><input type="text" class="s-cert" value="${st.cert || ''}" style="width:70px; padding:4px;"></td>
+          <td><input type="text" class="s-percent" value="${st.percent || ''}" style="width:80px; padding:4px;"></td>
+          <td><input type="text" class="s-equip" value="${st.equipment || ''}" style="width:100px; padding:4px;"></td>
+          <td><input type="text" class="s-address" value="${st.address || ''}" style="width:120px; padding:4px;"></td>
+          <td><input type="text" class="s-pin" value="${st.pin || ''}" style="width:70px; padding:4px;"></td>
+          <td><input type="text" class="s-bank" value="${st.bank || ''}" style="width:80px; padding:4px;"></td>
+          <td><input type="text" class="s-ifsc" value="${st.ifsc || ''}" style="width:90px; padding:4px;"></td>
+          <td><input type="text" class="s-acc" value="${st.accNo || ''}" style="width:110px; padding:4px;"></td>
+          <td><input type="text" class="s-teacher" value="${st.teacher || ''}" style="width:110px; padding:4px;"></td>
+          <td><input type="text" class="s-teachermob" value="${st.teacherMob || ''}" style="width:100px; padding:4px;"></td>
+          <td><button type="button" onclick="this.closest('tr').remove()" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    },
+
+    saveData() {
+      let select = document.getElementById('cwsnSchoolSelect');
+      let udise = select ? select.value : null;
+      if (!udise) { alert("Please select a school first!"); return; }
+
+      let school = this.allSchools.find(s => s.udise === udise);
+      let students = [];
+      document.querySelectorAll('.student-row').forEach(row => {
+        students.push({
+          samagra: row.querySelector('.s-samagra').value, name: row.querySelector('.s-name').value,
+          father: row.querySelector('.s-father').value, mother: row.querySelector('.s-mother').value,
+          gender: row.querySelector('.s-gender').value, cast: row.querySelector('.s-cast').value,
+          cls: row.querySelector('.s-class').value, mobile: row.querySelector('.s-mobile').value,
+          udid: row.querySelector('.s-udid').value, aadhar: row.querySelector('.s-aadhar').value,
+          dob: row.querySelector('.s-dob').value, disability: row.querySelector('.s-dis').value,
+          cert: row.querySelector('.s-cert').value, percent: row.querySelector('.s-percent').value,
+          equipment: row.querySelector('.s-equip').value, address: row.querySelector('.s-address').value,
+          pin: row.querySelector('.s-pin').value, bank: row.querySelector('.s-bank').value,
+          ifsc: row.querySelector('.s-ifsc').value, accNo: row.querySelector('.s-acc').value,
+          teacher: row.querySelector('.s-teacher').value, teacherMob: row.querySelector('.s-teachermob').value
+        });
+      });
+
+      let boys = students.filter(st => st.gender === 'Boy').length;
+      let girls = students.filter(st => st.gender === 'Girl').length;
+
+      let payload = {
+        udise: udise, schoolName: school.name, jsk: school.jsk, students: students,
+        totalBoys: boys, totalGirls: girls, grandTotal: students.length, completed: students.length > 0
+      };
+
+      localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
+      this.syncToCloud();
+      alert("CWSN Data Saved & Synced to Cloud Successfully!");
+      this.switchTab('dashboard');
+    },
+
+    renderDashboard() {
+      let yesCount = 0, completedCount = 0, totalCwsn = 0;
+      let jskMap = {};
+      ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
+        jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
+      });
+
+      this.allSchools.forEach(s => {
+        let jsk = s.jsk ? s.jsk.charAt(0).toUpperCase() + s.jsk.slice(1).toLowerCase() : "Bhoura";
+        if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
+        jskMap[jsk].schools++;
+
+        let udise = s.udise;
+        if (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes') {
+          yesCount++; jskMap[jsk].yesSchools++;
+        }
+        let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+        if (saved && saved.completed) {
+          completedCount++; jskMap[jsk].completed++;
+          jskMap[jsk].boys += (saved.totalBoys || 0);
+          jskMap[jsk].girls += (saved.totalGirls || 0);
+          totalCwsn += (saved.grandTotal || 0);
+        }
+      });
+
+      document.getElementById('statTotalSchools').textContent = this.allSchools.length;
+      document.getElementById('statCwsnYes').textContent = yesCount;
+      document.getElementById('statCompleted').textContent = completedCount;
+      document.getElementById('statTotalCwsn').textContent = totalCwsn;
+
+      let tbody = document.getElementById('dashSummaryTable');
+      tbody.innerHTML = '';
+      let i = 1, tSch = 0, tYes = 0, tComp = 0, tB = 0, tG = 0, tTot = 0;
+
+      for (let jsk in jskMap) {
+        let d = jskMap[jsk], tot = d.boys + d.girls;
+        tSch += d.schools; tYes += d.yesSchools; tComp += d.completed; tB += d.boys; tG += d.girls; tTot += tot;
+        tbody.innerHTML += `
+          <tr>
+            <td>${i++}</td>
+            <td style="text-align:left; font-weight:bold;">${jsk}</td>
+            <td>${d.schools}</td>
+            <td style="color:#16a34a; font-weight:bold;">${d.yesSchools}</td>
+            <td>${d.completed}</td>
+            <td>${d.boys}</td>
+            <td>${d.girls}</td>
+            <td style="font-weight:bold; color:#1d4ed8;">${tot}</td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML += `
+        <tr style="background:#f1f5f9; font-weight:bold;">
+          <td colspan="2">Grand Total</td>
+          <td>${tSch}</td><td>${tYes}</td><td>${tComp}</td><td>${tB}</td><td>${tG}</td>
+          <td style="color:#1d4ed8;">${tTot}</td>
+        </tr>
+      `;
+    },
+
+    renderReports() {
+      let jskFilter = document.getElementById('reportJskFilter').value;
+      let disFilter = document.getElementById('reportDisabilityFilter').value;
+      let table = document.getElementById('cwsnReportTable');
+      let html = `
+        <thead>
+          <tr>
+            <th>Sr. No.</th><th>School Name</th><th>Dise_code</th><th>JSK</th><th>Samagra Id</th>
+            <th>Student Name</th><th>Father Name</th><th>Mother Name</th><th>Gender</th><th>CAST Category</th>
+            <th>Class</th><th>Parent's Mobile n.</th><th>UDID NO.</th><th>Aadhar Number</th><th>DOB</th>
+            <th>Disability Type</th><th>Certificate yes/No</th><th>Disability Percent</th><th>Necessary Equipment Materials</th>
+            <th>address</th><th>pin code</th><th>Bank Name</th><th>Bank IFSC Code</th><th>Bank Account No.</th>
+            <th>Teacher name</th><th>Teacher mobile no.</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      let rowIdx = 1, found = false;
+      this.allSchools.forEach(s => {
+        let jsk = s.jsk;
+        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+        let udise = s.udise;
+        let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+        if (saved && saved.students && saved.students.length > 0) {
+          saved.students.forEach(st => {
+            if (disFiletr !== "ALL" && st.disability !== disFilter) return;
+            found = true;
+            html += `
+              <tr>
+                <td>${rowIdx++}</td><td style="text-align:left;">${s.name}</td><td>${udise}</td><td>${jsk}</td>
+                <td>${st.samagra || '-'}</td><td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
+                <td style="text-align:left;">${st.father || '-'}</td><td style="text-align:left;">${st.mother || '-'}</td>
+                <td>${st.gender || '-'}</td><td>${st.cast || '-'}</td><td>${st.cls || '-'}</td><td>${st.mobile || '-'}</td>
+                <td>${st.udid || '-'}</td><td>${st.aadhar || '-'}</td><td>${st.dob || '-'}</td>
+                <td style="text-align:left;">${st.disability || '-'}</td><td>${st.cert || '-'}</td><td>${st.percent || '-'}</td>
+                <td>${st.equipment || '-'}</td><td>${st.address || '-'}</td><td>${st.pin || '-'}</td>
+                <td>${st.bank || '-'}</td><td>${st.ifsc || '-'}</td><td>${st.accNo || '-'}</td>
+                <td>${st.teacher || '-'}</td><td>${st.teacherMob || '-'}</td>
+              </tr>
+            `;
+          });
+        }
+      });
+
+      if (!found) html += `<tr><td colspan="26" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
+      html += `</tbody>`;
+      table.innerHTML = html;
+    },
+
+    exportExcel() {
+      let table = document.getElementById('cwsnReportTable');
+      if (!table || table.rows.length <= 1) { alert("No report data available to export."); return; }
+      let wb = XLSX.utils.table_to_book(table, { raw: true });
+      XLSX.writeFile(wb, "BRC_CWSN_Compilation_Report.xlsx");
     }
-    return null;
-  }
-};
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    CwsnApp.init();
+  });
+</script>
+
+</body>
+</html>
