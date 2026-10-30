@@ -283,6 +283,17 @@
       if (overlay) overlay.style.display = show ? 'flex' : 'none';
     },
 
+    getUserRoleInfo() {
+      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let role = String(user.role || "").toLowerCase();
+      // If role is explicitly school or if user ID / username is numeric and 11 digits (UDISE format)
+      let userId = String(user.userId || user.username || "").trim();
+      let isSchool = (role === 'school' || (!role && userId.length === 11));
+      let isAdmin = (role === 'admin' || (!role && userId.length !== 11));
+      let isJsk = (role === 'jsk' || role === 'sankul');
+      return { user, role, isAdmin, isJsk, isSchool, userId };
+    },
+
     async init() {
       this.showLoader(true);
       try {
@@ -338,18 +349,15 @@
     },
 
     checkAdminRole() {
-      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-      let role = (user.role || "").toLowerCase();
-      let isAdmin = (role === 'admin' || !user.role);
-
+      let info = this.getUserRoleInfo();
       let adminMenuContainer = document.getElementById("adminMenuContainer");
       if (adminMenuContainer) {
-        adminMenuContainer.style.display = isAdmin ? 'inline-block' : 'none';
+        adminMenuContainer.style.display = info.isAdmin ? 'inline-block' : 'none';
       }
 
       let selectionBtn = document.getElementById('navSelectionBtn');
       if (selectionBtn) {
-        selectionBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+        selectionBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
       }
     },
 
@@ -357,15 +365,14 @@
       document.querySelectorAll('.cwsn-section').forEach(sec => sec.style.display = 'none');
       document.querySelectorAll('.sub-nav-btn').forEach(btn => btn.classList.remove('active'));
 
+      let info = this.getUserRoleInfo();
+
       if (tab === 'dashboard') {
         document.getElementById('cwsnDash').style.display = 'block';
         document.getElementById('navDashBtn').classList.add('active');
         this.renderDashboard();
       } else if (tab === 'selection') {
-        let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-        let role = (user.role || "").toLowerCase();
-        let isAdmin = (role === 'admin' || !user.role);
-        if (!isAdmin) {
+        if (!info.isAdmin) {
           alert("Kshama karein, School Setup section keval Admin ke liye hai!");
           this.switchTab('dashboard');
           return;
@@ -381,14 +388,9 @@
         document.getElementById('cwsnReports').style.display = 'block';
         document.getElementById('navReportsBtn').classList.add('active');
         
-        let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-        let role = (currentUser.role || "").toLowerCase();
-        let isAdminOrJsk = (role === 'admin' || role === 'jsk' || role === 'sankul' || !currentUser.role);
-        
-        // Hide advanced filters for school login, show only for Admin/JSK
         let reportFiltersBar = document.getElementById('reportFiltersBar');
         if (reportFiltersBar) {
-          reportFiltersBar.style.display = isAdminOrJsk ? 'flex' : 'none';
+          reportFiltersBar.style.display = (info.isAdmin || info.isJsk) ? 'flex' : 'none';
         }
 
         this.renderReports();
@@ -623,22 +625,20 @@
       if (!select) return;
       select.innerHTML = '<option value="">-- Select School --</option>';
 
-      let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-      let role = (currentUser.role || "").toLowerCase();
-      let isAdmin = (role === 'admin' || !user.role);
-      let userUdise = String(currentUser.userId || currentUser.username || "").trim();
-      let cleanUserUdise = userUdise.replace(/\D/g, "");
+      let info = this.getUserRoleInfo();
+      let cleanUserUdise = info.userId.replace(/\D/g, "");
 
       let eligibleSchools = this.allSchools.filter(s => {
         let udise = String(s.udise || "").trim();
         let cleanSchoolUdise = udise.replace(/\D/g, "");
         let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
 
-        if (!isAdmin) {
+        if (info.isSchool) {
+          // Match by exact UDISE or digit extraction
           let matches = (
-            udise === userUdise || 
-            userUdise.includes(udise) || 
-            udise.includes(userUdise) ||
+            udise === info.userId || 
+            info.userId.includes(udise) || 
+            udise.includes(info.userId) ||
             (cleanUserUdise && cleanSchoolUdise && (cleanSchoolUdise === cleanUserUdise || cleanSchoolUdise.includes(cleanUserUdise) || cleanUserUdise.includes(cleanSchoolUdise)))
           );
           return matches;
@@ -646,11 +646,11 @@
         return isYes;
       });
 
-      if (eligibleSchools.length === 0 && !isAdmin && userUdise) {
+      if (eligibleSchools.length === 0 && info.isSchool && info.userId) {
         let matchedSchool = this.allSchools.find(s => {
           let u = String(s.udise || "").trim();
           let cleanU = u.replace(/\D/g, "");
-          return u === userUdise || userUdise.includes(u) || u.includes(userUdise) || (cleanUserUdise && cleanU && cleanU === cleanUserUdise);
+          return u === info.userId || info.userId.includes(u) || u.includes(info.userId) || (cleanUserUdise && cleanU && cleanU === cleanUserUdise);
         });
         if (matchedSchool) {
           eligibleSchools = [matchedSchool];
@@ -669,7 +669,7 @@
         select.appendChild(el);
       });
 
-      if (!isAdmin && eligibleSchools.length === 1) {
+      if (info.isSchool && eligibleSchools.length === 1) {
         select.value = eligibleSchools[0].udise;
         this.loadSchoolForm();
       }
@@ -744,13 +744,12 @@
       let card = document.createElement('div');
       card.className = 'student-card';
       
-      let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-      let isAdmin = (currentUser.role === 'admin' || !currentUser.role);
+      let info = this.getUserRoleInfo();
 
       card.innerHTML = `
         <div class="student-card-header" style="display:flex; justify-content:space-between; align-items:center;">
           <span>Student #${idx} Record</span>
-          ${isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Delete Record (Admin)</button>` : ''}
+          ${info.isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Delete Record (Admin)</button>` : ''}
         </div>
         <div class="form-grid">
           <div class="form-group"><label>Samagra ID (9 Digits) *</label><input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID"></div>
@@ -944,11 +943,7 @@
     },
 
     renderReports() {
-      let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-      let role = (currentUser.role || "").toLowerCase();
-      let isAdminOrJsk = (role === 'admin' || role === 'jsk' || role === 'sankul' || !currentUser.role);
-      let userUdise = String(currentUser.userId || currentUser.username || "").trim();
-
+      let info = this.getUserRoleInfo();
       let jskFilter = document.getElementById('reportJskFilter').value;
       let disFilter = document.getElementById('reportDisabilityFilter').value;
       let classFilter = document.getElementById('reportClassFilter').value;
@@ -956,9 +951,9 @@
 
       let table = document.getElementById('cwsnReportTable');
 
-      // Check if Matrix Report is requested (Admin / JSK only)
+      // Matrix Report (Admin / JSK only)
       if (reportType.startsWith('matrix_')) {
-        if (!isAdminOrJsk) {
+        if (!info.isAdmin && !info.isJsk) {
           alert("Kshama karein, Matrix Summary report keval Admin aur JSK ke liye uplabdh hai!");
           return;
         }
@@ -1060,15 +1055,22 @@
       let rowIdx = 1, found = false;
       this.allSchools.forEach(s => {
         let udise = String(s.udise).trim();
+        let cleanSchoolUdise = udise.replace(/\D/g, "");
+        let cleanUserUdise = info.userId.replace(/\D/g, "");
         
         // Strict check: if role is school, only allow matching their own UDISE
-        if (!isAdminOrJsk) {
-          let isMatch = (udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise) || udise.replace(/\D/g,"") === userUdise.replace(/\D/g,""));
+        if (info.isSchool) {
+          let isMatch = (
+            udise === info.userId || 
+            info.userId.includes(udise) || 
+            udise.includes(info.userId) ||
+            (cleanUserUdise && cleanSchoolUdise && (cleanSchoolUdise === cleanUserUdise || cleanSchoolUdise.includes(cleanUserUdise) || cleanUserUdise.includes(cleanSchoolUdise)))
+          );
           if (!isMatch) return;
         }
 
         let jsk = s.jsk;
-        if (isAdminOrJsk && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+        if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.students && saved.students.length > 0) {
