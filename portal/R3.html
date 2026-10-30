@@ -618,43 +618,71 @@
 
       this.switchTab('dashboard');
     },
-
     populateCwsnDropdown() {
       let select = document.getElementById('cwsnSchoolSelect');
       if (!select) return;
       select.innerHTML = '<option value="">-- Select School --</option>';
 
       let info = this.getUserRoleInfo();
+      let cleanLoginId = String(info.userId || "").replace(/\D/g, "");
 
-      // Find the exact school matching user login ID / UDISE
-      let matchedSchool = this.allSchools.find(s => {
-        let udise = String(s.udise || "").trim();
-        let cleanUdise = udise.replace(/\D/g, "");
-        let cleanLoginId = info.userId.replace(/\D/g, "");
-        return (
-          udise === info.userId || 
-          cleanUdise === cleanLoginId || 
-          (cleanLoginId && cleanUdise.includes(cleanLoginId)) || 
-          (cleanLoginId && cleanLoginId.includes(cleanUdise))
-        );
+      let eligibleSchools = [];
+
+      if (info.isAdmin || info.isJsk) {
+        // Admin aur JSK ke liye sabhi schools dikhenge jinka status YES hai (ya phir saare schools agar setup check karna ho)
+        eligibleSchools = this.allSchools.filter(s => {
+          let udise = String(s.udise || "").trim();
+          let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
+          return isYes || info.isAdmin; // Admin ke liye saari schools ki list bhi dikh sakti hai, ya sirf YES wali
+        });
+      } else {
+        // School login ke liye: UDISE match karein
+        eligibleSchools = this.allSchools.filter(s => {
+          let udise = String(s.udise || "").trim();
+          let cleanSchoolUdise = udise.replace(/\D/g, "");
+          
+          let matches = (
+            udise === info.userId || 
+            (cleanLoginId && cleanSchoolUdise && (cleanSchoolUdise === cleanLoginId || cleanSchoolUdise.includes(cleanLoginId) || cleanLoginId.includes(cleanSchoolUdise)))
+          );
+          return matches;
+        });
+
+        // Fallback agar direct filter mein na aaye
+        if (eligibleSchools.length === 0 && cleanLoginId) {
+          let matchedSchool = this.allSchools.find(s => {
+            let u = String(s.udise || "").trim();
+            let cleanU = u.replace(/\D/g, "");
+            return u === info.userId || (cleanLoginId && cleanU === cleanLoginId);
+          });
+          if (matchedSchool) {
+            eligibleSchools = [matchedSchool];
+          }
+        }
+      }
+
+      if (eligibleSchools.length === 0) {
+        select.innerHTML = '<option value="">-- No Schools available --</option>';
+        return;
+      }
+
+      eligibleSchools.forEach(s => {
+        let el = document.option ? document.createElement('option') : document.createElement('option');
+        el.value = s.udise;
+        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
+        select.appendChild(el);
       });
 
-      if (matchedSchool) {
-        let el = document.createElement('option');
-        el.value = matchedSchool.udise;
-        el.textContent = `${matchedSchool.name} (${matchedSchool.udise}) - JSK: ${matchedSchool.jsk}`;
-        select.appendChild(el);
-
-        // Auto select and freeze/disable dropdown for school login
-        select.value = matchedSchool.udise;
-        if (info.isSchool) {
-          select.disabled = true;
-          select.style.background = "#e2e8f0";
-          select.style.cursor = "not-allowed";
-        }
+      // Agar school login hai, toh dropdown mein uska school select karke freeze (disable) kar do
+      if (info.isSchool && eligibleSchools.length > 0) {
+        select.value = eligibleSchools[0].udise;
+        select.disabled = true;
+        select.style.background = "#e2e8f0";
+        select.style.cursor = "not-allowed";
         this.loadSchoolForm();
-      } else {
-        select.innerHTML = '<option value="">-- No matching school found for this login --</option>';
+      } else if (eligibleSchools.length === 1 && !info.isAdmin) {
+        select.value = eligibleSchools[0].udise;
+        this.loadSchoolForm();
       }
     },
 
