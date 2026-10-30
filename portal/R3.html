@@ -251,6 +251,20 @@
             this.allSchools = cloudData;
           }
         }
+        
+        // Fetch live CWSN data from Google Sheet for cross-browser sync
+        let cwsnRes = await fetch(this.cloudApiUrl + "?action=getAllCwsnData&session=" + activeSess + "&t=" + new Date().getTime());
+        if (cwsnRes.ok) {
+          let cloudCwsn = await cwsnRes.json();
+          if (Array.isArray(cloudCwsn)) {
+            cloudCwsn.forEach(item => {
+              if (item.udise && item.payload) {
+                localStorage.setItem("brc_cwsn_has_" + item.udise, "yes");
+                localStorage.setItem("brc_cwsn_" + item.udise, JSON.stringify(item.payload));
+              }
+            });
+          }
+        }
       } catch(e) {
         console.log("Cloud fetch fallback.");
       }
