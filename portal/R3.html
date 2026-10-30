@@ -224,6 +224,17 @@
           <option value="Autism Spectrum">Autism Spectrum</option>
           <option value="Multiple Disabilities">Multiple Disabilities</option>
         </select>
+        <label style="margin-left:10px;"><b>Class Filter:</b></label>
+        <select id="reportClassFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Classes --</option>
+          <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option><option value="Class 5">Class 5</option>
+          <option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option>
+        </select>
+        <label style="margin-left:10px;"><b>Report Type:</b></label>
+        <select id="reportTypeFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="overall">Overall Students</option>
+          <option value="above40">Disability >= 40%</option>
+        </select>
       </div>
       <div class="tablewrap">
         <table id="cwsnReportTable"></table>
@@ -261,8 +272,8 @@
           if (Array.isArray(cloudCwsn)) {
             cloudCwsn.forEach(item => {
               if (item.udise && item.payload) {
-                localStorage.setItem("brc_cwsn_has_" + item.udise, "yes");
-                localStorage.setItem("brc_cwsn_" + item.udise, JSON.stringify(item.payload));
+                localStorage.setItem("brc_cwsn_has_" + String(item.udise).trim(), "yes");
+                localStorage.setItem("brc_cwsn_" + String(item.udise).trim(), JSON.stringify(item.payload));
               }
             });
           }
@@ -274,7 +285,7 @@
           if (Array.isArray(setupList)) {
             setupList.forEach(st => {
               if (st.udise && st.status) {
-                localStorage.setItem("brc_cwsn_has_" + st.udise, st.status);
+                localStorage.setItem("brc_cwsn_has_" + String(st.udise).trim(), String(st.status).trim());
               }
             });
           }
@@ -300,7 +311,6 @@
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let role = (user.role || "").toLowerCase();
       let isAdmin = (role === 'admin' || !user.role);
-      let isJsk = (role === 'jsk' || role === 'sankul');
 
       let adminMenuContainer = document.getElementById("adminMenuContainer");
       if (adminMenuContainer) {
@@ -491,7 +501,7 @@
       });
 
       filtered.forEach(s => {
-        let udise = s.udise;
+        let udise = String(s.udise).trim();
         let cwsnStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
         tbody.innerHTML += `
           <tr>
@@ -532,7 +542,7 @@
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let setupData = {};
         this.allSchools.forEach(s => {
-          let udise = s.udise;
+          let udise = String(s.udise).trim();
           let status = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
           setupData[udise] = status;
         });
@@ -568,14 +578,15 @@
 
       let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let role = (currentUser.role || "").toLowerCase();
-      let isAdmin = (role === 'admin' || !user.role);
+      let isAdmin = (role === 'admin' || !currentUser.role);
       let userUdise = String(currentUser.userId || currentUser.username || "").trim();
 
       let eligibleSchools = this.allSchools.filter(s => {
-        let isYes = (localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes');
+        let udise = String(s.udise).trim();
+        let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
         if (!isYes) return false;
         if (!isAdmin) {
-          return String(s.udise).trim() === userUdise;
+          return udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise);
         }
         return true;
       });
@@ -816,7 +827,7 @@
         if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
         jskMap[jsk].schools++;
 
-        let udise = s.udise;
+        let udise = String(s.udise).trim();
         if (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes') {
           yesCount++; jskMap[jsk].yesSchools++;
         }
@@ -871,6 +882,9 @@
 
       let jskFilter = document.getElementById('reportJskFilter').value;
       let disFilter = document.getElementById('reportDisabilityFilter').value;
+      let classFilter = document.getElementById('reportClassFilter').value;
+      let reportType = document.getElementById('reportTypeFilter').value;
+
       let table = document.getElementById('cwsnReportTable');
       let html = `
         <thead>
@@ -889,7 +903,7 @@
       let rowIdx = 1, found = false;
       this.allSchools.forEach(s => {
         let udise = String(s.udise).trim();
-        if (!isAdminOrJsk && udise !== userUdise) return;
+        if (!isAdminOrJsk && !userUdise.includes(udise) && !udise.includes(userUdise)) return;
 
         let jsk = s.jsk;
         if (isAdminOrJsk && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
@@ -898,6 +912,14 @@
         if (saved && saved.students && saved.students.length > 0) {
           saved.students.forEach(st => {
             if (disFilter !== "ALL" && st.disability !== disFilter) return;
+            if (classFilter !== "ALL" && st.cls !== classFilter) return;
+
+            if (reportType === 'above40') {
+              let pctStr = String(st.percent || "").replace(/[^0-9]/g, "");
+              let pct = parseInt(pctStr) || 0;
+              if (pct < 40) return;
+            }
+
             found = true;
             html += `
               <tr>
