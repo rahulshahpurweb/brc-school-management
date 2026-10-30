@@ -39,6 +39,12 @@
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; }
   .tablewrap { overflow-x: auto; max-height: 500px; }
+  
+  /* Loading Spinner overlay */
+  #loadingOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; color:#fff; font-size:18px; font-weight:bold; }
+  .spinner { border: 6px solid #f3f3f3; border-top: 6px solid #f4b400; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
   @media print {
     .module-header, .sub-nav, .filter-bar, button, select, input { display: none !important; }
     body, html, main, .content-container, .card { background: #fff !important; color: #000 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -49,6 +55,13 @@
 </style>
 </head>
 <body>
+
+<div id="loadingOverlay">
+  <div style="text-align:center;">
+    <div class="spinner"></div>
+    <div>Processing data, please wait...</div>
+  </div>
+</div>
 
 <div class="module-header">
   <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
@@ -266,7 +279,13 @@
       "Mental illness", "Autism Spectrum Disorder", "Hemophilia"
     ],
 
+    showLoader(show) {
+      let overlay = document.getElementById("loadingOverlay");
+      if (overlay) overlay.style.display = show ? 'flex' : 'none';
+    },
+
     async init() {
+      this.showLoader(true);
       try {
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let res = await fetch(this.cloudApiUrl + "?action=getAllData&session=" + activeSess + "&t=" + new Date().getTime());
@@ -312,6 +331,7 @@
 
       this.checkAdminRole();
       this.switchTab('dashboard');
+      this.showLoader(false);
     },
 
     toggleMenu() {
@@ -392,6 +412,7 @@
       let file = event.target.files[0];
       if (!file) return;
 
+      this.showLoader(true);
       let reader = new FileReader();
       reader.onload = async (e) => {
         try {
@@ -486,9 +507,11 @@
             })
           });
 
+          this.showLoader(false);
           alert(`Admin dwara bulk template ke madhyam se ${count} schools ka data Google Sheet par cloud sync kar diya gaya hai!`);
           this.switchTab('dashboard');
         } catch (err) {
+          this.showLoader(false);
           alert("Excel file upload karne mein samasya aayi: " + err.message);
         }
       };
@@ -549,6 +572,7 @@
     },
 
     async saveSchoolSetupChanges() {
+      this.showLoader(true);
       try {
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let setupData = {};
@@ -569,12 +593,14 @@
         });
 
         let result = await response.json();
+        this.showLoader(false);
         if (result.status === "success" || result.success) {
           alert("School setup changes safalta-purnaiv Google Sheet par save ho gaye hain!");
         } else {
           alert("Local storage par save ho gaya hai.");
         }
       } catch (err) {
+        this.showLoader(false);
         console.log("Setup save error:", err);
         alert("Setup local storage par save ho gaya hai!");
       }
@@ -800,6 +826,7 @@
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
 
+      this.showLoader(true);
       try {
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let response = await fetch(this.cloudApiUrl, {
@@ -813,12 +840,14 @@
           })
         });
         let result = await response.json();
+        this.showLoader(false);
         if(result.status === "success" || result.success) {
           alert("CWSN Data Safalta-purnaiv Google Sheet par Cloud Sync ho gaya hai!");
         } else {
           alert("Data Local Save ho gaya hai.");
         }
       } catch(err) {
+        this.showLoader(false);
         console.log("Cloud sync error:", err);
         alert("Data Local Storage par save ho gaya hai!");
       }
