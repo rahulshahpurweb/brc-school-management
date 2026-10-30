@@ -619,6 +619,7 @@
       this.switchTab('dashboard');
     },
     populateCwsnDropdown() {
+        populateCwsnDropdown() {
       let select = document.getElementById('cwsnSchoolSelect');
       if (!select) return;
       select.innerHTML = '<option value="">-- Select School --</option>';
@@ -635,7 +636,7 @@
           return isYes;
         });
       } else {
-        // School login ke liye: UDISE match karein (chahe setup mein YES ho ya na ho, school ko apna school dikhega aur freeze rahega)
+        // School login ke liye: UDISE match karein
         eligibleSchools = this.allSchools.filter(s => {
           let udise = String(s.udise || "").trim();
           let cleanSchoolUdise = udise.replace(/\D/g, "");
@@ -648,15 +649,15 @@
           return matches;
         });
 
-        if (eligibleSchools.length === 0 && cleanLoginId) {
-          let matchedSchool = this.allSchools.find(s => {
-            let u = String(s.udise || "").trim();
-            let cleanU = u.replace(/\D/g, "");
-            return u === info.userId || (cleanLoginId && cleanU === cleanLoginId);
-          });
-          if (matchedSchool) {
-            eligibleSchools = [matchedSchool];
-          }
+        // Agar direct match nahi mila, toh login ID ko hi UDISE maan kar list mein add kar do taaki school kabhi khali na dikhe
+        if (eligibleSchools.length === 0 && info.userId) {
+          let forcedSchool = this.allSchools.find(s => String(s.udise).trim() === cleanLoginId) || {
+            udise: info.userId,
+            name: "My School (" + info.userId + ")",
+            jsk: "Bhoura",
+            category: "Primary with Middle School"
+          };
+          eligibleSchools = [forcedSchool];
         }
       }
 
