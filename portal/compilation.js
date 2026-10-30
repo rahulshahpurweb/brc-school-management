@@ -45,32 +45,28 @@ export const CompilationModule = {
         jskSchools.forEach(s => {
           let cat = (s.category || "").toUpperCase().trim();
           let name = (s.name || "").toUpperCase().trim();
-          let combined = cat + " " + name;
+          let combined = (cat + " " + name + " " + (s.classes ? Object.keys(s.classes).join(" ") : "")).toUpperCase();
 
-          // Smart category detection based on UDISE / Master naming conventions
-          if (combined.includes("1 TO 12") || combined.includes("1-12") || cat.includes("PRIMARY TO HIGHER SECONDARY")) {
+          // Smart category detection based on class range and keywords
+          if (combined.includes("1 TO 12") || combined.includes("1-12") || combined.includes("1 TO 12TH")) {
             c7++; // Primary to Higher Sec. (1 to 12)
-          } else if (combined.includes("1 TO 10") || combined.includes("1-10") || cat.includes("PRIMARY TO HIGH")) {
+          } else if (combined.includes("1 TO 10") || combined.includes("1-10") || combined.includes("1 TO 10TH")) {
             c6++; // Primary to High (1 to 10)
-          } else if (combined.includes("6 TO 12") || combined.includes("6-12") || cat.includes("MIDDLE TO HIGHER SECONDARY")) {
+          } else if (combined.includes("6 TO 12") || combined.includes("6-12")) {
             c5++; // Middle to Higher Sec. (6 to 12)
-          } else if (combined.includes("6 TO 10") || combined.includes("6-10") || cat.includes("MIDDLE TO HIGH")) {
+          } else if (combined.includes("6 TO 10") || combined.includes("6-10")) {
             c4++; // Middle to High (6 to 10)
-          } else if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("GPS") || combined.includes("GMS") || cat.includes("PRIMARY WITH MIDDLE") || (cat.includes("PRIMARY") && cat.includes("MIDDLE"))) {
-            if (combined.includes("6 TO 8") || cat.includes("MIDDLE SCHOOL")) {
-              c2++; // Middle School (6 to 8)
-            } else {
-              c3++; // Primary with Middle (1 to 8)
-            }
-          } else if (cat.includes("PRIMARY SCHOOL") || name.startsWith("PS ") || name.startsWith("GPS ")) {
-            c1++; // Primary School (1 to 5)
-          } else if (cat.includes("MIDDLE SCHOOL") || name.startsWith("MS ") || name.startsWith("GMS ")) {
+          } else if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("PRIMARY WITH MIDDLE") || combined.includes("PRIMARY WITH UPPER")) {
+            c3++; // Primary with Middle (1 to 8)
+          } else if (combined.includes("6 TO 8") || combined.includes("6-8") || combined.includes("MIDDLE SCHOOL") || combined.includes("UPPER PRIMARY")) {
             c2++; // Middle School (6 to 8)
+          } else if (combined.includes("1 TO 5") || combined.includes("1-5") || combined.includes("PRIMARY SCHOOL")) {
+            c1++; // Primary School (1 to 5)
           } else {
-            // Default fallback based on general indicators
-            if (cat.includes("HIGHER SEC")) c7++;
-            else if (cat.includes("HIGH SCHOOL")) c6++;
-            else c3++;
+            if (cat.includes("HIGHER SEC") || cat.includes("HSS")) c7++;
+            else if (cat.includes("HIGH") || cat.includes("HS")) c6++;
+            else if (cat.includes("MIDDLE")) c2++;
+            else c1++;
           }
         });
 
@@ -118,7 +114,7 @@ export const CompilationModule = {
         </tr>
       </thead><tbody>`;
 
-      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
+      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => String(s.jsk || "").trim().toLowerCase() === jskFilter.toLowerCase());
       let classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
       let gTot = { scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0, totB:0, totG:0, final:0 };
 
