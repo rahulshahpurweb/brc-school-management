@@ -618,7 +618,6 @@
 
       this.switchTab('dashboard');
     },
-    populateCwsnDropdown() {
         populateCwsnDropdown() {
       let select = document.getElementById('cwsnSchoolSelect');
       if (!select) return;
@@ -630,11 +629,8 @@
       let eligibleSchools = [];
 
       if (info.isAdmin || info.isJsk) {
-        eligibleSchools = this.allSchools.filter(s => {
-          let udise = String(s.udise || "").trim();
-          let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
-          return isYes;
-        });
+        // Admin aur JSK ke liye master schools ki poori list dikhegi
+        eligibleSchools = this.allSchools;
       } else {
         // School login ke liye: UDISE match karein
         eligibleSchools = this.allSchools.filter(s => {
@@ -649,7 +645,7 @@
           return matches;
         });
 
-        // Agar direct match nahi mila, toh login ID ko hi UDISE maan kar list mein add kar do taaki school kabhi khali na dikhe
+        // Agar direct match nahi mila, toh login ID ko hi UDISE maan kar add kar do
         if (eligibleSchools.length === 0 && info.userId) {
           let forcedSchool = this.allSchools.find(s => String(s.udise).trim() === cleanLoginId) || {
             udise: info.userId,
@@ -673,6 +669,7 @@
         select.appendChild(el);
       });
 
+      // Agar school login hai, toh dropdown ko select karke freeze (disable) kar do
       if (info.isSchool && eligibleSchools.length > 0) {
         select.value = eligibleSchools[0].udise;
         select.disabled = true;
@@ -685,7 +682,6 @@
       }
     },
     
-
     loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
       let expBoys = document.getElementById('expectedBoys');
