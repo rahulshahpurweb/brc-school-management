@@ -286,10 +286,9 @@
     getUserRoleInfo() {
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let role = String(user.role || "").toLowerCase();
-      // If role is explicitly school or if user ID / username is numeric and 11 digits (UDISE format)
       let userId = String(user.userId || user.username || "").trim();
-      let isSchool = (role === 'school' || (!role && userId.length === 11));
-      let isAdmin = (role === 'admin' || (!role && userId.length !== 11));
+      let isSchool = (role === 'school' || userId.length >= 10);
+      let isAdmin = (role === 'admin' || (!role && userId.length < 10));
       let isJsk = (role === 'jsk' || role === 'sankul');
       return { user, role, isAdmin, isJsk, isSchool, userId };
     },
@@ -626,52 +625,36 @@
       select.innerHTML = '<option value="">-- Select School --</option>';
 
       let info = this.getUserRoleInfo();
-      let cleanUserUdise = info.userId.replace(/\D/g, "");
 
-      let eligibleSchools = this.allSchools.filter(s => {
+      // Find the exact school matching user login ID / UDISE
+      let matchedSchool = this.allSchools.find(s => {
         let udise = String(s.udise || "").trim();
-        let cleanSchoolUdise = udise.replace(/\D/g, "");
-        let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
-
-        if (info.isSchool) {
-          // Match by exact UDISE or digit extraction
-          let matches = (
-            udise === info.userId || 
-            info.userId.includes(udise) || 
-            udise.includes(info.userId) ||
-            (cleanUserUdise && cleanSchoolUdise && (cleanSchoolUdise === cleanUserUdise || cleanSchoolUdise.includes(cleanUserUdise) || cleanUserUdise.includes(cleanSchoolUdise)))
-          );
-          return matches;
-        }
-        return isYes;
+        let cleanUdise = udise.replace(/\D/g, "");
+        let cleanLoginId = info.userId.replace(/\D/g, "");
+        return (
+          udise === info.userId || 
+          cleanUdise === cleanLoginId || 
+          (cleanLoginId && cleanUdise.includes(cleanLoginId)) || 
+          (cleanLoginId && cleanLoginId.includes(cleanUdise))
+        );
       });
 
-      if (eligibleSchools.length === 0 && info.isSchool && info.userId) {
-        let matchedSchool = this.allSchools.find(s => {
-          let u = String(s.udise || "").trim();
-          let cleanU = u.replace(/\D/g, "");
-          return u === info.userId || info.userId.includes(u) || u.includes(info.userId) || (cleanUserUdise && cleanU && cleanU === cleanUserUdise);
-        });
-        if (matchedSchool) {
-          eligibleSchools = [matchedSchool];
-        }
-      }
-
-      if (eligibleSchools.length === 0) {
-        select.innerHTML = '<option value="">-- No Schools available or marked as YES by Admin --</option>';
-        return;
-      }
-
-      eligibleSchools.forEach(s => {
+      if (matchedSchool) {
         let el = document.createElement('option');
-        el.value = s.udise;
-        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
+        el.value = matchedSchool.udise;
+        el.textContent = `${matchedSchool.name} (${matchedSchool.udise}) - JSK: ${matchedSchool.jsk}`;
         select.appendChild(el);
-      });
 
-      if (info.isSchool && eligibleSchools.length === 1) {
-        select.value = eligibleSchools[0].udise;
+        // Auto select and freeze/disable dropdown for school login
+        select.value = matchedSchool.udise;
+        if (info.isSchool) {
+          select.disabled = true;
+          select.style.background = "#e2e8f0";
+          select.style.cursor = "not-allowed";
+        }
         this.loadSchoolForm();
+      } else {
+        select.innerHTML = '<option value="">-- No matching school found for this login --</option>';
       }
     },
 
@@ -745,6 +728,7 @@
       card.className = 'student-card';
       
       let info = this.getUserRoleInfo();
+      let hasSamagra = st.samagra && String(st.samagra).trim() !== "";
 
       card.innerHTML = `
         <div class="student-card-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -752,7 +736,10 @@
           ${info.isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Delete Record (Admin)</button>` : ''}
         </div>
         <div class="form-grid">
-          <div class="form-group"><label>Samagra ID (9 Digits) *</label><input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID"></div>
+          <div class="form-group">
+            <label>Samagra ID (9 Digits) *</label>
+            <input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID" ${hasSamagra ? 'readonly style="background:#e2e8f0; cursor:not-allowed;" title="Samagra ID is locked after entry"' : ''}>
+          </div>
           <div class="form-group"><label>Student Name *</label><input type="text" class="s-name" value="${st.name || ''}" placeholder="Student Name"></div>
           <div class="form-group"><label>Father Name</label><input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name"></div>
           <div class="form-group"><label>Mother Name</label><input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name"></div>
@@ -951,7 +938,6 @@
 
       let table = document.getElementById('cwsnReportTable');
 
-      // Matrix Report (Admin / JSK only)
       if (reportType.startsWith('matrix_')) {
         if (!info.isAdmin && !info.isJsk) {
           alert("Kshama karein, Matrix Summary report keval Admin aur JSK ke liye uplabdh hai!");
@@ -1037,7 +1023,6 @@
         return;
       }
 
-      // Detailed List Report (Strictly restricted to logged-in school if role is school)
       let html = `
         <thead>
           <tr>
@@ -1058,13 +1043,12 @@
         let cleanSchoolUdise = udise.replace(/\D/g, "");
         let cleanUserUdise = info.userId.replace(/\D/g, "");
         
-        // Strict check: if role is school, only allow matching their own UDISE
         if (info.isSchool) {
           let isMatch = (
             udise === info.userId || 
-            info.userId.includes(udise) || 
-            udise.includes(info.userId) ||
-            (cleanUserUdise && cleanSchoolUdise && (cleanSchoolUdise === cleanUserUdise || cleanSchoolUdise.includes(cleanUserUdise) || cleanUserUdise.includes(cleanSchoolUdise)))
+            cleanSchoolUdise === cleanUserUdise || 
+            (cleanUserUdise && cleanSchoolUdise.includes(cleanUserUdise)) || 
+            (cleanUserUdise && cleanUserUdise.includes(cleanSchoolUdise))
           );
           if (!isMatch) return;
         }
