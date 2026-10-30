@@ -70,7 +70,7 @@
 
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard</button>
-  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School Setup (Admin Only)</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin Only)</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry</button>
   <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports</button>
 </div>
@@ -159,7 +159,7 @@
     <div class="card">
       <h3>✍️ School CWSN Data Entry Module (Edit-Only Access)</h3>
       <div class="filter-bar">
-        <label><b>Select School (CWSN Yes Only):</b></label>
+        <label><b>Select School:</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
       </div>
 
@@ -304,6 +304,11 @@
       if (bulkBtn) {
         bulkBtn.style.display = isAdmin ? 'block' : 'none';
       }
+
+      let selectionBtn = document.getElementById('navSelectionBtn');
+      if (selectionBtn) {
+        selectionBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+      }
     },
 
     switchTab(tab) {
@@ -318,7 +323,7 @@
         let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
         let isAdmin = (user.role === 'admin' || !user.role);
         if (!isAdmin) {
-          alert("Kshama karein, School-wise CWSN Setup section keval Admin ke liye uplabdh hai!");
+          alert("Kshama karein, School Setup section keval Admin ke liye hai!");
           this.switchTab('dashboard');
           return;
         }
@@ -364,7 +369,7 @@
       if (!file) return;
 
       let reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           let data = new Uint8Array(e.target.result);
           let workbook = XLSX.read(data, { type: 'array' });
@@ -373,6 +378,8 @@
           let jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
           let schoolMap = {};
+          let setupData = {};
+          
           for (let i = 1; i < jsonRows.length; i++) {
             let r = jsonRows[i];
             if (!r || r.length < 3) continue;
@@ -381,6 +388,8 @@
             let jsk = r[3] ? String(r[3]).trim() : "Bhoura";
 
             if (!udise || udise === '3' || udise === 'Dise_code') continue;
+
+            setupData[udise] = "yes";
 
             if (!schoolMap[udise]) {
               schoolMap[udise] = { schoolName: schoolName, jsk: jsk, students: [] };
@@ -413,6 +422,8 @@
           }
 
           let count = 0;
+          let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+
           for (let udise in schoolMap) {
             let sData = schoolMap[udise];
             let boys = sData.students.filter(st => st.gender && st.gender.toLowerCase().includes('boy')).length;
@@ -427,13 +438,36 @@
 
             localStorage.setItem("brc_cwsn_has_" + udise, "yes");
             localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
+            
+            // Cloud Sync per school
+            await fetch(this.cloudApiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                action: "saveCwsnData",
+                session: activeSess,
+                udise: udise,
+                payload: JSON.stringify(payload)
+              })
+            });
             count++;
           }
 
-          alert(`Admin dwara template ke madhyam se ${count} schools ka data safalta-purnaiv upload kar diya gaya hai!`);
+          // Cloud Sync Setup
+          await fetch(this.cloudApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "saveSchoolSetup",
+              session: activeSess,
+              payload: JSON.stringify(setupData)
+            })
+          });
+
+          alert(`Admin dwara bulk template ke madhyam se ${count} schools ka data Google Sheet par cloud sync kar diya gaya hai!`);
           this.switchTab('dashboard');
         } catch (err) {
-          alert("Excel file padhne mein samasya aayi: " + err.message);
+          alert("Excel file upload karne mein samasya aayi: " + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -531,18 +565,35 @@
       if (!select) return;
       select.innerHTML = '<option value="">-- Select CWSN School --</option>';
 
-      let yesSchools = this.allSchools.filter(s => localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes');
-      if (yesSchools.length === 0) {
-        select.innerHTML = '<option value="">-- No Schools marked as YES. Go to Setup or Bulk Upload --</option>';
+      let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let isAdmin = (currentUser.role === 'admin' || !currentUser.role);
+      let userUdise = String(currentUser.userId || currentUser.username || "").trim();
+
+      let eligibleSchools = this.allSchools.filter(s => {
+        let isYes = (localStorage.getItem("brc_cwsn_has_" + s.udise) === 'yes');
+        if (!isYes) return false;
+        if (!isAdmin) {
+          return String(s.udise).trim() === userUdise;
+        }
+        return true;
+      });
+
+      if (eligibleSchools.length === 0) {
+        select.innerHTML = '<option value="">-- No Schools available or marked as YES --</option>';
         return;
       }
 
-      yesSchools.forEach(s => {
+      eligibleSchools.forEach(s => {
         let el = document.createElement('option');
         el.value = s.udise;
         el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
         select.appendChild(el);
       });
+
+      if (!isAdmin && eligibleSchools.length === 1) {
+        select.value = eligibleSchools[0].udise;
+        this.loadSchoolForm();
+      }
     },
 
     loadSchoolForm() {
