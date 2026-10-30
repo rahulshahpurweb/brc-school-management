@@ -119,7 +119,10 @@
 
   <section id="cwsnSelection" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>🏫 School-wise CWSN Availability Setup (Yes / No)</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0;">🏫 School-wise CWSN Availability Setup (Admin Only)</h3>
+        <button onclick="CwsnApp.saveSchoolSetupChanges()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;" id="saveSetupBtn">💾 Save Setup Changes</button>
+      </div>
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
         <select id="selJskFilter" onchange="CwsnApp.renderSchoolSelectionTable()" style="padding:6px; font-weight:bold; border-radius:4px;">
@@ -283,12 +286,18 @@
 
     checkAdminRole() {
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let isAdmin = (user.role === 'admin' || !user.role);
+      
       let bulkBtn = document.getElementById("adminBulkUploadBtn");
       if (bulkBtn) {
-        if (user.role === 'admin' || !user.role) {
-          bulkBtn.style.display = 'block';
-        } else {
-          bulkBtn.style.display = 'none';
+        bulkBtn.style.display = isAdmin ? 'block' : 'none';
+      }
+
+      // Restrict School Setup Tab for non-admins if needed, or disable radio buttons
+      let selectionBtn = document.getElementById('navSelectionBtn');
+      if (selectionBtn) {
+        if (!isAdmin) {
+          selectionBtn.style.opacity = '0.6';
         }
       }
     },
@@ -302,6 +311,13 @@
         document.getElementById('navDashBtn').classList.add('active');
         this.renderDashboard();
       } else if (tab === 'selection') {
+        let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+        let isAdmin = (user.role === 'admin' || !user.role);
+        if (!isAdmin) {
+          alert("Yeh setup section keval Admin ke liye anivarya hai!");
+          this.switchTab('dashboard');
+          return;
+        }
         document.getElementById('cwsnSelection').style.display = 'block';
         document.getElementById('navSelectionBtn').classList.add('active');
         this.renderSchoolSelectionTable();
@@ -447,10 +463,10 @@
             <td>${s.jsk}</td>
             <td>
               <label style="margin-right:15px; cursor:pointer; font-weight:bold; color:${cwsnStatus === 'yes' ? '#16a34a' : '#64748b'};">
-                <input type="radio" name="cwsn_chk_${udise}" value="yes" ${cwsnStatus === 'yes' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'yes')"> YES
+                <input type="radio" name="cwsn_chk_${udise}" value="yes" ${cwsnStatus === 'yes' ? 'checked' : ''} onchange="CwsnApp.confirmAndSetSchoolCwsn('${udise}', 'yes', '${s.name}')"> YES
               </label>
               <label style="cursor:pointer; font-weight:bold; color:${cwsnStatus === 'no' ? '#dc2626' : '#64748b'};">
-                <input type="radio" name="cwsn_chk_${udise}" value="no" ${cwsnStatus === 'no' ? 'checked' : ''} onchange="CwsnApp.setSchoolCwsn('${udise}', 'no')"> NO
+                <input type="radio" name="cwsn_chk_${udise}" value="no" ${cwsnStatus === 'no' ? 'checked' : ''} onchange="CwsnApp.confirmAndSetSchoolCwsn('${udise}', 'no', '${s.name}')"> NO
               </label>
             </td>
           </tr>
@@ -458,9 +474,24 @@
       });
     },
 
-    setSchoolCwsn(udise, status) {
-      localStorage.setItem("brc_cwsn_has_" + udise, status);
-      this.renderSchoolSelectionTable();
+    confirmAndSetSchoolCwsn(udise, status, schoolName) {
+      let confirmMsg = `Kya aap "${schoolName}" (UDISE: ${udise}) ke CWSN status ko ${status.toUpperCase()} karna chahte hain?`;
+      if (confirm(confirmMsg)) {
+        localStorage.setItem("brc_cwsn_has_" + udise, status);
+        this.renderSchoolSelectionTable();
+      } else {
+        // Revert radio selection if cancelled
+        let prevStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+        let radios = document.querySelectorAll(`input[name="cwsn_chk_${udise}"]`);
+        radios.forEach(r => {
+          if (r.value === prevStatus) r.checked = true;
+        });
+      }
+    },
+
+    async saveSchoolSetupChanges() {
+      alert("School setup changes safalta-purnaiv local aur dashboard par reflect kar diye gaye hain!");
+      this.switchTab('dashboard');
     },
 
     populateCwsnDropdown() {
