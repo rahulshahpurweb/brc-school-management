@@ -282,16 +282,17 @@
       let overlay = document.getElementById("loadingOverlay");
       if (overlay) overlay.style.display = show ? 'flex' : 'none';
     },
-
     getUserRoleInfo() {
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let role = String(user.role || "").toLowerCase();
-      let userId = String(user.userId || user.username || "").trim();
-      let isSchool = (role === 'school' || userId.length >= 10);
-      let isAdmin = (role === 'admin' || (!role && userId.length < 10));
+      // Main portal aur school-auth.js 'udise' key save karte hain, isliye ise sabse pehle priority di gayi hai
+      let userId = String(user.udise || user.userId || user.username || user.code || user.id || "").trim();
+      let isSchool = (role === 'school' || userId.length >= 10 || Boolean(user.udise));
+      let isAdmin = (role === 'admin' || userId === 'admin' || (!role && userId.length < 10 && !user.udise));
       let isJsk = (role === 'jsk' || role === 'sankul');
       return { user, role, isAdmin, isJsk, isSchool, userId };
     },
+    
 
     async init() {
       this.showLoader(true);
