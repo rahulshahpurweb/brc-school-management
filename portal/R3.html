@@ -215,25 +215,35 @@
         <label style="margin-left:10px;"><b>Disability Filter:</b></label>
         <select id="reportDisabilityFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
           <option value="ALL">-- All Disabilities --</option>
-          <option value="Locomotor Disability">Locomotor Disability</option>
-          <option value="Visual Impairment">Visual Impairment</option>
-          <option value="Hearing Impairment">Hearing Impairment</option>
-          <option value="Speech & Language">Speech & Language</option>
-          <option value="Intellectual Disability">Intellectual Disability</option>
           <option value="Specific Learning Disabilities">Specific Learning Disabilities</option>
-          <option value="Autism Spectrum">Autism Spectrum</option>
+          <option value="Intellectual Disability">Intellectual Disability</option>
+          <option value="Locomotor Disability">Locomotor Disability</option>
+          <option value="Blindness">Blindness</option>
+          <option value="Low Vision">Low Vision</option>
+          <option value="Speech and Language Disability">Speech and Language Disability</option>
+          <option value="Sickle Cell Disease">Sickle Cell Disease</option>
+          <option value="Hearing impairment">Hearing impairment</option>
           <option value="Multiple Disabilities">Multiple Disabilities</option>
+          <option value="Cerebral Palsy">Cerebral Palsy</option>
+          <option value="Thalassemia">Thalassemia</option>
+          <option value="Mental illness">Mental illness</option>
+          <option value="Autism Spectrum Disorder">Autism Spectrum Disorder</option>
+          <option value="Hemophilia">Hemophilia</option>
         </select>
         <label style="margin-left:10px;"><b>Class Filter:</b></label>
         <select id="reportClassFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
           <option value="ALL">-- All Classes --</option>
-          <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option><option value="Class 5">Class 5</option>
-          <option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option>
+          <option value="Class - 1">Class - 1</option><option value="Class - 2">Class - 2</option><option value="Class - 3">Class - 3</option><option value="Class - 4">Class - 4</option><option value="Class - 5">Class - 5</option>
+          <option value="Class - 6">Class - 6</option><option value="Class - 7">Class - 7</option><option value="Class - 8">Class - 8</option><option value="Class - 9">Class - 9</option><option value="Class - 10">Class - 10</option><option value="Class - 11">Class - 11</option><option value="Class - 12">Class - 12</option>
         </select>
-        <label style="margin-left:10px;"><b>Report Type:</b></label>
+        <label style="margin-left:10px;"><b>Report Format:</b></label>
         <select id="reportTypeFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="overall">Overall Students</option>
-          <option value="above40">Disability >= 40%</option>
+          <option value="overall">Overall Students (List)</option>
+          <option value="above40">Disability >= 40% (List)</option>
+          <option value="below40">Disability < 40% (Below / List)</option>
+          <option value="matrix_overall">Matrix Summary (Overall)</option>
+          <option value="matrix_above40">Matrix Summary (>= 40%)</option>
+          <option value="matrix_below40">Matrix Summary (< 40%)</option>
         </select>
       </div>
       <div class="tablewrap">
@@ -250,9 +260,10 @@
   window.CwsnApp = {
     cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
     disabilityTypes: [
-      "Locomotor Disability", "Visual Impairment", "Hearing Impairment", 
-      "Speech & Language", "Intellectual Disability", "Specific Learning Disabilities", 
-      "Autism Spectrum", "Multiple Disabilities", "Blindness", "Low Vision"
+      "Specific Learning Disabilities", "Intellectual Disability", "Locomotor Disability", 
+      "Blindness", "Low Vision", "Speech and Language Disability", "Sickle Cell Disease", 
+      "Hearing impairment", "Multiple Disabilities", "Cerebral Palsy", "Thalassemia", 
+      "Mental illness", "Autism Spectrum Disorder", "Hemophilia"
     ],
 
     async init() {
@@ -415,7 +426,7 @@
               mother: r[7] ? String(r[7]).trim() : "",
               gender: r[8] ? String(r[8]).trim() : "Boy",
               cast: r[9] ? String(r[9]).trim() : "",
-              cls: r[10] ? String(r[10]).trim() : "Class 1",
+              cls: r[10] ? String(r[10]).trim() : "Class - 1",
               mobile: r[11] ? String(r[11]).trim() : "",
               udid: r[12] ? String(r[12]).trim() : "",
               aadhar: r[13] ? String(r[13]).trim() : "",
@@ -578,7 +589,7 @@
 
       let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let role = (currentUser.role || "").toLowerCase();
-      let isAdmin = (role === 'admin' || !currentUser.role);
+      let isAdmin = (role === 'admin' || !user.role);
       let userUdise = String(currentUser.userId || currentUser.username || "").trim();
 
       let eligibleSchools = this.allSchools.filter(s => {
@@ -699,7 +710,7 @@
             <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
             <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
           </select></div>
-          <div class="form-group"><label>Class</label><select class="s-class">${['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label>Class</label><select class="s-class">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
           <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
           <div class="form-group"><label>UDID No.</label><input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No."></div>
           <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
@@ -886,6 +897,90 @@
       let reportType = document.getElementById('reportTypeFilter').value;
 
       let table = document.getElementById('cwsnReportTable');
+
+      // Check if Matrix Report is requested
+      if (reportType.startsWith('matrix_')) {
+        let matrixMode = reportType.replace('matrix_', ''); // 'overall', 'above40', 'below40'
+        let classes = ['Class - 1', 'Class - 2', 'Class - 3', 'Class - 4', 'Class - 5', 'Class - 6', 'Class - 7', 'Class - 8', 'Class - 9', 'Class - 10', 'Class - 11', 'Class - 12'];
+        
+        let matrixData = {};
+        this.disabilityTypes.forEach(d => {
+          matrixData[d] = {};
+          classes.forEach(c => {
+            matrixData[d][c] = { b: 0, g: 0, t: 0 };
+          });
+        });
+
+        this.allSchools.forEach(s => {
+          let udise = String(s.udise).trim();
+          if (!isAdminOrJsk && !userUdise.includes(udise) && !udise.includes(userUdise)) return;
+          let jsk = s.jsk;
+          if (isAdminOrJsk && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
+          let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+          if (saved && saved.students && saved.students.length > 0) {
+            saved.students.forEach(st => {
+              let dType = st.disability || "Locomotor Disability";
+              let cName = st.cls || "Class - 1";
+              let gender = (st.gender || "").toLowerCase();
+              
+              let pctStr = String(st.percent || "").replace(/[^0-9]/g, "");
+              let pct = parseInt(pctStr) || 0;
+
+              if (matrixMode === 'above40' && pct < 40) return;
+              if (matrixMode === 'below40' && pct >= 40) return;
+
+              if (matrixData[dType] && matrixData[dType][cName]) {
+                if (gender.includes('boy')) {
+                  matrixData[dType][cName].b++;
+                } else if (gender.includes('girl')) {
+                  matrixData[dType][cName].g++;
+                }
+                matrixData[dType][cName].t++;
+              }
+            });
+          }
+        });
+
+        let html = `<thead><tr><th rowspan="2">S.N.</th><th rowspan="2">Category</th>`;
+        classes.forEach(c => {
+          html += `<th colspan="3">${c}</th>`;
+        });
+        html += `<th colspan="3">Mahayog (Class 1 to 12)</th></tr><tr>`;
+        classes.forEach(() => {
+          html += `<th>B</th><th>G</th><th>T</th>`;
+        });
+        html += `<th>B</th><th>G</th><th>T</th></tr></thead><tbody>`;
+
+        let sn = 1;
+        let classTotals = {};
+        classes.forEach(c => { classTotals[c] = { b: 0, g: 0, t: 0 }; });
+        let grandB = 0, grandG = 0, grandT = 0;
+
+        this.disabilityTypes.forEach(d => {
+          html += `<tr><td>${sn++}</td><td style="text-align:left; font-weight:bold;">${d}</td>`;
+          let rowB = 0, rowG = 0, rowT = 0;
+          classes.forEach(c => {
+            let cell = matrixData[d][c];
+            rowB += cell.b; rowG += cell.g; rowT += cell.t;
+            classTotals[c].b += cell.b; classTotals[c].g += cell.g; classTotals[c].t += cell.t;
+            html += `<td>${cell.b || ''}</td><td>${cell.g || ''}</td><td>${cell.t || ''}</td>`;
+          });
+          grandB += rowB; grandG += rowG; grandT += rowT;
+          html += `<td style="font-weight:bold; color:#1d4ed8;">${rowB}</td><td style="font-weight:bold; color:#db2777;">${rowG}</td><td style="font-weight:bold; color:#071b38;">${rowT}</td></tr>`;
+        });
+
+        html += `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="2">State Total / Total</td>`;
+        classes.forEach(c => {
+          let ct = classTotals[c];
+          html += `<td>${ct.b}</td><td>${ct.g}</td><td>${ct.t}</td>`;
+        });
+        html += `<td style="color:#1d4ed8;">${grandB}</td><td style="color:#db2777;">${grandG}</td><td style="color:#071b38;">${grandT}</td></tr></tbody>`;
+        table.innerHTML = html;
+        return;
+      }
+
+      // Default Detailed List Report
       let html = `
         <thead>
           <tr>
@@ -914,11 +1009,11 @@
             if (disFilter !== "ALL" && st.disability !== disFilter) return;
             if (classFilter !== "ALL" && st.cls !== classFilter) return;
 
-            if (reportType === 'above40') {
-              let pctStr = String(st.percent || "").replace(/[^0-9]/g, "");
-              let pct = parseInt(pctStr) || 0;
-              if (pct < 40) return;
-            }
+            let pctStr = String(st.percent || "").replace(/[^0-9]/g, "");
+            let pct = parseInt(pctStr) || 0;
+
+            if (reportType === 'above40' && pct < 40) return;
+            if (reportType === 'below40' && pct >= 40) return;
 
             found = true;
             html += `
