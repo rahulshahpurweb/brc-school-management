@@ -381,11 +381,11 @@
         document.getElementById('cwsnReports').style.display = 'block';
         document.getElementById('navReportsBtn').classList.add('active');
         
-        // Hide matrix and Sankul filter for school login
         let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
         let role = (currentUser.role || "").toLowerCase();
         let isAdminOrJsk = (role === 'admin' || role === 'jsk' || role === 'sankul' || !currentUser.role);
         
+        // Hide advanced filters for school login, show only for Admin/JSK
         let reportFiltersBar = document.getElementById('reportFiltersBar');
         if (reportFiltersBar) {
           reportFiltersBar.style.display = isAdminOrJsk ? 'flex' : 'none';
@@ -627,27 +627,33 @@
       let role = (currentUser.role || "").toLowerCase();
       let isAdmin = (role === 'admin' || !user.role);
       let userUdise = String(currentUser.userId || currentUser.username || "").trim();
+      let cleanUserUdise = userUdise.replace(/\D/g, "");
 
       let eligibleSchools = this.allSchools.filter(s => {
-        let udise = String(s.udise).trim();
+        let udise = String(s.udise || "").trim();
+        let cleanSchoolUdise = udise.replace(/\D/g, "");
         let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
-        
+
         if (!isAdmin) {
-          let matchesUser = (udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise));
-          // For school login, if matches userUdise, show it even if isYes is missing (fallback safety)
-          if (matchesUser) return true;
-          return false;
+          let matches = (
+            udise === userUdise || 
+            userUdise.includes(udise) || 
+            udise.includes(userUdise) ||
+            (cleanUserUdise && cleanSchoolUdise && (cleanSchoolUdise === cleanUserUdise || cleanSchoolUdise.includes(cleanUserUdise) || cleanUserUdise.includes(cleanSchoolUdise)))
+          );
+          return matches;
         }
         return isYes;
       });
 
-      if (eligibleSchools.length === 0) {
-        // Fallback for school login if not found in filtered list
-        if (!isAdmin && userUdise) {
-          let matchedSchool = this.allSchools.find(s => String(s.udise).trim() === userUdise || userUdise.includes(String(s.udise).trim()));
-          if (matchedSchool) {
-            eligibleSchools = [matchedSchool];
-          }
+      if (eligibleSchools.length === 0 && !isAdmin && userUdise) {
+        let matchedSchool = this.allSchools.find(s => {
+          let u = String(s.udise || "").trim();
+          let cleanU = u.replace(/\D/g, "");
+          return u === userUdise || userUdise.includes(u) || u.includes(userUdise) || (cleanUserUdise && cleanU && cleanU === cleanUserUdise);
+        });
+        if (matchedSchool) {
+          eligibleSchools = [matchedSchool];
         }
       }
 
@@ -1036,7 +1042,7 @@
         return;
       }
 
-      // Detailed List Report (For school login: restrict only to their own school)
+      // Detailed List Report (Strictly restricted to logged-in school if role is school)
       let html = `
         <thead>
           <tr>
@@ -1055,9 +1061,10 @@
       this.allSchools.forEach(s => {
         let udise = String(s.udise).trim();
         
-        // Strict restriction for school login
+        // Strict check: if role is school, only allow matching their own UDISE
         if (!isAdminOrJsk) {
-          if (!userUdise.includes(udise) && !udise.includes(userUdise)) return;
+          let isMatch = (udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise) || udise.replace(/\D/g,"") === userUdise.replace(/\D/g,""));
+          if (!isMatch) return;
         }
 
         let jsk = s.jsk;
@@ -1093,7 +1100,7 @@
         }
       });
 
-      if (!found) html += `<tr><td colspan="26" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
+      if (!found) html += `<tr><td colspan="26" style="padding:20px; color:#64748b;">No matching CWSN student records found for your school.</td></tr>`;
       html += `</tbody>`;
       table.innerHTML = html;
     },
