@@ -40,7 +40,6 @@
   th { background: #071b38; color: #fff; }
   .tablewrap { overflow-x: auto; max-height: 500px; }
   
-  /* Loading Spinner overlay */
   #loadingOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; color:#fff; font-size:18px; font-weight:bold; }
   .spinner { border: 6px solid #f3f3f3; border-top: 6px solid #f4b400; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -213,7 +212,7 @@
   <section id="cwsnReports" class="cwsn-section" style="display:none;">
     <div class="card">
       <h3>📑 CWSN Compilation & Filter Reports</h3>
-      <div class="filter-bar">
+      <div class="filter-bar" id="reportFiltersBar">
         <label><b>JSK Filter:</b></label>
         <select id="reportJskFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
           <option value="ALL">-- All Sankul --</option>
@@ -381,6 +380,17 @@
       } else if (tab === 'reports') {
         document.getElementById('cwsnReports').style.display = 'block';
         document.getElementById('navReportsBtn').classList.add('active');
+        
+        // Hide matrix and Sankul filter for school login
+        let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+        let role = (currentUser.role || "").toLowerCase();
+        let isAdminOrJsk = (role === 'admin' || role === 'jsk' || role === 'sankul' || !currentUser.role);
+        
+        let reportFiltersBar = document.getElementById('reportFiltersBar');
+        if (reportFiltersBar) {
+          reportFiltersBar.style.display = isAdminOrJsk ? 'flex' : 'none';
+        }
+
         this.renderReports();
       }
     },
@@ -618,29 +628,26 @@
       let isAdmin = (role === 'admin' || !user.role);
       let userUdise = String(currentUser.userId || currentUser.username || "").trim();
 
-      // Fallback: Agar localStorage mein status nahi mila, toh master schools se match karein
       let eligibleSchools = this.allSchools.filter(s => {
         let udise = String(s.udise).trim();
-        let statusKey = "brc_cwsn_has_" + udise;
-        let isYes = (localStorage.getItem(statusKey) === 'yes');
+        let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
         
-        // Agar admin nahi hai, toh keval logged-in school ka UDISE match hona chahiye
         if (!isAdmin) {
-          let matchFound = (udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise));
-          // Agar admin ne setup mein 'yes' nahi bhi kiya hai par school login hai, toh use entry dikhane ke liye auto-allow ya check kar sakte hain, 
-          // lekin strict rule ke anusar agar 'yes' hai tabhi dikhega. Agar test ke liye dekhna hai toh isYes condition hata bhi sakte hain.
-          return matchFound;
+          let matchesUser = (udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise));
+          // For school login, if matches userUdise, show it even if isYes is missing (fallback safety)
+          if (matchesUser) return true;
+          return false;
         }
-        
         return isYes;
       });
 
-      // Agar non-admin ke liye eligible schools nahi mile (kyunki admin ne setup mein YES nahi kiya hoga), 
-      // toh testing ke liye userUdise se direct match wala school dikha denge taaki school ko pareshani na ho:
-      if (!isAdmin && eligibleSchools.length === 0 && userUdise) {
-        let matchedSchool = this.allSchools.find(s => String(s.udise).trim() === userUdise || userUdise.includes(String(s.udise).trim()));
-        if (matchedSchool) {
-          eligibleSchools = [matchedSchool];
+      if (eligibleSchools.length === 0) {
+        // Fallback for school login if not found in filtered list
+        if (!isAdmin && userUdise) {
+          let matchedSchool = this.allSchools.find(s => String(s.udise).trim() === userUdise || userUdise.includes(String(s.udise).trim()));
+          if (matchedSchool) {
+            eligibleSchools = [matchedSchool];
+          }
         }
       }
 
@@ -943,9 +950,14 @@
 
       let table = document.getElementById('cwsnReportTable');
 
-      // Check if Matrix Report is requested
+      // Check if Matrix Report is requested (Admin / JSK only)
       if (reportType.startsWith('matrix_')) {
-        let matrixMode = reportType.replace('matrix_', ''); // 'overall', 'above40', 'below40'
+        if (!isAdminOrJsk) {
+          alert("Kshama karein, Matrix Summary report keval Admin aur JSK ke liye uplabdh hai!");
+          return;
+        }
+
+        let matrixMode = reportType.replace('matrix_', '');
         let classes = ['Class - 1', 'Class - 2', 'Class - 3', 'Class - 4', 'Class - 5', 'Class - 6', 'Class - 7', 'Class - 8'];
         
         let matrixData = {};
@@ -958,9 +970,8 @@
 
         this.allSchools.forEach(s => {
           let udise = String(s.udise).trim();
-          if (!isAdminOrJsk && !userUdise.includes(udise) && !udise.includes(userUdise)) return;
           let jsk = s.jsk;
-          if (isAdminOrJsk && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
           if (saved && saved.students && saved.students.length > 0) {
@@ -991,7 +1002,7 @@
         classes.forEach(c => {
           html += `<th colspan="3">${c}</th>`;
         });
-        html += `<th colspan="3">Grand Total (Class 1 to 8)</th></tr><tr>`;
+        html += `<th colspan="3">Mahayog (Class 1 to 8)</th></tr><tr>`;
         classes.forEach(() => {
           html += `<th>B</th><th>G</th><th>T</th>`;
         });
@@ -1025,7 +1036,7 @@
         return;
       }
 
-      // Default Detailed List Report
+      // Detailed List Report (For school login: restrict only to their own school)
       let html = `
         <thead>
           <tr>
@@ -1043,7 +1054,11 @@
       let rowIdx = 1, found = false;
       this.allSchools.forEach(s => {
         let udise = String(s.udise).trim();
-        if (!isAdminOrJsk && !userUdise.includes(udise) && !udise.includes(userUdise)) return;
+        
+        // Strict restriction for school login
+        if (!isAdminOrJsk) {
+          if (!userUdise.includes(udise) && !udise.includes(userUdise)) return;
+        }
 
         let jsk = s.jsk;
         if (isAdminOrJsk && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
