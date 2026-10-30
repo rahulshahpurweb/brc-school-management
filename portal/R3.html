@@ -252,7 +252,6 @@
           }
         }
         
-        // Fetch live CWSN data from Google Sheet for cross-browser sync
         let cwsnRes = await fetch(this.cloudApiUrl + "?action=getAllCwsnData&session=" + activeSess + "&t=" + new Date().getTime());
         if (cwsnRes.ok) {
           let cloudCwsn = await cwsnRes.json();
@@ -373,7 +372,7 @@
               father: r[6] ? String(r[6]).trim() : "",
               mother: r[7] ? String(r[7]).trim() : "",
               gender: r[8] ? String(r[8]).trim() : "Boy",
-              cast: r[9] ? String(r[9]).trim() : "SC",
+              cast: r[9] ? String(r[9]).trim() : "",
               cls: r[10] ? String(r[10]).trim() : "Class 1",
               mobile: r[11] ? String(r[11]).trim() : "",
               udid: r[12] ? String(r[12]).trim() : "",
@@ -552,9 +551,13 @@
       let card = document.createElement('div');
       card.className = 'student-card';
       
+      let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let isAdmin = (currentUser.role === 'admin' || !currentUser.role);
+
       card.innerHTML = `
-        <div class="student-card-header">
-          <span>Student #${idx} Record (Edit Only)</span>
+        <div class="student-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Student #${idx} Record</span>
+          ${isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Delete Record (Admin)</button>` : ''}
         </div>
         <div class="form-grid">
           <div class="form-group"><label>Samagra ID (9 Digits) *</label><input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID"></div>
@@ -562,7 +565,8 @@
           <div class="form-group"><label>Father Name</label><input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name"></div>
           <div class="form-group"><label>Mother Name</label><input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name"></div>
           <div class="form-group"><label>Gender</label><select class="s-gender"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></div>
-          <div class="form-group"><label>Category</label><select class="s-cast">
+          <div class="form-group"><label>Category *</label><select class="s-cast">
+            <option value="" ${!st.cast ? 'selected' : ''}>-- Select --</option>
             <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
             <option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option>
             <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
@@ -613,12 +617,14 @@
       for (let card of cards) {
         let samagra = card.querySelector('.s-samagra').value.trim();
         let name = card.querySelector('.s-name').value.trim();
+        let cast = card.querySelector('.s-cast').value;
         let aadhar = card.querySelector('.s-aadhar').value.trim();
         let mobile = card.querySelector('.s-mobile').value.trim();
         let dob = card.querySelector('.s-dob').value.trim();
         let teacherMob = card.querySelector('.s-teachermob').value.trim();
 
         if (!name) { alert("Student Name bharna anivarya (mandatory) hai!"); return; }
+        if (!cast) { alert("Kripya student ki CAST Category select karein!"); return; }
         if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID theek 9 digits ki honi chahiye!"); return; }
         if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) { alert("Aadhar card number theek 12 digits ka hona chahiye!"); return; }
         if (mobile !== "" && !(/^\d{10}$/.test(mobile))) { alert("Mobile number theek 10 digits ka hona chahiye!"); return; }
