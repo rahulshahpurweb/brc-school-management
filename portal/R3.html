@@ -618,7 +618,8 @@
 
       this.switchTab('dashboard');
     },
-            populateCwsnDropdown() {
+
+    populateCwsnDropdown() {
       let select = document.getElementById('cwsnSchoolSelect');
       if (!select) return;
       select.innerHTML = '<option value="">-- Select School --</option>';
@@ -629,60 +630,47 @@
       let eligibleSchools = [];
 
       if (info.isAdmin || info.isJsk) {
-        // Admin aur JSK ke liye master schools ki poori list
         eligibleSchools = this.allSchools;
       } else {
-        // School login ke liye: UDISE match karein
+        // Real master list se school match karein bina kisi dummy creation ke
         if (this.allSchools && this.allSchools.length > 0) {
           eligibleSchools = this.allSchools.filter(s => {
-            let udise = String(s.udise || "").trim();
+            let udise = String(s.udise || s.Dise_code || s.code || s.id || "").trim();
             let cleanSchoolUdise = udise.replace(/\D/g, "");
             
-            let matches = (
+            return (
               udise === info.userId || 
               cleanSchoolUdise === cleanLoginId || 
               (cleanLoginId && cleanSchoolUdise && (cleanSchoolUdise.includes(cleanLoginId) || cleanLoginId.includes(cleanSchoolUdise)))
             );
-            return matches;
           });
-        }
-
-        // Agar master list mein nahi mila, toh session ke login ID ko hi school maan kar turant dikha do
-        if (eligibleSchools.length === 0) {
-          let fallbackUdise = info.userId || "23351000000";
-          let foundInMaster = this.allSchools.find(s => String(s.udise).trim() === fallbackUdise);
-          
-          eligibleSchools = [{
-            udise: fallbackUdise,
-            name: foundInMaster ? foundInMaster.name : ("School Login (" + fallbackUdise + ")"),
-            jsk: foundInMaster ? foundInMaster.jsk : "Bhoura"
-          }];
         }
       }
 
       if (eligibleSchools.length === 0) {
-        select.innerHTML = '<option value="">-- No Schools available --</option>';
+        select.innerHTML = '<option value="">-- No matching school found in master data --</option>';
         return;
       }
 
       eligibleSchools.forEach(s => {
+        let realUdise = String(s.udise || s.Dise_code || s.code || s.id).trim();
         let el = document.createElement('option');
-        el.value = s.udise;
-        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
+        el.value = realUdise;
+        el.textContent = `${s.name || s.schoolName} (${realUdise}) - JSK: ${s.jsk || s.Sankul || 'Bhoura'}`;
         select.appendChild(el);
       });
 
-      // Agar school login hai, toh dropdown ko select karke freeze (disable) kar do
+      // School login ke liye dropdown select karke freeze (disable) kar do
       if (info.isSchool || eligibleSchools.length === 1) {
-        select.value = eligibleSchools[0].udise;
+        let targetUdise = String(eligibleSchools[0].udise || eligibleSchools[0].Dise_code || eligibleSchools[0].code || eligibleSchools[0].id).trim();
+        select.value = targetUdise;
         select.disabled = true;
         select.style.background = "#e2e8f0";
         select.style.cursor = "not-allowed";
         this.loadSchoolForm();
       }
     },
-    
-    
+
     loadSchoolForm() {
       let udise = document.getElementById('cwsnSchoolSelect').value;
       let expBoys = document.getElementById('expectedBoys');
@@ -709,12 +697,12 @@
       addBtn.disabled = false; addBtn.style.background = "#1d4ed8"; addBtn.style.cursor = "pointer";
       saveBtn.disabled = false; saveBtn.style.background = "#16a34a"; saveBtn.style.cursor = "pointer";
 
-      let school = this.allSchools.find(s => String(s.udise) === String(udise));
+      let school = this.allSchools.find(s => String(s.udise || s.Dise_code || s.code || s.id) === String(udise));
       if (!school) return;
 
-      document.getElementById('lblSchoolName').textContent = school.name;
+      document.getElementById('lblSchoolName').textContent = school.name || school.schoolName;
       document.getElementById('lblUdise').textContent = udise;
-      document.getElementById('lblJsk').textContent = school.jsk;
+      document.getElementById('lblJsk').textContent = school.jsk || school.Sankul || 'Bhoura';
       
       let liveTotal = 0;
       if (school.classes) {
@@ -836,7 +824,7 @@
         if (dob !== "" && !(/^\d{2}\/\d{2}\/\d{4}$/.test(dob))) { alert("DOB ka format DD/MM/YYYY (e.g., 15/08/2012) hona chahiye!"); return; }
       }
 
-      let school = this.allSchools.find(s => String(s.udise) === String(udise));
+      let school = this.allSchools.find(s => String(s.udise || s.Dise_code || s.code || s.id) === String(udise));
       let students = [];
       
       cards.forEach(card => {
@@ -859,7 +847,7 @@
       let girls = students.filter(st => st.gender === 'Girl').length;
 
       let payload = {
-        udise: udise, schoolName: school.name, jsk: school.jsk, students: students,
+        udise: udise, schoolName: school.name || school.schoolName, jsk: school.jsk || school.Sankul || 'Bhoura', students: students,
         totalBoys: boys, totalGirls: girls, grandTotal: students.length, completed: students.length > 0,
         expectedBoys: expBoys, expectedGirls: expGirls
       };
@@ -903,11 +891,12 @@
       });
 
       this.allSchools.forEach(s => {
-        let jsk = s.jsk ? s.jsk.charAt(0).toUpperCase() + s.jsk.slice(1).toLowerCase() : "Bhoura";
+        let rawJsk = s.jsk || s.Sankul || "Bhoura";
+        let jsk = rawJsk.charAt(0).toUpperCase() + rawJsk.slice(1).toLowerCase();
         if(!jskMap[jsk]) jskMap[jsk] = { schools: 0, yesSchools: 0, completed: 0, boys: 0, girls: 0 };
         jskMap[jsk].schools++;
 
-        let udise = String(s.udise).trim();
+        let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
         if (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes') {
           yesCount++; jskMap[jsk].yesSchools++;
         }
@@ -981,8 +970,8 @@
         });
 
         this.allSchools.forEach(s => {
-          let udise = String(s.udise).trim();
-          let jsk = s.jsk;
+          let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
+          let jsk = s.jsk || s.Sankul || 'Bhoura';
           if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
@@ -1064,7 +1053,7 @@
 
       let rowIdx = 1, found = false;
       this.allSchools.forEach(s => {
-        let udise = String(s.udise).trim();
+        let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
         let cleanSchoolUdise = udise.replace(/\D/g, "");
         let cleanUserUdise = info.userId.replace(/\D/g, "");
         
@@ -1078,7 +1067,7 @@
           if (!isMatch) return;
         }
 
-        let jsk = s.jsk;
+        let jsk = s.jsk || s.Sankul || 'Bhoura';
         if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
@@ -1096,7 +1085,7 @@
             found = true;
             html += `
               <tr>
-                <td>${rowIdx++}</td><td style="text-align:left;">${s.name}</td><td>${udise}</td><td>${jsk}</td>
+                <td>${rowIdx++}</td><td style="text-align:left;">${s.name || s.schoolName}</td><td>${udise}</td><td>${jsk}</td>
                 <td>${st.samagra || '-'}</td><td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
                 <td style="text-align:left;">${st.father || '-'}</td><td style="text-align:left;">${st.mother || '-'}</td>
                 <td>${st.gender || '-'}</td><td>${st.cast || '-'}</td><td>${st.cls || '-'}</td><td>${st.mobile || '-'}</td>
