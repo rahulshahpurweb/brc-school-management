@@ -12,7 +12,6 @@
   .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; flex-wrap: wrap; gap: 10px; }
   .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
   
-  /* 3-Line Hamburger Menu Styling */
   .menu-container { position: relative; display: inline-block; }
   .menu-btn { background: #0b2854; color: #fff; border: 1px solid #ffd21c; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; }
   .dropdown-content { display: none; position: absolute; right: 0; background-color: #ffffff; min-width: 220px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
@@ -316,7 +315,7 @@
       let sample = [
         1, "GHSS MODEL SHAHPUR(6 to 12)", "23351003914", "Shahpur", "302877484",
         "Chetan Verma", "Sard", "Rina", "Boy", "SC",
-        "Class - 6", "9876543210", "UDID123", "123456789012", "15082012",
+        "Class - 6", "9876543210", "UDID123", "123456789012", "15/08/2012",
         "Specific Learning Disabilities", "Yes", "40 Percent", "Hearing Aid",
         "Shahpur", "460440", "CBI", "CBIN0280760", "2227888040",
         "Ramesh Kumar", "9425012345"
@@ -559,7 +558,7 @@
           <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
           <div class="form-group"><label>UDID No.</label><input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No."></div>
           <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
-          <div class="form-group"><label>DOB (DDMMYYYY)</label><input type="text" class="s-dob" maxlength="8" value="${st.dob || ''}" placeholder="DDMMYYYY"></div>
+          <div class="form-group"><label>DOB (DD/MM/YYYY)</label><input type="text" class="s-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY"></div>
           <div class="form-group"><label>Disability Type</label><select class="s-dis">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
           <div class="form-group"><label>Certificate (Yes/No)</label><input type="text" class="s-cert" value="${st.cert || ''}" placeholder="Yes/No"></div>
           <div class="form-group"><label>Disability %</label><input type="text" class="s-percent" value="${st.percent || ''}" placeholder="%"></div>
@@ -610,7 +609,7 @@
         if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) { alert("Aadhar card number theek 12 digits ka hona chahiye!"); return; }
         if (mobile !== "" && !(/^\d{10}$/.test(mobile))) { alert("Mobile number theek 10 digits ka hona chahiye!"); return; }
         if (teacherMob !== "" && !(/^\d{10}$/.test(teacherMob))) { alert("Teacher ka mobile number theek 10 digits ka hona chahiye!"); return; }
-        if (dob !== "" && !(/^\d{8}$/.test(dob))) { alert("DOB ka format DDMMYYYY hona chahiye!"); return; }
+        if (dob !== "" && !(/^\d{2}\/\d{2}\/\d{4}$/.test(dob))) { alert("DOB ka format DD/MM/YYYY (e.g., 15/08/2012) hona chahiye!"); return; }
       }
 
       let school = this.allSchools.find(s => String(s.udise) === String(udise));
@@ -625,7 +624,7 @@
           udid: card.querySelector('.s-udid').value, aadhar: card.querySelector('.s-aadhar').value,
           dob: card.querySelector('.s-dob').value, disability: card.querySelector('.s-dis').value,
           cert: card.querySelector('.s-cert').value, percent: card.querySelector('.s-percent').value,
-          equipment: card.querySelector('.s-equipment').value, address: card.querySelector('.s-address').value,
+          equipment: card.querySelector('.s-equip').value, address: card.querySelector('.s-address').value,
           pin: card.querySelector('.s-pin').value, bank: card.querySelector('.s-bank').value,
           ifsc: card.querySelector('.s-ifsc').value, accNo: card.querySelector('.s-acc').value,
           teacher: card.querySelector('.s-teacher').value, teacherMob: card.querySelector('.s-teachermob').value
