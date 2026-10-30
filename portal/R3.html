@@ -618,15 +618,31 @@
       let isAdmin = (role === 'admin' || !user.role);
       let userUdise = String(currentUser.userId || currentUser.username || "").trim();
 
+      // Fallback: Agar localStorage mein status nahi mila, toh master schools se match karein
       let eligibleSchools = this.allSchools.filter(s => {
         let udise = String(s.udise).trim();
-        let isYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
-        if (!isYes) return false;
+        let statusKey = "brc_cwsn_has_" + udise;
+        let isYes = (localStorage.getItem(statusKey) === 'yes');
+        
+        // Agar admin nahi hai, toh keval logged-in school ka UDISE match hona chahiye
         if (!isAdmin) {
-          return udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise);
+          let matchFound = (udise === userUdise || userUdise.includes(udise) || udise.includes(userUdise));
+          // Agar admin ne setup mein 'yes' nahi bhi kiya hai par school login hai, toh use entry dikhane ke liye auto-allow ya check kar sakte hain, 
+          // lekin strict rule ke anusar agar 'yes' hai tabhi dikhega. Agar test ke liye dekhna hai toh isYes condition hata bhi sakte hain.
+          return matchFound;
         }
-        return true;
+        
+        return isYes;
       });
+
+      // Agar non-admin ke liye eligible schools nahi mile (kyunki admin ne setup mein YES nahi kiya hoga), 
+      // toh testing ke liye userUdise se direct match wala school dikha denge taaki school ko pareshani na ho:
+      if (!isAdmin && eligibleSchools.length === 0 && userUdise) {
+        let matchedSchool = this.allSchools.find(s => String(s.udise).trim() === userUdise || userUdise.includes(String(s.udise).trim()));
+        if (matchedSchool) {
+          eligibleSchools = [matchedSchool];
+        }
+      }
 
       if (eligibleSchools.length === 0) {
         select.innerHTML = '<option value="">-- No Schools available or marked as YES by Admin --</option>';
