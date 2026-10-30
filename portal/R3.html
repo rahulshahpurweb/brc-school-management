@@ -56,11 +56,11 @@
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
     <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
 
-    <div class="menu-container">
+    <div class="menu-container" id="adminMenuContainer" style="display:none;">
       <button onclick="CwsnApp.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
         <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template</button>
-        <label id="adminBulkUploadBtn" style="display:none; cursor:pointer;">
+        <label style="cursor:pointer;">
           📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
         </label>
       </div>
@@ -70,7 +70,7 @@
 
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard</button>
-  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin Only)</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin)</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry</button>
   <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports</button>
 </div>
@@ -157,7 +157,7 @@
 
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module (Edit-Only Access)</h3>
+      <h3>✍️ School CWSN Data Entry Module</h3>
       <div class="filter-bar">
         <label><b>Select School:</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -298,11 +298,13 @@
 
     checkAdminRole() {
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-      let isAdmin = (user.role === 'admin' || !user.role);
-      
-      let bulkBtn = document.getElementById("adminBulkUploadBtn");
-      if (bulkBtn) {
-        bulkBtn.style.display = isAdmin ? 'block' : 'none';
+      let role = (user.role || "").toLowerCase();
+      let isAdmin = (role === 'admin' || !user.role);
+      let isJsk = (role === 'jsk' || role === 'sankul');
+
+      let adminMenuContainer = document.getElementById("adminMenuContainer");
+      if (adminMenuContainer) {
+        adminMenuContainer.style.display = isAdmin ? 'inline-block' : 'none';
       }
 
       let selectionBtn = document.getElementById('navSelectionBtn');
@@ -321,7 +323,8 @@
         this.renderDashboard();
       } else if (tab === 'selection') {
         let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-        let isAdmin = (user.role === 'admin' || !user.role);
+        let role = (user.role || "").toLowerCase();
+        let isAdmin = (role === 'admin' || !user.role);
         if (!isAdmin) {
           alert("Kshama karein, School Setup section keval Admin ke liye hai!");
           this.switchTab('dashboard');
@@ -439,7 +442,6 @@
             localStorage.setItem("brc_cwsn_has_" + udise, "yes");
             localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
             
-            // Cloud Sync per school
             await fetch(this.cloudApiUrl, {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -453,7 +455,6 @@
             count++;
           }
 
-          // Cloud Sync Setup
           await fetch(this.cloudApiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -563,10 +564,11 @@
     populateCwsnDropdown() {
       let select = document.getElementById('cwsnSchoolSelect');
       if (!select) return;
-      select.innerHTML = '<option value="">-- Select CWSN School --</option>';
+      select.innerHTML = '<option value="">-- Select School --</option>';
 
       let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-      let isAdmin = (currentUser.role === 'admin' || !currentUser.role);
+      let role = (currentUser.role || "").toLowerCase();
+      let isAdmin = (role === 'admin' || !user.role);
       let userUdise = String(currentUser.userId || currentUser.username || "").trim();
 
       let eligibleSchools = this.allSchools.filter(s => {
@@ -579,7 +581,7 @@
       });
 
       if (eligibleSchools.length === 0) {
-        select.innerHTML = '<option value="">-- No Schools available or marked as YES --</option>';
+        select.innerHTML = '<option value="">-- No Schools available or marked as YES by Admin --</option>';
         return;
       }
 
@@ -862,6 +864,11 @@
     },
 
     renderReports() {
+      let currentUser = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let role = (currentUser.role || "").toLowerCase();
+      let isAdminOrJsk = (role === 'admin' || role === 'jsk' || role === 'sankul' || !currentUser.role);
+      let userUdise = String(currentUser.userId || currentUser.username || "").trim();
+
       let jskFilter = document.getElementById('reportJskFilter').value;
       let disFilter = document.getElementById('reportDisabilityFilter').value;
       let table = document.getElementById('cwsnReportTable');
@@ -881,9 +888,12 @@
 
       let rowIdx = 1, found = false;
       this.allSchools.forEach(s => {
+        let udise = String(s.udise).trim();
+        if (!isAdminOrJsk && udise !== userUdise) return;
+
         let jsk = s.jsk;
-        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
-        let udise = s.udise;
+        if (isAdminOrJsk && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
         let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
         if (saved && saved.students && saved.students.length > 0) {
           saved.students.forEach(st => {
