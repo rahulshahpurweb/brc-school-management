@@ -234,7 +234,7 @@
         <select id="reportClassFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
           <option value="ALL">-- All Classes --</option>
           <option value="Class - 1">Class - 1</option><option value="Class - 2">Class - 2</option><option value="Class - 3">Class - 3</option><option value="Class - 4">Class - 4</option><option value="Class - 5">Class - 5</option>
-          <option value="Class - 6">Class - 6</option><option value="Class - 7">Class - 7</option><option value="Class - 8">Class - 8</option><option value="Class - 9">Class - 9</option><option value="Class - 10">Class - 10</option><option value="Class - 11">Class - 11</option><option value="Class - 12">Class - 12</option>
+          <option value="Class - 6">Class - 6</option><option value="Class - 7">Class - 7</option><option value="Class - 8">Class - 8</option>
         </select>
         <label style="margin-left:10px;"><b>Report Format:</b></label>
         <select id="reportTypeFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
@@ -710,7 +710,7 @@
             <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
             <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
           </select></div>
-          <div class="form-group"><label>Class</label><select class="s-class">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8','Class - 9','Class - 10','Class - 11','Class - 12'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label>Class</label><select class="s-class">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
           <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
           <div class="form-group"><label>UDID No.</label><input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No."></div>
           <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
@@ -901,7 +901,7 @@
       // Check if Matrix Report is requested
       if (reportType.startsWith('matrix_')) {
         let matrixMode = reportType.replace('matrix_', ''); // 'overall', 'above40', 'below40'
-        let classes = ['Class - 1', 'Class - 2', 'Class - 3', 'Class - 4', 'Class - 5', 'Class - 6', 'Class - 7', 'Class - 8', 'Class - 9', 'Class - 10', 'Class - 11', 'Class - 12'];
+        let classes = ['Class - 1', 'Class - 2', 'Class - 3', 'Class - 4', 'Class - 5', 'Class - 6', 'Class - 7', 'Class - 8'];
         
         let matrixData = {};
         this.disabilityTypes.forEach(d => {
