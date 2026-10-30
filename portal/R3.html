@@ -70,7 +70,7 @@
 
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard</button>
-  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School Setup (Yes/No)</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')">🏫 School Setup (Admin Only)</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry</button>
   <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports</button>
 </div>
@@ -267,6 +267,18 @@
             });
           }
         }
+
+        let setupRes = await fetch(this.cloudApiUrl + "?action=getAllSchoolSetup&session=" + activeSess + "&t=" + new Date().getTime());
+        if (setupRes.ok) {
+          let setupList = await setupRes.json();
+          if (Array.isArray(setupList)) {
+            setupList.forEach(st => {
+              if (st.udise && st.status) {
+                localStorage.setItem("brc_cwsn_has_" + st.udise, st.status);
+              }
+            });
+          }
+        }
       } catch(e) {
         console.log("Cloud fetch fallback.");
       }
@@ -292,14 +304,6 @@
       if (bulkBtn) {
         bulkBtn.style.display = isAdmin ? 'block' : 'none';
       }
-
-      // Restrict School Setup Tab for non-admins if needed, or disable radio buttons
-      let selectionBtn = document.getElementById('navSelectionBtn');
-      if (selectionBtn) {
-        if (!isAdmin) {
-          selectionBtn.style.opacity = '0.6';
-        }
-      }
     },
 
     switchTab(tab) {
@@ -314,7 +318,7 @@
         let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
         let isAdmin = (user.role === 'admin' || !user.role);
         if (!isAdmin) {
-          alert("Yeh setup section keval Admin ke liye anivarya hai!");
+          alert("Kshama karein, School-wise CWSN Setup section keval Admin ke liye uplabdh hai!");
           this.switchTab('dashboard');
           return;
         }
@@ -480,7 +484,6 @@
         localStorage.setItem("brc_cwsn_has_" + udise, status);
         this.renderSchoolSelectionTable();
       } else {
-        // Revert radio selection if cancelled
         let prevStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
         let radios = document.querySelectorAll(`input[name="cwsn_chk_${udise}"]`);
         radios.forEach(r => {
@@ -490,7 +493,36 @@
     },
 
     async saveSchoolSetupChanges() {
-      alert("School setup changes safalta-purnaiv local aur dashboard par reflect kar diye gaye hain!");
+      try {
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        let setupData = {};
+        this.allSchools.forEach(s => {
+          let udise = s.udise;
+          let status = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+          setupData[udise] = status;
+        });
+
+        let response = await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "saveSchoolSetup",
+            session: activeSess,
+            payload: JSON.stringify(setupData)
+          })
+        });
+
+        let result = await response.json();
+        if (result.status === "success" || result.success) {
+          alert("School setup changes safalta-purnaiv Google Sheet par save ho gaye hain!");
+        } else {
+          alert("Local storage par save ho gaya hai.");
+        }
+      } catch (err) {
+        console.log("Setup save error:", err);
+        alert("Setup local storage par save ho gaya hai!");
+      }
+
       this.switchTab('dashboard');
     },
 
