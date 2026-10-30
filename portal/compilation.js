@@ -39,7 +39,7 @@ export const CompilationModule = {
       let totals = { p:0, m:0, pm:0, mh:0, mhs:0, ph:0, phs:0, grand:0 };
 
       jskList.forEach(jsk => {
-        let jskSchools = schools.filter(s => s.jsk === jsk);
+        let jskSchools = schools.filter(s => String(s.jsk || "").trim().toLowerCase() === jsk.toLowerCase());
         let c1=0, c2=0, c3=0, c4=0, c5=0, c6=0, c7=0;
 
         jskSchools.forEach(s => {
@@ -47,27 +47,30 @@ export const CompilationModule = {
           let name = (s.name || "").toUpperCase().trim();
           let combined = cat + " " + name;
 
-          // Exact matching as per your master school categories
-          if (cat.includes("PRIMARY SCHOOL") && !cat.includes("MIDDLE") && !cat.includes("HIGH")) {
-            c1++; // Primary School (Class 1 to 5)
-          } else if (cat.includes("MIDDLE SCHOOL") || cat.includes("MIDDLE TO HIGH")) {
-            c2++; // Middle School (Class 6 to 8) or Middle to High
-          } else if (cat.includes("PRIMARY WITH MIDDLE")) {
-            c3++; // Primary with Middle School (Class 1 to 8)
-          } else if (cat.includes("MIDDLE TO HIGHER SECONDARY")) {
-            c5++; // Middle to Higher Sec. (Class 6 to 12)
-          } else if (cat.includes("PRIMARY TO HIGH")) {
-            c6++; // Primary to High School (Class 1 to 10)
-          } else if (cat.includes("PRIMARY TO HIGHER SECONDARY")) {
-            c7++; // Primary to Higher Sec. (Class 1 to 12)
+          // Smart category detection based on UDISE / Master naming conventions
+          if (combined.includes("1 TO 12") || combined.includes("1-12") || cat.includes("PRIMARY TO HIGHER SECONDARY")) {
+            c7++; // Primary to Higher Sec. (1 to 12)
+          } else if (combined.includes("1 TO 10") || combined.includes("1-10") || cat.includes("PRIMARY TO HIGH")) {
+            c6++; // Primary to High (1 to 10)
+          } else if (combined.includes("6 TO 12") || combined.includes("6-12") || cat.includes("MIDDLE TO HIGHER SECONDARY")) {
+            c5++; // Middle to Higher Sec. (6 to 12)
+          } else if (combined.includes("6 TO 10") || combined.includes("6-10") || cat.includes("MIDDLE TO HIGH")) {
+            c4++; // Middle to High (6 to 10)
+          } else if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("GPS") || combined.includes("GMS") || cat.includes("PRIMARY WITH MIDDLE") || (cat.includes("PRIMARY") && cat.includes("MIDDLE"))) {
+            if (combined.includes("6 TO 8") || cat.includes("MIDDLE SCHOOL")) {
+              c2++; // Middle School (6 to 8)
+            } else {
+              c3++; // Primary with Middle (1 to 8)
+            }
+          } else if (cat.includes("PRIMARY SCHOOL") || name.startsWith("PS ") || name.startsWith("GPS ")) {
+            c1++; // Primary School (1 to 5)
+          } else if (cat.includes("MIDDLE SCHOOL") || name.startsWith("MS ") || name.startsWith("GMS ")) {
+            c2++; // Middle School (6 to 8)
           } else {
-            // Fallback check based on name/range text
-            if (combined.includes("1 TO 12") || combined.includes("1-12")) c7++;
-            else if (combined.includes("1 TO 10") || combined.includes("1-10")) c6++;
-            else if (combined.includes("6 TO 12") || combined.includes("6-12")) c5++;
-            else if (combined.includes("6 TO 10") || combined.includes("6-10")) c2++;
-            else if (combined.includes("1 TO 8") || combined.includes("1-8")) c3++;
-            else c1++;
+            // Default fallback based on general indicators
+            if (cat.includes("HIGHER SEC")) c7++;
+            else if (cat.includes("HIGH SCHOOL")) c6++;
+            else c3++;
           }
         });
 
@@ -181,7 +184,7 @@ export const CompilationModule = {
       let f3Tot = { c1:0, c2:0, c3:0, c4:0, c5:0, sub1_5:0, c6:0, c7:0, c8:0, sub6_8:0, grand:0 };
 
       jskList.forEach(jsk => {
-        let jskSchools = schools.filter(s => s.jsk === jsk);
+        let jskSchools = schools.filter(s => String(s.jsk || "").trim().toLowerCase() === jsk.toLowerCase());
         let t = { c1:0, c2:0, c3:0, c4:0, c5:0, c6:0, c7:0, c8:0 };
 
         jskSchools.forEach(s => {
@@ -252,7 +255,7 @@ export const CompilationModule = {
         </tr>
       </thead><tbody>`;
 
-      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
+      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => String(s.jsk || "").trim().toLowerCase() === jskFilter.toLowerCase());
       let f4Tot = { t1:0, t2:0, t3:0, t4:0, t5:0, t6:0, t7:0, t8:0, grand:0 };
 
       filteredSchools.forEach((s, idx) => {
@@ -319,7 +322,7 @@ export const CompilationModule = {
       }
       html += `</tr></thead><tbody>`;
 
-      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => s.jsk === jskFilter);
+      let filteredSchools = jskFilter === "ALL" ? schools : schools.filter(s => String(s.jsk || "").trim().toLowerCase() === jskFilter.toLowerCase());
       let f5Totals = {};
       for(let i=1; i<=8; i++) {
         f5Totals[i] = {scB:0, scG:0, stB:0, stG:0, obcB:0, obcG:0, genB:0, genG:0, tot:0};
@@ -372,3 +375,5 @@ export const CompilationModule = {
     table.innerHTML = html;
   }
 };
+
+window.CompilationModule = CompilationModule;
