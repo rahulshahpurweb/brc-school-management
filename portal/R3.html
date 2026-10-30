@@ -54,11 +54,9 @@
 <div class="module-header">
   <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <!-- Excel Export & Print Upar Rakhe Gaye Hain -->
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
     <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
 
-    <!-- 3-Line Hamburger Sub-menu -->
     <div class="menu-container">
       <button onclick="CwsnApp.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
@@ -187,7 +185,6 @@
         <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#94a3b8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:not-allowed;" disabled>➕ Naya Student Jodein</button>
       </div>
 
-      <!-- Card Container for Mobile-Friendly Entry -->
       <div id="studentCardsContainer">
         <div style="padding:20px; color:#64748b; text-align:center;">Kripya pehle upar diye gaye dropdown se school select karein. Tabhi entry khulegi.</div>
       </div>
@@ -256,7 +253,7 @@
           }
         }
       } catch(e) {
-        console.log("Cloud fetch fallback to session/local storage.");
+        console.log("Cloud fetch fallback.");
       }
 
       if (!this.allSchools || this.allSchools.length === 0) {
@@ -608,31 +605,12 @@
         let dob = card.querySelector('.s-dob').value.trim();
         let teacherMob = card.querySelector('.s-teachermob').value.trim();
 
-        // Mandatory checks
-        if (!name) {
-          alert("Student Name bharna anivarya (mandatory) hai!");
-          return;
-        }
-        if (!(/^\d{9}$/.test(samagra))) {
-          alert("Samagra ID theek 9 digits ki honi chahiye!");
-          return;
-        }
-        if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) {
-          alert("Aadhar card number theek 12 digits ka hona chahiye!");
-          return;
-        }
-        if (mobile !== "" && !(/^\d{10}$/.test(mobile))) {
-          alert("Mobile number theek 10 digits ka hona chahiye!");
-          return;
-        }
-        if (teacherMob !== "" && !(/^\d{10}$/.test(teacherMob))) {
-          alert("Teacher ka mobile number theek 10 digits ka hona chahiye!");
-          return;
-        }
-        if (dob !== "" && !(/^\d{8}$/.test(dob))) {
-          alert("DOB ka format DDMMYYYY (e.g., 15082012) hona chahiye!");
-          return;
-        }
+        if (!name) { alert("Student Name bharna anivarya (mandatory) hai!"); return; }
+        if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID theek 9 digits ki honi chahiye!"); return; }
+        if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) { alert("Aadhar card number theek 12 digits ka hona chahiye!"); return; }
+        if (mobile !== "" && !(/^\d{10}$/.test(mobile))) { alert("Mobile number theek 10 digits ka hona chahiye!"); return; }
+        if (teacherMob !== "" && !(/^\d{10}$/.test(teacherMob))) { alert("Teacher ka mobile number theek 10 digits ka hona chahiye!"); return; }
+        if (dob !== "" && !(/^\d{8}$/.test(dob))) { alert("DOB ka format DDMMYYYY hona chahiye!"); return; }
       }
 
       let school = this.allSchools.find(s => String(s.udise) === String(udise));
@@ -647,7 +625,7 @@
           udid: card.querySelector('.s-udid').value, aadhar: card.querySelector('.s-aadhar').value,
           dob: card.querySelector('.s-dob').value, disability: card.querySelector('.s-dis').value,
           cert: card.querySelector('.s-cert').value, percent: card.querySelector('.s-percent').value,
-          equipment: card.querySelector('.s-equip').value, address: card.querySelector('.s-address').value,
+          equipment: card.querySelector('.s-equipment').value, address: card.querySelector('.s-address').value,
           pin: card.querySelector('.s-pin').value, bank: card.querySelector('.s-bank').value,
           ifsc: card.querySelector('.s-ifsc').value, accNo: card.querySelector('.s-acc').value,
           teacher: card.querySelector('.s-teacher').value, teacherMob: card.querySelector('.s-teachermob').value
@@ -663,10 +641,8 @@
         expectedBoys: expBoys, expectedGirls: expGirls
       };
 
-      // 1. Local save
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
 
-      // 2. Cloud Sync to Google Sheet
       try {
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
         let response = await fetch(this.cloudApiUrl, {
