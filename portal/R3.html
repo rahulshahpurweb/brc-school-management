@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -196,11 +196,11 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h4 style="color:#071b38; margin:0;">Student Details Entry (Card View)</h4>
-        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#94a3b8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:not-allowed;" disabled>➕ Naya Student Jodein</button>
+        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#94a3b8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:not-allowed;" disabled>➕ Add New Student</button>
       </div>
 
       <div id="studentCardsContainer">
-        <div style="padding:20px; color:#64748b; text-align:center;">Kripya pehle upar diye gaye dropdown se school select karein. Tabhi entry khulegi.</div>
+        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
@@ -282,17 +282,16 @@
       let overlay = document.getElementById("loadingOverlay");
       if (overlay) overlay.style.display = show ? 'flex' : 'none';
     },
+
     getUserRoleInfo() {
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       let role = String(user.role || "").toLowerCase();
-      // Main portal aur school-auth.js 'udise' key save karte hain, isliye ise sabse pehle priority di gayi hai
       let userId = String(user.udise || user.userId || user.username || user.code || user.id || "").trim();
       let isSchool = (role === 'school' || userId.length >= 10 || Boolean(user.udise));
       let isAdmin = (role === 'admin' || userId === 'admin' || (!role && userId.length < 10 && !user.udise));
       let isJsk = (role === 'jsk' || role === 'sankul');
       return { user, role, isAdmin, isJsk, isSchool, userId };
     },
-    
 
     async init() {
       this.showLoader(true);
@@ -373,7 +372,7 @@
         this.renderDashboard();
       } else if (tab === 'selection') {
         if (!info.isAdmin) {
-          alert("Kshama karein, School Setup section keval Admin ke liye hai!");
+          alert("Access Denied: School Setup section is restricted to Administrator only.");
           this.switchTab('dashboard');
           return;
         }
@@ -520,11 +519,11 @@
           });
 
           this.showLoader(false);
-          alert(`Admin dwara bulk template ke madhyam se ${count} schools ka data Google Sheet par cloud sync kar diya gaya hai!`);
+          alert(`Successfully synced data for ${count} schools to cloud via bulk template!`);
           this.switchTab('dashboard');
         } catch (err) {
           this.showLoader(false);
-          alert("Excel file upload karne mein samasya aayi: " + err.message);
+          alert("Error processing Excel file: " + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -570,7 +569,7 @@
     },
 
     confirmAndSetSchoolCwsn(udise, status, schoolName) {
-      let confirmMsg = `Kya aap "${schoolName}" (UDISE: ${udise}) ke CWSN status ko ${status.toUpperCase()} karna chahte hain?`;
+      let confirmMsg = `Are you sure you want to set CWSN status for "${schoolName}" (UDISE: ${udise}) to ${status.toUpperCase()}?`;
       if (confirm(confirmMsg)) {
         localStorage.setItem("brc_cwsn_has_" + udise, status);
         this.renderSchoolSelectionTable();
@@ -607,14 +606,14 @@
         let result = await response.json();
         this.showLoader(false);
         if (result.status === "success" || result.success) {
-          alert("School setup changes safalta-purnaiv Google Sheet par save ho gaye hain!");
+          alert("School setup changes successfully saved to cloud!");
         } else {
-          alert("Local storage par save ho gaya hai.");
+          alert("Saved to local storage successfully.");
         }
       } catch (err) {
         this.showLoader(false);
         console.log("Setup save error:", err);
-        alert("Setup local storage par save ho gaya hai!");
+        alert("Setup saved to local storage successfully!");
       }
 
       this.switchTab('dashboard');
@@ -633,7 +632,6 @@
       if (info.isAdmin || info.isJsk) {
         eligibleSchools = this.allSchools;
       } else {
-        // Real master list se school match karein bina kisi dummy creation ke
         if (this.allSchools && this.allSchools.length > 0) {
           eligibleSchools = this.allSchools.filter(s => {
             let udise = String(s.udise || s.Dise_code || s.code || s.id || "").trim();
@@ -661,7 +659,6 @@
         select.appendChild(el);
       });
 
-      // School login ke liye dropdown select karke freeze (disable) kar do
       if (info.isSchool || eligibleSchools.length === 1) {
         let targetUdise = String(eligibleSchools[0].udise || eligibleSchools[0].Dise_code || eligibleSchools[0].code || eligibleSchools[0].id).trim();
         select.value = targetUdise;
@@ -689,7 +686,7 @@
         expGirls.value = ""; expGirls.disabled = true;
         addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
         saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
-        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Kripya pehle upar diye gaye dropdown se school select karein. Tabhi entry khulegi.</div>`;
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>`;
         return;
       }
 
@@ -729,7 +726,7 @@
 
       let currentCards = container.querySelectorAll('.student-card').length;
       if (currentCards >= totalAllowed) {
-        alert(`Aapne expected total Boys (${expBoys}) aur Girls (${expGirls}) ki sankhya ki limit poori kar li hai!`);
+        alert(`You have reached the expected total limit for Boys (${expBoys}) and Girls (${expGirls})!`);
         return;
       }
 
@@ -790,7 +787,7 @@
       let container = document.getElementById('studentCardsContainer');
       container.innerHTML = '';
       if (!students || students.length === 0) {
-        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Koi CWSN student nahi joda gaya hai. 'Naya Student Jodein' par click karein.</div>`;
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">No CWSN students added yet. Click 'Add New Student' to begin.</div>`;
         return;
       }
       students.forEach(st => {
@@ -801,7 +798,7 @@
     async saveData() {
       let select = document.getElementById('cwsnSchoolSelect');
       let udise = select ? select.value : null;
-      if (!udise) { alert("Kripya pehle school select karein!"); return; }
+      if (!udise) { alert("Please select a school first!"); return; }
 
       let expBoys = parseInt(document.getElementById('expectedBoys').value) || 0;
       let expGirls = parseInt(document.getElementById('expectedGirls').value) || 0;
@@ -816,13 +813,13 @@
         let dob = card.querySelector('.s-dob').value.trim();
         let teacherMob = card.querySelector('.s-teachermob').value.trim();
 
-        if (!name) { alert("Student Name bharna anivarya (mandatory) hai!"); return; }
-        if (!cast) { alert("Kripya student ki CAST Category select karein!"); return; }
-        if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID theek 9 digits ki honi chahiye!"); return; }
-        if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) { alert("Aadhar card number theek 12 digits ka hona chahiye!"); return; }
-        if (mobile !== "" && !(/^\d{10}$/.test(mobile))) { alert("Mobile number theek 10 digits ka hona chahiye!"); return; }
-        if (teacherMob !== "" && !(/^\d{10}$/.test(teacherMob))) { alert("Teacher ka mobile number theek 10 digits ka hona chahiye!"); return; }
-        if (dob !== "" && !(/^\d{2}\/\d{2}\/\d{4}$/.test(dob))) { alert("DOB ka format DD/MM/YYYY (e.g., 15/08/2012) hona chahiye!"); return; }
+        if (!name) { alert("Student Name is mandatory!"); return; }
+        if (!cast) { alert("Please select student's CAST Category!"); return; }
+        if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID must be exactly 9 digits!"); return; }
+        if (aadhar !== "" && !(/^\d{12}$/.test(aadhar))) { alert("Aadhar card number must be exactly 12 digits!"); return; }
+        if (mobile !== "" && !(/^\d{10}$/.test(mobile))) { alert("Mobile number must be exactly 10 digits!"); return; }
+        if (teacherMob !== "" && !(/^\d{10}$/.test(teacherMob))) { alert("Teacher's mobile number must be exactly 10 digits!"); return; }
+        if (dob !== "" && !(/^\d{2}\/\d{2}\/\d{4}$/.test(dob))) { alert("DOB format must be DD/MM/YYYY (e.g., 15/08/2012)!"); return; }
       }
 
       let school = this.allSchools.find(s => String(s.udise || s.Dise_code || s.code || s.id) === String(udise));
@@ -871,14 +868,14 @@
         let result = await response.json();
         this.showLoader(false);
         if(result.status === "success" || result.success) {
-          alert("CWSN Data Safalta-purnaiv Google Sheet par Cloud Sync ho gaya hai!");
+          alert("CWSN Data successfully synced to Google Sheet!");
         } else {
-          alert("Data Local Save ho gaya hai.");
+          alert("Data saved locally.");
         }
       } catch(err) {
         this.showLoader(false);
         console.log("Cloud sync error:", err);
-        alert("Data Local Storage par save ho gaya hai!");
+        alert("Data saved to local storage successfully!");
       }
 
       this.switchTab('dashboard');
@@ -955,7 +952,7 @@
 
       if (reportType.startsWith('matrix_')) {
         if (!info.isAdmin && !info.isJsk) {
-          alert("Kshama karein, Matrix Summary report keval Admin aur JSK ke liye uplabdh hai!");
+          alert("Access Denied: Matrix Summary report is restricted to Admin and JSK only!");
           return;
         }
 
@@ -1004,7 +1001,7 @@
         classes.forEach(c => {
           html += `<th colspan="3">${c}</th>`;
         });
-        html += `<th colspan="3">Mahayog (Class 1 to 8)</th></tr><tr>`;
+        html += `<th colspan="3">Grand Total (Class 1 to 8)</th></tr><tr>`;
         classes.forEach(() => {
           html += `<th>B</th><th>G</th><th>T</th>`;
         });
@@ -1028,7 +1025,7 @@
           html += `<td style="font-weight:bold; color:#1d4ed8;">${rowB}</td><td style="font-weight:bold; color:#db2777;">${rowG}</td><td style="font-weight:bold; color:#071b38;">${rowT}</td></tr>`;
         });
 
-        html += `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="2">State Total / Total</td>`;
+        html += `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="2">Total</td>`;
         classes.forEach(c => {
           let ct = classTotals[c];
           html += `<td>${ct.b}</td><td>${ct.g}</td><td>${ct.t}</td>`;
