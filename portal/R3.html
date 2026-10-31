@@ -253,6 +253,7 @@
           <option value="overall">Overall Students (List)</option>
           <option value="above40">Disability >= 40% (List)</option>
           <option value="below40">Disability < 40% (Below / List)</option>
+          <option value="status_report">School Status Report (Pending / Completed)</option>
           <option value="matrix_overall">Matrix Summary (Overall)</option>
           <option value="matrix_above40">Matrix Summary (>= 40%)</option>
           <option value="matrix_below40">Matrix Summary (< 40%)</option>
@@ -630,7 +631,11 @@
       let eligibleSchools = [];
 
       if (info.isAdmin || info.isJsk) {
-        eligibleSchools = this.allSchools;
+        // Admin ke liye sirf wahi schools dikhenge jinka setup YES hai, baaki hide rahenge
+        eligibleSchools = this.allSchools.filter(s => {
+          let udise = String(s.udise || s.Dise_code || s.code || s.id || "").trim();
+          return localStorage.getItem("brc_cwsn_has_" + udise) === 'yes';
+        });
       } else {
         if (this.allSchools && this.allSchools.length > 0) {
           eligibleSchools = this.allSchools.filter(s => {
@@ -647,7 +652,7 @@
       }
 
       if (eligibleSchools.length === 0) {
-        select.innerHTML = '<option value="">-- No matching school found in master data --</option>';
+        select.innerHTML = '<option value="">-- No CWSN-enabled schools available --</option>';
         return;
       }
 
@@ -687,6 +692,19 @@
         addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
         saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
         container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>`;
+        return;
+      }
+
+      let info = this.getUserRoleInfo();
+      let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+
+      // Yadi setup NO hai aur user school login hai, toh entry aur add student button freeze kar do
+      if (setupStatus !== 'yes' && info.isSchool) {
+        expBoys.value = ""; expBoys.disabled = true;
+        expGirls.value = ""; expGirls.disabled = true;
+        addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
+        saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
+        container.innerHTML = `<div style="padding:25px; color:#dc2626; font-weight:bold; text-align:center; background:#fee2e2; border-radius:8px;">⚠️ CWSN Data Entry for this school is currently locked (Setup is set to NO by Admin).</div>`;
         return;
       }
 
@@ -730,7 +748,7 @@
         return;
       }
 
-      if (container.querySelector('div[style*="text-align:center"]')) {
+      if (container.querySelector('div[style*="text-align:center"]') || container.querySelector('div[style*="background:#fee2e2"]')) {
         container.innerHTML = '';
       }
       
@@ -950,6 +968,54 @@
 
       let table = document.getElementById('cwsnReportTable');
 
+      // SCHOOL STATUS REPORT (Pending / Completed with Red Highlight)
+      if (reportType === 'status_report') {
+        let html = `
+          <thead>
+            <tr>
+              <th>Sr. No.</th>
+              <th>School Name</th>
+              <th>UDISE Code</th>
+              <th>JSK</th>
+              <th>Setup Status (Admin)</th>
+              <th>Entry Status</th>
+              <th>Total Students Added</th>
+            </tr>
+          </thead>
+          <tbody>
+        `;
+        let idx = 1;
+        this.allSchools.forEach(s => {
+          let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
+          let jsk = s.jsk || s.Sankul || 'Bhoura';
+          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
+          let setupYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
+          let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+          let isCompleted = saved && saved.completed && saved.students && saved.students.length > 0;
+          let totalStudents = isCompleted ? saved.students.length : 0;
+
+          let statusText = isCompleted ? "Completed" : "Pending Entry";
+          let rowColor = isCompleted ? "#f0fdf4" : "#fee2e2"; // Green for completed, Red for pending
+          let textCol = isCompleted ? "#16a34a" : "#dc2626";
+
+          html += `
+            <tr style="background:${rowColor};">
+              <td>${idx++}</td>
+              <td style="text-align:left; font-weight:bold;">${s.name || s.schoolName}</td>
+              <td>${udise}</td>
+              <td>${jsk}</td>
+              <td>${setupYes ? '<span style="color:#16a34a; font-weight:bold;">YES</span>' : '<span style="color:#dc2626; font-weight:bold;">NO</span>'}</td>
+              <td style="color:${textCol}; font-weight:bold;">${statusText}</td>
+              <td style="font-weight:bold;">${totalStudents}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody>`;
+        table.innerHTML = html;
+        return;
+      }
+
       if (reportType.startsWith('matrix_')) {
         if (!info.isAdmin && !info.isJsk) {
           alert("Access Denied: Matrix Summary report is restricted to Admin and JSK only!");
@@ -1031,6 +1097,7 @@
           html += `<td>${ct.b}</td><td>${ct.g}</td><td>${ct.t}</td>`;
         });
         html += `<td style="color:#1d4ed8;">${grandB}</td><td style="color:#db2777;">${grandG}</td><td style="color:#071b38;">${grandT}</td></tr></tbody>`;
+        table.html = html;
         table.innerHTML = html;
         return;
       }
