@@ -887,7 +887,7 @@
       };
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
-      localStorage.setItem("brc_cwsn_lock_" + udise, "yes"); // Auto lock/freeze upon successful save
+      localStorage.setItem("brc_cwsn_lock_" + udise, "yes");
 
       this.showLoader(true);
       try {
@@ -1210,7 +1210,7 @@
             udise === info.userId || 
             cleanSchoolUdise === cleanUserUdise || 
             (cleanUserUdise && cleanSchoolUdise.includes(cleanUserUdise)) || 
-            (cleanUserUdise && cleanUserUdise.includes(cleanSchoolUdise))
+            (cleanUserUdise && cleanSchoolUdise.includes(cleanSchoolUdise))
           );
           if (!isMatch) return;
         }
@@ -1278,6 +1278,13 @@
       }
     }
   }
+
+  // Global Session Synchronization Listener for R3 Module
+  window.addEventListener("storage", (event) => {
+    if (event.key === "brc_active_session") {
+      CwsnApp.init();
+    }
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     CwsnApp.init();
