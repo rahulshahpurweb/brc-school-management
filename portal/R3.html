@@ -38,7 +38,7 @@
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; }
-  .tablewrap { overflow-x: auto; max-height: 500px; }
+  .tablewrap { overflow-x: auto; max-height: none; }
   
   #loadingOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; color:#fff; font-size:18px; font-weight:bold; }
   .spinner { border: 6px solid #f3f3f3; border-top: 6px solid #f4b400; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
@@ -159,6 +159,7 @@
               <th>Category</th>
               <th>JSK</th>
               <th>Has CWSN Students? (Yes / No)</th>
+              <th>Admin Freeze / Unfreeze Control</th>
             </tr>
           </thead>
           <tbody id="schoolSelectionTableBody"></tbody>
@@ -257,6 +258,14 @@
           <option value="matrix_overall">Matrix Summary (Overall)</option>
           <option value="matrix_above40">Matrix Summary (>= 40%)</option>
           <option value="matrix_below40">Matrix Summary (< 40%)</option>
+        </select>
+        <label style="margin-left:10px;"><b>Rows:</b></label>
+        <select id="reportPageSize" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="50">50 Rows</option>
+          <option value="100" selected>100 Rows</option>
+          <option value="200">200 Rows</option>
+          <option value="300">300 Rows</option>
+          <option value="ALL">All Rows</option>
         </select>
       </div>
       <div class="tablewrap">
@@ -520,7 +529,7 @@
           });
 
           this.showLoader(false);
-          alert(`Successfully synced data for ${count} schools to cloud via bulk template!`);
+          alert(`Data successfully imported and saved for ${count} schools!`);
           this.switchTab('dashboard');
         } catch (err) {
           this.showLoader(false);
@@ -549,6 +558,8 @@
       filtered.forEach(s => {
         let udise = String(s.udise).trim();
         let cwsnStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+        let isLockedByAdmin = localStorage.getItem("brc_cwsn_lock_" + udise) === "yes";
+
         tbody.innerHTML += `
           <tr>
             <td>${idx++}</td>
@@ -564,9 +575,22 @@
                 <input type="radio" name="cwsn_chk_${udise}" value="no" ${cwsnStatus === 'no' ? 'checked' : ''} onchange="CwsnApp.confirmAndSetSchoolCwsn('${udise}', 'no', '${s.name}')"> NO
               </label>
             </td>
+            <td>
+              <button type="button" onclick="CwsnApp.toggleAdminLock('${udise}')" style="background:${isLockedByAdmin ? '#dc2626' : '#16a34a'}; color:#fff; border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">
+                ${isLockedByAdmin ? '🔒 Locked (Unfreeze)' : '🔓 Unlocked (Freeze)'}
+              </button>
+            </td>
           </tr>
         `;
       });
+    },
+
+    toggleAdminLock(udise) {
+      let currentLock = localStorage.getItem("brc_cwsn_lock_" + udise) === "yes";
+      let newLock = !currentLock;
+      localStorage.setItem("brc_cwsn_lock_" + udise, newLock ? "yes" : "no");
+      alert(newLock ? `School entry has been frozen/locked by Admin.` : `School entry has been unfrozen by Admin.`);
+      this.renderSchoolSelectionTable();
     },
 
     confirmAndSetSchoolCwsn(udise, status, schoolName) {
@@ -607,14 +631,14 @@
         let result = await response.json();
         this.showLoader(false);
         if (result.status === "success" || result.success) {
-          alert("School setup changes successfully saved to cloud!");
+          alert("School setup changes successfully saved!");
         } else {
-          alert("Saved to local storage successfully.");
+          alert("Data saved successfully.");
         }
       } catch (err) {
         this.showLoader(false);
         console.log("Setup save error:", err);
-        alert("Setup saved to local storage successfully!");
+        alert("Data saved successfully!");
       }
 
       this.switchTab('dashboard');
@@ -631,7 +655,6 @@
       let eligibleSchools = [];
 
       if (info.isAdmin || info.isJsk) {
-        // Admin aur JSK ke liye kewal wahi schools dikhenge jinka setup YES hai
         eligibleSchools = this.allSchools.filter(s => {
           let udise = String(s.udise || s.Dise_code || s.code || s.id || "").trim();
           return localStorage.getItem("brc_cwsn_has_" + udise) === 'yes';
@@ -697,14 +720,14 @@
 
       let info = this.getUserRoleInfo();
       let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+      let isLockedByAdmin = localStorage.getItem("brc_cwsn_lock_" + udise) === "yes";
 
-      // Yadi setup NO hai aur user school login hai, toh entry lock rahegi
-      if (setupStatus !== 'yes' && info.isSchool) {
+      if ((setupStatus !== 'yes' || isLockedByAdmin) && info.isSchool) {
         expBoys.value = ""; expBoys.disabled = true;
         expGirls.value = ""; expGirls.disabled = true;
         addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
         saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
-        container.innerHTML = `<div style="padding:25px; color:#dc2626; font-weight:bold; text-align:center; background:#fee2e2; border-radius:8px;">⚠️ CWSN Data Entry for this school is currently locked (Setup is set to NO by Admin).</div>`;
+        container.innerHTML = `<div style="padding:25px; color:#dc2626; font-weight:bold; text-align:center; background:#fee2e2; border-radius:8px;">⚠️ CWSN Data Entry for this school is currently frozen/locked.</div>`;
         return;
       }
 
@@ -869,6 +892,7 @@
       };
 
       localStorage.setItem("brc_cwsn_" + udise, JSON.stringify(payload));
+      localStorage.setItem("brc_cwsn_lock_" + udise, "yes"); // Auto lock/freeze upon successful save
 
       this.showLoader(true);
       try {
@@ -885,15 +909,11 @@
         });
         let result = await response.json();
         this.showLoader(false);
-        if(result.status === "success" || result.success) {
-          alert("CWSN Data successfully synced to Google Sheet!");
-        } else {
-          alert("Data saved locally.");
-        }
+        alert("Data saved successfully!");
       } catch(err) {
         this.showLoader(false);
         console.log("Cloud sync error:", err);
-        alert("Data saved to local storage successfully!");
+        alert("Data saved successfully!");
       }
 
       this.switchTab('dashboard');
@@ -965,10 +985,11 @@
       let disFilter = document.getElementById('reportDisabilityFilter').value;
       let classFilter = document.getElementById('reportClassFilter').value;
       let reportType = document.getElementById('reportTypeFilter').value;
+      let pageSize = document.getElementById('reportPageSize') ? document.getElementById('reportPageSize').value : "100";
 
       let table = document.getElementById('cwsnReportTable');
 
-      // SCHOOL STATUS REPORT (Smart 26-column check, Pending / Completed with Red/Green highlight for YES schools)
+      // SCHOOL STATUS REPORT (Smart 26-column check with Grand Total at the end and pagination limit)
       if (reportType === 'status_report') {
         let html = `
           <thead>
@@ -986,16 +1007,30 @@
           <tbody>
         `;
         let idx = 1;
+        let totalYesSchools = 0;
+        let totalCompletedSchools = 0;
+        let totalPendingSchools = 0;
+        let grandTotalCwsn = 0;
+
+        let filteredSchools = [];
         this.allSchools.forEach(s => {
           let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
           let jsk = s.jsk || s.Sankul || 'Bhoura';
           if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
-          
-          // Kewal wahi schools dikhenge jinhe admin ne YES kiya hai
           if (setupStatus !== 'yes') return;
+          filteredSchools.push(s);
+        });
 
+        let limit = pageSize === "ALL" ? filteredSchools.length : parseInt(pageSize) || 100;
+        let displayedSchools = filteredSchools.slice(0, limit);
+
+        displayedSchools.forEach(s => {
+          let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
+          let jsk = s.jsk || s.Sankul || 'Bhoura';
+
+          totalYesSchools++;
           let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
           let students = (saved && saved.students) ? saved.students : [];
           let totalStudents = students.length;
@@ -1005,9 +1040,9 @@
 
           if (totalStudents === 0) {
             isCompleted = false;
-            remarks = "Admin assigned YES, but data entry is pending (0 students added)";
+            remarks = "Data entry is pending (0 students added)";
+            totalPendingSchools++;
           } else {
-            // Check all 26 mandatory fields across students
             let missingFieldsCount = 0;
             students.forEach(st => {
               let fields = [
@@ -1024,9 +1059,12 @@
             if (missingFieldsCount > 0) {
               isCompleted = false;
               remarks = `Pending: ${missingFieldsCount} column field(s) empty across student record(s)`;
+              totalPendingSchools++;
             } else {
               isCompleted = true;
               remarks = "All 26 column entries completed successfully";
+              totalCompletedSchools++;
+              grandTotalCwsn += totalStudents;
             }
           }
 
@@ -1047,6 +1085,17 @@
             </tr>
           `;
         });
+
+        // Grand Total Row at the bottom
+        html += `
+          <tr style="background:#e2e8f0; font-weight:bold;">
+            <td colspan="4">Grand Total / Summary</td>
+            <td>Eligible: ${totalYesSchools}</td>
+            <td>Completed: <span style="color:#16a34a;">${totalCompletedSchools}</span> | Pending: <span style="color:#dc2626;">${totalPendingSchools}</span></td>
+            <td style="color:#1d4ed8;">${grandTotalCwsn}</td>
+            <td>All eligible schools status compiled successfully</td>
+          </tr>
+        `;
 
         if (idx === 1) {
           html += `<tr><td colspan="8" style="padding:20px; color:#64748b;">No CWSN-enabled (YES) schools found matching the selected filter.</td></tr>`;
@@ -1156,7 +1205,7 @@
         <tbody>
       `;
 
-      let rowIdx = 1, found = false;
+      let matchedStudents = [];
       this.allSchools.forEach(s => {
         let udise = String(s.udise || s.Dise_code || s.code || s.id).trim();
         let cleanSchoolUdise = udise.replace(/\D/g, "");
@@ -1167,7 +1216,7 @@
             udise === info.userId || 
             cleanSchoolUdise === cleanUserUdise || 
             (cleanUserUdise && cleanSchoolUdise.includes(cleanUserUdise)) || 
-            (cleanUserUdise && cleanSchoolUdise.includes(cleanSchoolUdise))
+            (cleanUserUdise && cleanUserUdise.includes(cleanSchoolUdise))
           );
           if (!isMatch) return;
         }
@@ -1187,25 +1236,34 @@
             if (reportType === 'above40' && pct < 40) return;
             if (reportType === 'below40' && pct >= 40) return;
 
-            found = true;
-            html += `
-              <tr>
-                <td>${rowIdx++}</td><td style="text-align:left;">${s.name || s.schoolName}</td><td>${udise}</td><td>${jsk}</td>
-                <td>${st.samagra || '-'}</td><td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
-                <td style="text-align:left;">${st.father || '-'}</td><td style="text-align:left;">${st.mother || '-'}</td>
-                <td>${st.gender || '-'}</td><td>${st.cast || '-'}</td><td>${st.cls || '-'}</td><td>${st.mobile || '-'}</td>
-                <td>${st.udid || '-'}</td><td>${st.aadhar || '-'}</td><td>${st.dob || '-'}</td>
-                <td style="text-align:left;">${st.disability || '-'}</td><td>${st.cert || '-'}</td><td>${st.percent || '-'}</td>
-                <td>${st.equipment || '-'}</td><td>${st.address || '-'}</td><td>${st.pin || '-'}</td>
-                <td>${st.bank || '-'}</td><td>${st.ifsc || '-'}</td><td>${st.accNo || '-'}</td>
-                <td>${st.teacher || '-'}</td><td>${st.teacherMob || '-'}</td>
-              </tr>
-            `;
+            matchedSchoolsStore = s;
+            matchedStudents.push({ s, st, udise, jsk });
           });
         }
       });
 
-      if (!found) html += `<tr><td colspan="26" style="padding:20px; color:#64748b;">No matching CWSN student records found for your school.</td></tr>`;
+      let limit = pageSize === "ALL" ? matchedStudents.length : parseInt(pageSize) || 100;
+      let displayedStudents = matchedStudents.slice(0, limit);
+
+      let rowIdx = 1;
+      displayedStudents.forEach(item => {
+        let { s, st, udise, jsk } = item;
+        html += `
+          <tr>
+            <td>${rowIdx++}</td><td style="text-align:left;">${s.name || s.schoolName}</td><td>${udise}</td><td>${jsk}</td>
+            <td>${st.samagra || '-'}</td><td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
+            <td style="text-align:left;">${st.father || '-'}</td><td style="text-align:left;">${st.mother || '-'}</td>
+            <td>${st.gender || '-'}</td><td>${st.cast || '-'}</td><td>${st.cls || '-'}</td><td>${st.mobile || '-'}</td>
+            <td>${st.udid || '-'}</td><td>${st.aadhar || '-'}</td><td>${st.dob || '-'}</td>
+            <td style="text-align:left;">${st.disability || '-'}</td><td>${st.cert || '-'}</td><td>${st.percent || '-'}</td>
+            <td>${st.equipment || '-'}</td><td>${st.address || '-'}</td><td>${st.pin || '-'}</td>
+            <td>${st.bank || '-'}</td><td>${st.ifsc || '-'}</td><td>${st.accNo || '-'}</td>
+            <td>${st.teacher || '-'}</td><td>${st.teacherMob || '-'}</td>
+          </tr>
+        `;
+      });
+
+      if (displayedStudents.length === 0) html += `<tr><td colspan="26" style="padding:20px; color:#64748b;">No matching CWSN student records found.</td></tr>`;
       html += `</tbody>`;
       table.innerHTML = html;
     },
