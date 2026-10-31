@@ -76,6 +76,9 @@
       </select>
     </div>
 
+    <!-- Live Rollback Trash Bin Button -->
+    <button onclick="CwsnApp.openTrashBin()" class="sub-nav-btn" style="background:#b45309;">🗑️ Rollback Trash Bin</button>
+
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
     <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
 
@@ -796,11 +799,10 @@
         <div class="student-card-header" style="display:flex; justify-content:space-between; align-items:center;">
           <div>
             <span>Student #${idx} Record</span>
-            <!-- Independent Admin / School Action Controls -->
+            <!-- Independent Admin / School Action Controls with Rollback Button -->
             <span style="margin-left:15px; font-weight:normal; font-size:11px;">
               <button type="button" onclick="CwsnApp.promoteStudent(this)" style="background:#16a34a; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">🎓 Promote</button>
               <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; margin-left:4px;">🗑️ Delete</button>
-              <button type="button" onclick="CwsnApp.rollbackStudentCard(this)" style="background:#d97706; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; margin-left:4px;">🔄 Rollback</button>
             </span>
           </div>
           ${info.isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Remove</button>` : ''}
@@ -848,7 +850,6 @@
       let classes = ['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8'];
       let currentIdx = classes.indexOf(classSelect.value);
       if (currentIdx < classes.length - 1 && currentIdx !== -1) {
-        card.dataset.prevClass = classSelect.value; // Store previous class state for rollback
         classSelect.value = classes[currentIdx + 1];
         alert("Student promoted to " + classSelect.value + " successfully!");
       } else {
@@ -857,9 +858,9 @@
     },
 
     deleteStudentCard(btn) {
-      if (confirm("Are you sure you want to delete this student record? It can be recovered using Rollback.")) {
+      if (confirm("Are you sure you want to delete this student record? It will be safely moved to the Rollback Trash Bin.")) {
         let card = btn.closest('.student-card');
-        card.dataset.deletedData = JSON.stringify({
+        let studentData = {
           samagra: card.querySelector('.s-samagra').value,
           name: card.querySelector('.s-name').value,
           father: card.querySelector('.s-father').value,
@@ -881,29 +882,106 @@
           ifsc: card.querySelector('.s-ifsc').value,
           accNo: card.querySelector('.s-acc').value,
           teacher: card.querySelector('.s-teacher').value,
-          teacherMob: card.querySelector('.s-teachermob').value
-        });
-        card.style.display = "none"; // Hide card instead of permanent destruction for instant rollback
-        alert("Student record marked as deleted. Click 'Rollback' to restore.");
+          teacherMob: card.querySelector('.s-teachermob').value,
+          deletedAt: new Date().toLocaleString()
+        };
+
+        // Live Trash Bin storage update
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        let trashKey = "brc_cwsn_trash_" + activeSess;
+        let trashList = JSON.parse(localStorage.getItem(trashKey) || "[]");
+        trashList.push(studentData);
+        localStorage.setItem(trashKey, JSON.stringify(trashList));
+
+        card.remove();
+        alert("Student deleted successfully and added to the Rollback Trash Bin list!");
       }
     },
 
-    rollbackStudentCard(btn) {
-      let card = btn.closest('.student-card');
-      if (card.style.display === "none" && card.dataset.deletedData) {
-        card.style.display = "block";
-        delete card.dataset.deletedData;
-        alert("Student record restored successfully via Rollback!");
+    openTrashBin() {
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let trashKey = "brc_cwsn_trash_" + activeSess;
+      let trashList = JSON.parse(localStorage.getItem(trashKey) || "[]");
+
+      if (trashList.length === 0) {
+        alert("Rollback Trash Bin is empty for session " + activeSess + "!");
         return;
       }
-      if (card.dataset.prevClass) {
-        let classSelect = card.querySelector('.s-class');
-        classSelect.value = card.dataset.prevClass;
-        delete card.dataset.prevClass;
-        alert("Promotion rolled back to " + classSelect.value + " successfully!");
+
+      let modalHtml = `
+        <div id="trashModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#fff; border-radius:12px; max-width:850px; width:100%; max-height:80vh; overflow-y:auto; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
+              <h3 style="margin:0; color:#071b38;">🗑️ Rollback Trash Bin (Deleted Students List - Session: ${activeSess})</h3>
+              <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">✕ Close</button>
+            </div>
+            <p style="font-size:12px; color:#64748b;">Select checkboxes for students you wish to restore/rollback to the active student entry list.</p>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="background:#071b38; color:#fff;">
+                  <th style="padding:8px;"><input type="checkbox" id="selectAllTrash" onclick="CwsnApp.toggleAllTrash(this)"></th>
+                  <th style="padding:8px;">Samagra ID</th>
+                  <th style="padding:8px;">Student Name</th>
+                  <th style="padding:8px;">Class</th>
+                  <th style="padding:8px;">Deleted At</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      trashList.forEach((st, idx) => {
+        modalHtml += `
+          <tr>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;"><input type="checkbox" class="trash-chk" value="${idx}"></td>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${st.samagra || '-'}</td>
+            <td style="padding:6px; border:1px solid #cbd5e1; font-weight:bold;">${st.name || '-'}</td>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${st.cls || '-'}</td>
+            <td style="padding:6px; border:1px solid #cbd5e1; font-size:11px; color:#64748b; text-align:center;">${st.deletedAt || '-'}</td>
+          </tr>
+        `;
+      });
+
+      modalHtml += `
+            </tbody>
+          </table>
+          <div style="margin-top:15px; display:flex; justify-content:flex-end; gap:10px;">
+            <button onclick="CwsnApp.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">🔄 Rollback / Restore Selected</button>
+          </div>
+        </div>
+      </div>
+      `;
+
+      let existing = document.getElementById('trashModal');
+      if (existing) existing.remove();
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    toggleAllTrash(masterChk) {
+      document.querySelectorAll('.trash-chk').forEach(chk => {
+        chk.checked = masterChk.checked;
+      });
+    },
+
+    restoreSelectedTrash() {
+      let checkboxes = document.querySelectorAll('.trash-chk:checked');
+      if (checkboxes.length === 0) {
+        alert("Please select at least one student to rollback/restore!");
         return;
       }
-      alert("No active rollback action available for this student record.");
+
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let trashKey = "brc_cwsn_trash_" + activeSess;
+      let trashList = JSON.parse(localStorage.getItem(trashKey) || "[]");
+      let indicesToRestore = Array.from(checkboxes).map(chk => parseInt(chk.value));
+
+      indicesToRestore.sort((a, b) => b - a).forEach(idx => {
+        let restoredStudent = trashList.splice(idx, 1)[0];
+        this.addNewStudentCard(restoredStudent);
+      });
+
+      localStorage.setItem(trashKey, JSON.stringify(trashList));
+      document.getElementById('trashModal').remove();
+      alert("Selected students have been successfully rolled back and restored to the student list!");
     },
 
     renderStudentCards(students = []) {
@@ -929,8 +1007,6 @@
       
       let students = [];
       cards.forEach(card => {
-        if (card.style.display === "none") return; // Skip deleted records
-        
         let samagra = card.querySelector('.s-samagra').value.trim();
         let name = card.querySelector('.s-name').value.trim();
         let cast = card.querySelector('.s-cast').value;
