@@ -631,7 +631,7 @@
       let eligibleSchools = [];
 
       if (info.isAdmin || info.isJsk) {
-        // Admin ke liye sirf wahi schools dikhenge jinka setup YES hai, baaki hide rahenge
+        // Admin aur JSK ke liye kewal wahi schools dikhenge jinka setup YES hai
         eligibleSchools = this.allSchools.filter(s => {
           let udise = String(s.udise || s.Dise_code || s.code || s.id || "").trim();
           return localStorage.getItem("brc_cwsn_has_" + udise) === 'yes';
@@ -698,7 +698,7 @@
       let info = this.getUserRoleInfo();
       let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
 
-      // Yadi setup NO hai aur user school login hai, toh entry aur add student button freeze kar do
+      // Yadi setup NO hai aur user school login hai, toh entry lock rahegi
       if (setupStatus !== 'yes' && info.isSchool) {
         expBoys.value = ""; expBoys.disabled = true;
         expGirls.value = ""; expGirls.disabled = true;
@@ -968,7 +968,7 @@
 
       let table = document.getElementById('cwsnReportTable');
 
-      // SCHOOL STATUS REPORT (Pending / Completed with Red Highlight)
+      // SCHOOL STATUS REPORT (Smart 26-column check, Pending / Completed with Red/Green highlight for YES schools)
       if (reportType === 'status_report') {
         let html = `
           <thead>
@@ -977,9 +977,10 @@
               <th>School Name</th>
               <th>UDISE Code</th>
               <th>JSK</th>
-              <th>Setup Status (Admin)</th>
+              <th>Setup Status</th>
               <th>Entry Status</th>
-              <th>Total Students Added</th>
+              <th>Enrolled CWSN</th>
+              <th>Pending Fields / Remaining Entry Details</th>
             </tr>
           </thead>
           <tbody>
@@ -990,14 +991,48 @@
           let jsk = s.jsk || s.Sankul || 'Bhoura';
           if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
-          let setupYes = (localStorage.getItem("brc_cwsn_has_" + udise) === 'yes');
-          let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
-          let isCompleted = saved && saved.completed && saved.students && saved.students.length > 0;
-          let totalStudents = isCompleted ? saved.students.length : 0;
+          let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
+          
+          // Kewal wahi schools dikhenge jinhe admin ne YES kiya hai
+          if (setupStatus !== 'yes') return;
 
-          let statusText = isCompleted ? "Completed" : "Pending Entry";
-          let rowColor = isCompleted ? "#f0fdf4" : "#fee2e2"; // Green for completed, Red for pending
+          let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
+          let students = (saved && saved.students) ? saved.students : [];
+          let totalStudents = students.length;
+
+          let isCompleted = false;
+          let remarks = "";
+
+          if (totalStudents === 0) {
+            isCompleted = false;
+            remarks = "Admin assigned YES, but data entry is pending (0 students added)";
+          } else {
+            // Check all 26 mandatory fields across students
+            let missingFieldsCount = 0;
+            students.forEach(st => {
+              let fields = [
+                st.samagra, st.name, st.father, st.mother, st.gender, st.cast, 
+                st.cls, st.mobile, st.udid, st.aadhar, st.dob, st.disability, 
+                st.cert, st.percent, st.equipment, st.address, st.pin, st.bank, 
+                st.ifsc, st.accNo, st.teacher, st.teacherMob
+              ];
+              fields.forEach(f => {
+                if (!f || String(f).trim() === "") missingFieldsCount++;
+              });
+            });
+
+            if (missingFieldsCount > 0) {
+              isCompleted = false;
+              remarks = `Pending: ${missingFieldsCount} column field(s) empty across student record(s)`;
+            } else {
+              isCompleted = true;
+              remarks = "All 26 column entries completed successfully";
+            }
+          }
+
+          let rowColor = isCompleted ? "#f0fdf4" : "#fee2e2"; 
           let textCol = isCompleted ? "#16a34a" : "#dc2626";
+          let statusText = isCompleted ? "Completed" : "Pending Entry";
 
           html += `
             <tr style="background:${rowColor};">
@@ -1005,12 +1040,18 @@
               <td style="text-align:left; font-weight:bold;">${s.name || s.schoolName}</td>
               <td>${udise}</td>
               <td>${jsk}</td>
-              <td>${setupYes ? '<span style="color:#16a34a; font-weight:bold;">YES</span>' : '<span style="color:#dc2626; font-weight:bold;">NO</span>'}</td>
+              <td><span style="color:#16a34a; font-weight:bold;">YES</span></td>
               <td style="color:${textCol}; font-weight:bold;">${statusText}</td>
               <td style="font-weight:bold;">${totalStudents}</td>
+              <td style="text-align:left; font-size:11px; color:#475569;">${remarks}</td>
             </tr>
           `;
         });
+
+        if (idx === 1) {
+          html += `<tr><td colspan="8" style="padding:20px; color:#64748b;">No CWSN-enabled (YES) schools found matching the selected filter.</td></tr>`;
+        }
+
         html += `</tbody>`;
         table.innerHTML = html;
         return;
@@ -1097,7 +1138,6 @@
           html += `<td>${ct.b}</td><td>${ct.g}</td><td>${ct.t}</td>`;
         });
         html += `<td style="color:#1d4ed8;">${grandB}</td><td style="color:#db2777;">${grandG}</td><td style="color:#071b38;">${grandT}</td></tr></tbody>`;
-        table.html = html;
         table.innerHTML = html;
         return;
       }
@@ -1127,7 +1167,7 @@
             udise === info.userId || 
             cleanSchoolUdise === cleanUserUdise || 
             (cleanUserUdise && cleanSchoolUdise.includes(cleanUserUdise)) || 
-            (cleanUserUdise && cleanUserUdise.includes(cleanSchoolUdise))
+            (cleanUserUdise && cleanSchoolUdise.includes(cleanSchoolUdise))
           );
           if (!isMatch) return;
         }
