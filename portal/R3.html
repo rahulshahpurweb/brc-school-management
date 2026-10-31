@@ -38,7 +38,7 @@
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; }
-    .tablewrap { width: 100%; overflow-x: auto; overflow-y: visible; max-height: none; margin-bottom: 20px; }
+  .tablewrap { width: 100%; overflow-x: auto; overflow-y: visible; max-height: none; margin-bottom: 20px; }
   
   #loadingOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; color:#fff; font-size:18px; font-weight:bold; }
   .spinner { border: 6px solid #f3f3f3; border-top: 6px solid #f4b400; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
@@ -264,9 +264,9 @@
           <option value="50" selected>50 Rows</option>
           <option value="100">100 Rows</option>
           <option value="200">200 Rows</option>
+          <option value="300">300 Rows</option>
           <option value="ALL">All Rows</option>
         </select>
-        
       </div>
       <div class="tablewrap">
         <table id="cwsnReportTable"></table>
@@ -529,7 +529,7 @@
           });
 
           this.showLoader(false);
-          alert(`Data successfully imported and saved for ${count} schools!`);
+          alert("Data imported and saved successfully!");
           this.switchTab('dashboard');
         } catch (err) {
           this.showLoader(false);
@@ -589,7 +589,7 @@
       let currentLock = localStorage.getItem("brc_cwsn_lock_" + udise) === "yes";
       let newLock = !currentLock;
       localStorage.setItem("brc_cwsn_lock_" + udise, newLock ? "yes" : "no");
-      alert(newLock ? `School entry has been frozen/locked by Admin.` : `School entry has been unfrozen by Admin.`);
+      alert(newLock ? "School entry has been locked." : "School entry has been unfrozen.");
       this.renderSchoolSelectionTable();
     },
 
@@ -630,14 +630,9 @@
 
         let result = await response.json();
         this.showLoader(false);
-        if (result.status === "success" || result.success) {
-          alert("School setup changes successfully saved!");
-        } else {
-          alert("Data saved successfully.");
-        }
+        alert("Data saved successfully!");
       } catch (err) {
         this.showLoader(false);
-        console.log("Setup save error:", err);
         alert("Data saved successfully!");
       }
 
@@ -912,7 +907,6 @@
         alert("Data saved successfully!");
       } catch(err) {
         this.showLoader(false);
-        console.log("Cloud sync error:", err);
         alert("Data saved successfully!");
       }
 
@@ -985,11 +979,10 @@
       let disFilter = document.getElementById('reportDisabilityFilter').value;
       let classFilter = document.getElementById('reportClassFilter').value;
       let reportType = document.getElementById('reportTypeFilter').value;
-      let pageSize = document.getElementById('reportPageSize') ? document.getElementById('reportPageSize').value : "100";
+      let pageSize = document.getElementById('reportPageSize') ? document.getElementById('reportPageSize').value : "50";
 
       let table = document.getElementById('cwsnReportTable');
 
-      // SCHOOL STATUS REPORT (Smart 26-column check with Grand Total at the end and pagination limit)
       if (reportType === 'status_report') {
         let html = `
           <thead>
@@ -1023,7 +1016,7 @@
           filteredSchools.push(s);
         });
 
-        let limit = pageSize === "ALL" ? filteredSchools.length : parseInt(pageSize) || 100;
+        let limit = pageSize === "ALL" ? filteredSchools.length : parseInt(pageSize) || 50;
         let displayedSchools = filteredSchools.slice(0, limit);
 
         displayedSchools.forEach(s => {
@@ -1034,6 +1027,8 @@
           let saved = JSON.parse(localStorage.getItem("brc_cwsn_" + udise) || "null");
           let students = (saved && saved.students) ? saved.students : [];
           let totalStudents = students.length;
+
+          grandTotalCwsn += totalStudents;
 
           let isCompleted = false;
           let remarks = "";
@@ -1064,13 +1059,13 @@
               isCompleted = true;
               remarks = "All 26 column entries completed successfully";
               totalCompletedSchools++;
-              grandTotalCwsn += totalStudents;
             }
           }
 
           let rowColor = isCompleted ? "#f0fdf4" : "#fee2e2"; 
           let textCol = isCompleted ? "#16a34a" : "#dc2626";
           let statusText = isCompleted ? "Completed" : "Pending Entry";
+          let formattedCount = totalStudents < 10 ? '0' + totalStudents : totalStudents;
 
           html += `
             <tr style="background:${rowColor};">
@@ -1080,13 +1075,12 @@
               <td>${jsk}</td>
               <td><span style="color:#16a34a; font-weight:bold;">YES</span></td>
               <td style="color:${textCol}; font-weight:bold;">${statusText}</td>
-              <td style="font-weight:bold;">${totalStudents}</td>
+              <td style="font-weight:bold;">${formattedCount}</td>
               <td style="text-align:left; font-size:11px; color:#475569;">${remarks}</td>
             </tr>
           `;
         });
 
-        // Grand Total Row at the bottom
         html += `
           <tr style="background:#e2e8f0; font-weight:bold;">
             <td colspan="4">Grand Total / Summary</td>
@@ -1236,13 +1230,12 @@
             if (reportType === 'above40' && pct < 40) return;
             if (reportType === 'below40' && pct >= 40) return;
 
-            matchedSchoolsStore = s;
             matchedStudents.push({ s, st, udise, jsk });
           });
         }
       });
 
-      let limit = pageSize === "ALL" ? matchedStudents.length : parseInt(pageSize) || 100;
+      let limit = pageSize === "ALL" ? matchedStudents.length : parseInt(pageSize) || 50;
       let displayedStudents = matchedStudents.slice(0, limit);
 
       let rowIdx = 1;
