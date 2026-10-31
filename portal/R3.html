@@ -796,10 +796,10 @@
         <div class="student-card-header" style="display:flex; justify-content:space-between; align-items:center;">
           <div>
             <span>Student #${idx} Record</span>
-            <!-- Promotion & Delete Quick Actions -->
+            <!-- Promotion & Trash Bin Rollback Quick Actions -->
             <span style="margin-left:15px; font-weight:normal; font-size:11px;">
               <button type="button" onclick="CwsnApp.promoteStudent(this)" style="background:#16a34a; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">🎓 Promote</button>
-              <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; margin-left:4px;">🗑️ Delete</button>
+              <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; margin-left:4px;">🗑️ Delete / Rollback</button>
             </span>
           </div>
           ${info.isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Remove</button>` : ''}
@@ -855,8 +855,39 @@
     },
 
     deleteStudentCard(btn) {
-      if (confirm("Are you sure you want to delete this student record?")) {
-        btn.closest('.student-card').remove();
+      if (confirm("Are you sure you want to delete this student record? It will be safely moved to the Trash Bin for rollback/recovery.")) {
+        let card = btn.closest('.student-card');
+        let deletedList = JSON.parse(localStorage.getItem("brc_cwsn_trash") || "[]");
+        let studentData = {
+          samagra: card.querySelector('.s-samagra').value,
+          name: card.querySelector('.s-name').value,
+          father: card.querySelector('.s-father').value,
+          mother: card.querySelector('.s-mother').value,
+          gender: card.querySelector('.s-gender').value,
+          cast: card.querySelector('.s-cast').value,
+          cls: card.querySelector('.s-class').value,
+          mobile: card.querySelector('.s-mobile').value,
+          udid: card.querySelector('.s-udid').value,
+          aadhar: card.querySelector('.s-aadhar').value,
+          dob: card.querySelector('.s-dob').value,
+          disability: card.querySelector('.s-dis').value,
+          cert: card.querySelector('.s-cert').value,
+          percent: card.querySelector('.s-percent').value,
+          equipment: card.querySelector('.s-equip').value,
+          address: card.querySelector('.s-address').value,
+          pin: card.querySelector('.s-pin').value,
+          bank: card.querySelector('.s-bank').value,
+          ifsc: card.querySelector('.s-ifsc').value,
+          accNo: card.querySelector('.s-acc').value,
+          teacher: card.querySelector('.s-teacher').value,
+          teacherMob: card.querySelector('.s-teachermob').value,
+          deletedAt: new Date().toLocaleString()
+        };
+        deletedList.push(studentData);
+        localStorage.setItem("brc_cwsn_trash", JSON.stringify(deletedList));
+        
+        card.remove();
+        alert("Student deleted and safely stored in Trash Bin (Rollback available).");
       }
     },
 
