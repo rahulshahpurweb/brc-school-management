@@ -66,8 +66,6 @@
 
 <div class="module-header">
   <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
-<div class="module-header">
-  <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
     <!-- Global Session Selector Dropdown -->
     <div style="display:flex; align-items:center; gap:5px; background:#0b2854; padding:4px 8px; border-radius:6px; border:1px solid #ffd21c;">
@@ -80,11 +78,11 @@
       </select>
     </div>
 
-    <!-- Bahar sirf yeh do buttons rahenge -->
+    <!-- Excel Export & Print/PDF bahar rakhe gaye hain -->
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
     <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
 
-    <!-- ☰ Menu Dropdown (Saare baki options iske andar hain) -->
+    <!-- ☰ Menu Dropdown (Saare extra options iske andar hain) -->
     <div class="menu-container" id="adminMenuContainer">
       <button onclick="CwsnApp.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
@@ -98,7 +96,6 @@
     </div>
   </div>
 </div>
-  
 
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard</button>
@@ -442,9 +439,9 @@
         selectionBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
       }
 
-      let adminRemoveBinBtn = document.getElementById('adminRemoveBinBtn');
-      if (adminRemoveBinBtn) {
-        adminRemoveBinBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
+      let menuAdminRemoveBtn = document.getElementById('menuAdminRemoveBtn');
+      if (menuAdminRemoveBtn) {
+        menuAdminRemoveBtn.style.display = info.isAdmin ? 'block' : 'none';
       }
 
       let globalSelect = document.getElementById("globalSessionSelect");
