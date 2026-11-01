@@ -23,7 +23,6 @@
   .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
   .sub-nav-btn.active { background: #f4b400; color: #071b38; }
   
-  /* Added generous bottom padding so bottom save button is completely visible and scrollable */
   .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 140px 15px; }
   
   .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
@@ -68,7 +67,6 @@
 <div class="module-header">
   <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <!-- Global Session Selector Dropdown -->
     <div style="display:flex; align-items:center; gap:5px; background:#0b2854; padding:4px 8px; border-radius:6px; border:1px solid #ffd21c;">
       <span style="font-size:12px; color:#ffd21c; font-weight:bold;">Session:</span>
       <select id="globalSessionSelect" onchange="CwsnApp.changeGlobalSession(this.value)" style="background:#fff; color:#071b38; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">
@@ -79,10 +77,7 @@
       </select>
     </div>
 
-    <!-- Rollback Trash Bin Button -->
     <button onclick="CwsnApp.openTrashBin()" class="sub-nav-btn" style="background:#b45309;">🗑️ Rollback Trash Bin</button>
-    
-    <!-- Admin Remove Bin Button -->
     <button onclick="CwsnApp.openAdminRemoveBin()" class="sub-nav-btn" id="adminRemoveBinBtn" style="background:#dc2626; display:none;">🗂️ Admin Remove Bin</button>
 
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
@@ -205,11 +200,11 @@
           <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <div>
               <label style="font-weight:bold; color:#1d4ed8; font-size:11px;">Expected Boys:</label>
-              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys" disabled>
+              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys">
             </div>
             <div>
               <label style="font-weight:bold; color:#db2777; font-size:11px;">Expected Girls:</label>
-              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls" disabled>
+              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls">
             </div>
           </div>
         </div>
@@ -859,7 +854,6 @@
               <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:${isNextYearSession ? '#dc2626' : '#94a3b8'}; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:${isNextYearSession ? 'pointer' : 'not-allowed'}; margin-left:4px;" ${isNextYearSession ? '' : 'title="Deletion available only in next session"'}>🗑️ Delete</button>
             </span>
           </div>
-          <!-- Admin-only remove button -->
           ${info.isAdmin ? `<button type="button" onclick="CwsnApp.adminRemoveStudent(this)" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Admin Remove & Backup">🗑️ Admin Remove</button>` : ''}
         </div>
         <div class="form-grid">
@@ -948,7 +942,7 @@
         this.showLoader(false);
 
         card.remove();
-        this.saveData(); // Automatically update school records after deletion
+        this.saveData();
         alert("Student deleted and moved to Rollback list successfully.");
       }
     },
@@ -1212,6 +1206,8 @@
       let cards = document.querySelectorAll('.student-card');
       
       let students = [];
+      let hasError = false;
+
       cards.forEach(card => {
         let samagra = card.querySelector('.s-samagra').value.trim();
         let name = card.querySelector('.s-name').value.trim();
@@ -1221,9 +1217,9 @@
         let dob = card.querySelector('.s-dob').value.trim();
         let teacherMob = card.querySelector('.s-teachermob').value.trim();
 
-        if (!name) { alert("Student Name is mandatory!"); return; }
-        if (!cast) { alert("Please select student's CAST Category!"); return; }
-        if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID must be exactly 9 digits!"); return; }
+        if (!name) { alert("Student Name is mandatory!"); hasError = true; return; }
+        if (!cast) { alert("Please select student's CAST Category!"); hasError = true; return; }
+        if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID must be exactly 9 digits!"); hasError = true; return; }
 
         students.push({
           samagra: samagra, name: name,
@@ -1236,9 +1232,11 @@
           equipment: card.querySelector('.s-equip').value, address: card.querySelector('.s-address').value,
           pin: card.querySelector('.s-pin').value, bank: card.querySelector('.s-bank').value,
           ifsc: card.querySelector('.s-ifsc').value, accNo: card.querySelector('.s-acc').value,
-          teacher: card.querySelector('.s-teacher').value, teacherMob: card.querySelector('.s-teachermob').value
+          teacher: card.querySelector('.s-teacher').value, teacherMob: teacherMob
         });
       });
+
+      if (hasError) return;
 
       let school = this.allSchools.find(s => String(s.udise || s.Dise_code || s.code || s.id) === String(udise));
       let boys = students.filter(st => st.gender === 'Boy').length;
