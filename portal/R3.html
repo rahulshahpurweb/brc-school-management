@@ -81,6 +81,9 @@
 
     <!-- Rollback Trash Bin Button -->
     <button onclick="CwsnApp.openTrashBin()" class="sub-nav-btn" style="background:#b45309;">🗑️ Rollback Trash Bin</button>
+    
+    <!-- Admin Remove Bin Button -->
+    <button onclick="CwsnApp.openAdminRemoveBin()" class="sub-nav-btn" id="adminRemoveBinBtn" style="background:#dc2626; display:none;">🗂️ Admin Remove Bin</button>
 
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
     <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
@@ -439,6 +442,12 @@
         selectionBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
       }
 
+      // Show Admin Remove Bin button only for Admin
+      let adminRemoveBinBtn = document.getElementById('adminRemoveBinBtn');
+      if (adminRemoveBinBtn) {
+        adminRemoveBinBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
+      }
+
       let globalSelect = document.getElementById("globalSessionSelect");
       if (globalSelect) {
         globalSelect.disabled = !info.isAdmin;
@@ -789,9 +798,7 @@
       }
 
       let info = this.getUserRoleInfo();
-      let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
       
-      // Removed automatic freezing for school login so entries and lists remain visible and editable when unlocked
       expBoys.disabled = false;
       expGirls.disabled = false;
       addBtn.disabled = false; addBtn.style.background = "#1d4ed8"; addBtn.style.cursor = "pointer";
@@ -855,7 +862,8 @@
               <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:${isNextYearSession ? '#dc2626' : '#94a3b8'}; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:${isNextYearSession ? 'pointer' : 'not-allowed'}; margin-left:4px;" ${isNextYearSession ? '' : 'title="Deletion available only in next session"'}>🗑️ Delete</button>
             </span>
           </div>
-          <button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Remove</button>
+          <!-- Remove button restricted strictly to Admin only -->
+          ${info.isAdmin ? `<button type="button" onclick="CwsnApp.adminRemoveStudent(this)" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Admin Remove & Backup">🗑️ Admin Remove</button>` : ''}
         </div>
         <div class="form-grid">
           <div class="form-group">
@@ -922,31 +930,7 @@
       }
       if (confirm("Are you sure you want to delete this student record? It will be synced to the Cloud Rollback Trash Bin.")) {
         let card = btn.closest('.student-card');
-        let studentData = {
-          samagra: card.querySelector('.s-samagra').value,
-          name: card.querySelector('.s-name').value,
-          father: card.querySelector('.s-father').value,
-          mother: card.querySelector('.s-mother').value,
-          gender: card.querySelector('.s-gender').value,
-          cast: card.querySelector('.s-cast').value,
-          cls: card.querySelector('.s-class').value,
-          mobile: card.querySelector('.s-mobile').value,
-          udid: card.querySelector('.s-udid').value,
-          aadhar: card.querySelector('.s-aadhar').value,
-          dob: card.querySelector('.s-dob').value,
-          disability: card.querySelector('.s-dis').value,
-          cert: card.querySelector('.s-cert').value,
-          percent: card.querySelector('.s-percent').value,
-          equipment: card.querySelector('.s-equip').value,
-          address: card.querySelector('.s-address').value,
-          pin: card.querySelector('.s-pin').value,
-          bank: card.querySelector('.s-bank').value,
-          ifsc: card.querySelector('.s-ifsc').value,
-          accNo: card.querySelector('.s-acc').value,
-          teacher: card.querySelector('.s-teacher').value,
-          teacherMob: card.querySelector('.s-teachermob').value,
-          deletedAt: new Date().toLocaleString()
-        };
+        let studentData = this.extractCardData(card);
 
         this.showLoader(true);
         try {
@@ -956,6 +940,7 @@
             body: new URLSearchParams({
               action: "saveTrash",
               session: activeSess,
+              type: "delete",
               payload: JSON.stringify(studentData)
             })
           });
@@ -967,13 +952,68 @@
       }
     },
 
+    async adminRemoveStudent(btn) {
+      let activeSessDropdown = document.getElementById("globalSessionSelect");
+      let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
+      if (confirm("⚠️ Admin Action: Are you sure you want to remove this student? It will be backed up in the Admin Remove Bin and can be restored.")) {
+        let card = btn.closest('.student-card');
+        let studentData = this.extractCardData(card);
+
+        this.showLoader(true);
+        try {
+          await fetch(this.cloudApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "saveTrash",
+              session: activeSess,
+              type: "remove",
+              payload: JSON.stringify(studentData)
+            })
+          });
+        } catch(err) {}
+        this.showLoader(false);
+
+        card.remove();
+        alert("Student removed by Admin and safely backed up to Admin Remove Bin.");
+      }
+    },
+
+    extractCardData(card) {
+      return {
+        samagra: card.querySelector('.s-samagra').value,
+        name: card.querySelector('.s-name').value,
+        father: card.querySelector('.s-father').value,
+        mother: card.querySelector('.s-mother').value,
+        gender: card.querySelector('.s-gender').value,
+        cast: card.querySelector('.s-cast').value,
+        cls: card.querySelector('.s-class').value,
+        mobile: card.querySelector('.s-mobile').value,
+        udid: card.querySelector('.s-udid').value,
+        aadhar: card.querySelector('.s-aadhar').value,
+        dob: card.querySelector('.s-dob').value,
+        disability: card.querySelector('.s-dis').value,
+        cert: card.querySelector('.s-cert').value,
+        percent: card.querySelector('.s-percent').value,
+        equipment: card.querySelector('.s-equip').value,
+        address: card.querySelector('.s-address').value,
+        pin: card.querySelector('.s-pin').value,
+        bank: card.querySelector('.s-bank').value,
+        ifsc: card.querySelector('.s-ifsc').value,
+        accNo: card.querySelector('.s-acc').value,
+        teacher: card.querySelector('.s-teacher').value,
+        teacherMob: card.querySelector('.s-teachermob').value,
+        deletedAt: new Date().toLocaleString()
+      };
+    },
+
     async openTrashBin() {
       let activeSessDropdown = document.getElementById("globalSessionSelect");
       let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
       this.showLoader(true);
       let trashList = [];
       try {
-        let res = await fetch(this.cloudApiUrl + "?action=getTrash&session=" + activeSess + "&t=" + new Date().getTime());
+        let res = await fetch(this.cloudApiUrl + "?action=getTrash&session=" + activeSess + "&type=delete&t=" + new Date().getTime());
         if (res.ok) {
           trashList = await res.json();
         }
@@ -992,21 +1032,21 @@
               <h3 style="margin:0; color:#071b38;">🗑️ Cloud Rollback Trash Bin (Session: ${activeSess})</h3>
               <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">✕ Close</button>
             </div>
-            <p style="font-size:12px; color:#64748b;">Select checkboxes for students you wish to rollback/restore across browsers.</p>
+            <p style="font-size:12px; color:#64748b;">Select checkboxes for students you wish to rollback/restore.</p>
             <table style="width:100%; border-collapse:collapse; font-size:12px;">
               <thead>
                 <tr style="background:#071b38; color:#fff;">
-                  <th style="padding:8px;"><input type="checkbox" id="selectAllTrash" onclick="CwsnApp.toggleAllTrash(this)"></th>
+                  <th style="padding:8px;"><input type="checkbox" id="selectAllTrash" onclick="CwsnApp.toggleAllTrash(this, 'trash-chk')"></th>
                   <th style="padding:8px;">Samagra ID</th>
                   <th style="padding:8px;">Student Name</th>
                   <th style="padding:8px;">Class</th>
                   <th style="padding:8px;">Deleted At</th>
                 </tr>
               </thead>
-              <tbody id="trashTableBody">
+              <tbody>
       `;
 
-      trashList.forEach((item, idx) => {
+      trashList.forEach((item) => {
         let st = item.data;
         let rowIdx = item.rowIdx;
         modalHtml += `
@@ -1024,7 +1064,7 @@
             </tbody>
           </table>
           <div style="margin-top:15px; display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="CwsnApp.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">🔄 Rollback / Restore Selected</button>
+            <button onclick="CwsnApp.restoreSelectedTrash('trash-chk', 'delete')" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">🔄 Rollback / Restore Selected</button>
           </div>
         </div>
       </div>
@@ -1035,16 +1075,84 @@
       document.body.insertAdjacentHTML('beforeend', modalHtml);
     },
 
-    toggleAllTrash(masterChk) {
-      document.querySelectorAll('.trash-chk').forEach(chk => {
+    async openAdminRemoveBin() {
+      let activeSessDropdown = document.getElementById("globalSessionSelect");
+      let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
+      this.showLoader(true);
+      let removeList = [];
+      try {
+        let res = await fetch(this.cloudApiUrl + "?action=getTrash&session=" + activeSess + "&type=remove&t=" + new Date().getTime());
+        if (res.ok) {
+          removeList = await res.json();
+        }
+      } catch(e) {}
+      this.showLoader(false);
+
+      if (!Array.isArray(removeList) || removeList.length === 0) {
+        alert("Admin Remove Bin is empty for session " + activeSess + "!");
+        return;
+      }
+
+      let modalHtml = `
+        <div id="removeModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#fff; border-radius:12px; max-width:850px; width:100%; max-height:80vh; overflow-y:auto; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
+              <h3 style="margin:0; color:#071b38;">🗂️ Admin Remove Bin & Backup (Session: ${activeSess})</h3>
+              <button onclick="document.getElementById('removeModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">✕ Close</button>
+            </div>
+            <p style="font-size:12px; color:#64748b;">Select checkboxes for students removed by Admin that you wish to restore back.</p>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="background:#071b38; color:#fff;">
+                  <th style="padding:8px;"><input type="checkbox" id="selectAllRemove" onclick="CwsnApp.toggleAllTrash(this, 'remove-chk')"></th>
+                  <th style="padding:8px;">Samagra ID</th>
+                  <th style="padding:8px;">Student Name</th>
+                  <th style="padding:8px;">Class</th>
+                  <th style="padding:8px;">Removed At</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      removeList.forEach((item) => {
+        let st = item.data;
+        let rowIdx = item.rowIdx;
+        modalHtml += `
+          <tr>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;"><input type="checkbox" class="remove-chk" data-rowidx="${rowIdx}" data-student='${JSON.stringify(st)}'></td>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${st.samagra || '-'}</td>
+            <td style="padding:6px; border:1px solid #cbd5e1; font-weight:bold;">${st.name || '-'}</td>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${st.cls || '-'}</td>
+            <td style="padding:6px; border:1px solid #cbd5e1; font-size:11px; color:#64748b; text-align:center;">${st.deletedAt || '-'}</td>
+          </tr>
+        `;
+      });
+
+      modalHtml += `
+            </tbody>
+          </table>
+          <div style="margin-top:15px; display:flex; justify-content:flex-end; gap:10px;">
+            <button onclick="CwsnApp.restoreSelectedTrash('remove-chk', 'remove')" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">🔄 Restore Removed Student</button>
+          </div>
+        </div>
+      </div>
+      `;
+
+      let existing = document.getElementById('removeModal');
+      if (existing) existing.remove();
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    toggleAllTrash(masterChk, className) {
+      document.querySelectorAll('.' + className).forEach(chk => {
         chk.checked = masterChk.checked;
       });
     },
 
-    async restoreSelectedTrash() {
-      let checkboxes = document.querySelectorAll('.trash-chk:checked');
+    async restoreSelectedTrash(className, type) {
+      let checkboxes = document.querySelectorAll('.' + className + ':checked');
       if (checkboxes.length === 0) {
-        alert("Please select at least one student to rollback/restore!");
+        alert("Please select at least one student to restore!");
         return;
       }
 
@@ -1061,6 +1169,7 @@
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({
               action: "deleteTrash",
+              type: type,
               rowIdx: rowIdx
             })
           });
@@ -1068,8 +1177,10 @@
       }
 
       this.showLoader(false);
-      document.getElementById('trashModal').remove();
-      alert("Selected students successfully restored and removed from trash bin!");
+      let modalId = type === 'remove' ? 'removeModal' : 'trashModal';
+      let modalElem = document.getElementById(modalId);
+      if (modalElem) modalElem.remove();
+      alert("Selected students successfully restored and removed from backup bin!");
     },
 
     renderStudentCards(students = []) {
@@ -1152,8 +1263,6 @@
         await response.json();
         this.showLoader(false);
         alert("Data saved successfully!");
-        
-        // Reload form data to keep student cards visible and populated
         this.loadSchoolForm();
       } catch(err) {
         this.showLoader(false);
