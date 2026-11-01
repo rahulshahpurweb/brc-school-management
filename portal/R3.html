@@ -65,12 +65,13 @@
 </div>
 
 <div class="module-header">
-  <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
-  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <!-- Global Session Selector Dropdown -->
-    <div style="display:flex; align-items:center; gap:5px; background:#0b2854; padding:4px 8px; border-radius:6px; border:1px solid #ffd21c;">
-      <span style="font-size:12px; color:#ffd21c; font-weight:bold;">Session:</span>
-      <select id="globalSessionSelect" onchange="CwsnApp.changeGlobalSession(this.value)" style="background:#fff; color:#071b38; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">
+  <div class="module-title" style="width: 100%; margin-bottom: 5px;">♿ CWSN Module (R3 - Cloud Synced)</div>
+  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 5px; flex-wrap: nowrap;">
+    
+    <!-- Session Dropdown -->
+    <div style="display: flex; align-items: center; gap: 3px; background: #0b2854; padding: 4px 6px; border-radius: 6px; border: 1px solid #ffd21c;">
+      <span style="font-size: 11px; color: #ffd21c; font-weight: bold;">Session:</span>
+      <select id="globalSessionSelect" onchange="CwsnApp.changeGlobalSession(this.value)" style="background: #fff; color: #071b38; border: none; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer;">
         <option value="2026-27">2026-27</option>
         <option value="2027-28">2027-28</option>
         <option value="2028-29">2028-29</option>
@@ -78,24 +79,28 @@
       </select>
     </div>
 
-    <!-- Excel Export & Print/PDF bahar rakhe gaye hain -->
-    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
-    <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
+    <!-- Excel Export Button -->
+    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background: #16a34a; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Excel</button>
+    
+    <!-- Print / PDF Button -->
+    <button onclick="window.print()" class="sub-nav-btn" style="background: #d97706; padding: 6px 10px; font-size: 12px; white-space: nowrap;">🖨️ Print</button>
 
-    <!-- ☰ Menu Dropdown (Saare extra options iske andar hain) -->
-    <div class="menu-container" id="adminMenuContainer">
-      <button onclick="CwsnApp.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
-      <div id="dropdownMenu" class="dropdown-content">
+    <!-- ☰ Menu Dropdown -->
+    <div class="menu-container" id="adminMenuContainer" style="position: relative; display: inline-block;">
+      <button onclick="CwsnApp.toggleMenu()" class="menu-btn" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">☰ Menu</button>
+      <div id="dropdownMenu" class="dropdown-content" style="right: 0; left: auto;">
         <button onclick="CwsnApp.openTrashBin()">🗑️ Rollback Trash Bin</button>
-        <button onclick="CwsnApp.openAdminRemoveBin()" id="menuAdminRemoveBtn" style="display:none;">🗂️ Admin Remove Bin</button>
+        <button onclick="CwsnApp.openAdminRemoveBin()" id="menuAdminRemoveBtn" style="display: none;">🗂️ Admin Remove Bin</button>
         <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template</button>
-        <label style="cursor:pointer;">
-          📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="CwsnApp.handleBulkUpload(event)">
+        <label style="cursor: pointer;">
+          📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display: none" onchange="CwsnApp.handleBulkUpload(event)">
         </label>
       </div>
     </div>
+
   </div>
 </div>
+  
 
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard</button>
