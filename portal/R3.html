@@ -22,7 +22,10 @@
   .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
   .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
   .sub-nav-btn.active { background: #f4b400; color: #071b38; }
-  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+  
+  /* Added bottom padding & margin so page doesn't stick to bottom and scrolls smoothly */
+  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 60px 15px; }
+  
   .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
   .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
   .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1d4ed8; text-align: center; }
@@ -65,7 +68,7 @@
 <div class="module-header">
   <div class="module-title">♿ CWSN Module (R3 - Cloud Synced)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <!-- Global Session Selector Dropdown (Cloud Synced & Admin Controlled) -->
+    <!-- Global Session Selector Dropdown -->
     <div style="display:flex; align-items:center; gap:5px; background:#0b2854; padding:4px 8px; border-radius:6px; border:1px solid #ffd21c;">
       <span style="font-size:12px; color:#ffd21c; font-weight:bold;">Session:</span>
       <select id="globalSessionSelect" onchange="CwsnApp.changeGlobalSession(this.value)" style="background:#fff; color:#071b38; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">
@@ -76,7 +79,7 @@
       </select>
     </div>
 
-    <!-- Cloud-Synced Rollback Trash Bin Button -->
+    <!-- Rollback Trash Bin Button -->
     <button onclick="CwsnApp.openTrashBin()" class="sub-nav-btn" style="background:#b45309;">🗑️ Rollback Trash Bin</button>
 
     <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
@@ -373,7 +376,7 @@
         console.log("Cloud fetch fallback.");
       }
 
-      // Safe clone for next session so previous session remains untouched and secure
+      // Clone base session data into next session if next session is empty so previous records remain completely safe and intact
       if (activeSess !== "2026-27") {
         let baseRes = await fetch(this.cloudApiUrl + "?action=getAllCwsnData&session=2026-27&t=" + new Date().getTime());
         if (baseRes.ok) {
@@ -437,7 +440,6 @@
         selectionBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
       }
 
-      // Restrict global session select dropdown for non-admins to keep it frozen/locked
       let globalSelect = document.getElementById("globalSessionSelect");
       if (globalSelect) {
         globalSelect.disabled = !info.isAdmin;
@@ -566,7 +568,7 @@
             });
           }
 
-          let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+          let activeSess = document.getElementById("globalSessionSelect") ? document.getElementById("globalSessionSelect").value : (localStorage.getItem("brc_active_session") || "2026-27");
 
           for (let udise in schoolMap) {
             let sData = schoolMap[udise];
@@ -687,7 +689,7 @@
     async saveSchoolSetupChanges() {
       this.showLoader(true);
       try {
-        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        let activeSess = document.getElementById("globalSessionSelect") ? document.getElementById("globalSessionSelect").value : (localStorage.getItem("brc_active_session") || "2026-27");
         let setupData = {};
         this.allSchools.forEach(s => {
           let udise = String(s.udise).trim();
@@ -850,7 +852,8 @@
       
       let info = this.getUserRoleInfo();
       let hasSamagra = st.samagra && String(st.samagra).trim() !== "";
-      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let activeSessDropdown = document.getElementById("globalSessionSelect");
+      let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
       let isNextYearSession = (activeSess !== "2026-27");
 
       card.innerHTML = `
@@ -902,7 +905,8 @@
     },
 
     promoteStudent(btn) {
-      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let activeSessDropdown = document.getElementById("globalSessionSelect");
+      let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
       if (activeSess === "2026-27") {
         alert("Promotion is locked for current session (2026-27). It is available only in next session.");
         return;
@@ -920,7 +924,8 @@
     },
 
     async deleteStudentCard(btn) {
-      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let activeSessDropdown = document.getElementById("globalSessionSelect");
+      let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
       if (activeSess === "2026-27") {
         alert("Deletion is locked for current session (2026-27). It is available only in next session.");
         return;
@@ -973,7 +978,8 @@
     },
 
     async openTrashBin() {
-      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      let activeSessDropdown = document.getElementById("globalSessionSelect");
+      let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
       this.showLoader(true);
       let trashList = [];
       try {
@@ -1124,7 +1130,8 @@
 
       this.showLoader(true);
       try {
-        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        let activeSessDropdown = document.getElementById("globalSessionSelect");
+        let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
         let response = await fetch(this.cloudApiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
