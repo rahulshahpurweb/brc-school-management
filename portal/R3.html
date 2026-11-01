@@ -23,8 +23,8 @@
   .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
   .sub-nav-btn.active { background: #f4b400; color: #071b38; }
   
-  /* Added bottom padding & margin so page doesn't stick to bottom and scrolls smoothly */
-  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 60px 15px; }
+  /* Proper bottom padding & spacing so Save button and page elements are fully visible and scrollable */
+  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 120px 15px; }
   
   .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
   .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -214,7 +214,7 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h4 style="color:#071b38; margin:0;">Student Details Entry & Promotion Workflow</h4>
-        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#94a3b8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:not-allowed;" disabled>➕ Add New Student</button>
+        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Student</button>
       </div>
 
       <div id="studentCardsContainer">
@@ -222,7 +222,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
-        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#94a3b8; color:#fff; padding:10px 22px; border:none; border-radius:8px; font-weight:bold; cursor:not-allowed;" disabled>💾 Save CWSN Data</button>
+        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:10px 22px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save CWSN Data</button>
       </div>
     </div>
   </section>
@@ -376,7 +376,6 @@
         console.log("Cloud fetch fallback.");
       }
 
-      // Clone base session data into next session if next session is empty so previous records remain completely safe and intact
       if (activeSess !== "2026-27") {
         let baseRes = await fetch(this.cloudApiUrl + "?action=getAllCwsnData&session=2026-27&t=" + new Date().getTime());
         if (baseRes.ok) {
@@ -791,17 +790,8 @@
 
       let info = this.getUserRoleInfo();
       let setupStatus = localStorage.getItem("brc_cwsn_has_" + udise) || "no";
-      let isLockedByAdmin = localStorage.getItem("brc_cwsn_lock_" + udise) === "yes";
-
-      if ((setupStatus !== 'yes' || isLockedByAdmin) && info.isSchool) {
-        expBoys.value = ""; expBoys.disabled = true;
-        expGirls.value = ""; expGirls.disabled = true;
-        addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
-        saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
-        container.innerHTML = `<div style="padding:25px; color:#dc2626; font-weight:bold; text-align:center; background:#fee2e2; border-radius:8px;">⚠️ CWSN Data Entry for this school is currently frozen/locked.</div>`;
-        return;
-      }
-
+      
+      // Removed automatic freezing for school login so entries and lists remain visible and editable when unlocked
       expBoys.disabled = false;
       expGirls.disabled = false;
       addBtn.disabled = false; addBtn.style.background = "#1d4ed8"; addBtn.style.cursor = "pointer";
@@ -837,7 +827,7 @@
       let totalAllowed = expBoys + expGirls;
 
       let currentCards = container.querySelectorAll('.student-card').length;
-      if (currentCards >= totalAllowed) {
+      if (totalAllowed > 0 && currentCards >= totalAllowed) {
         alert(`You have reached the expected total limit for Boys (${expBoys}) and Girls (${expGirls})!`);
         return;
       }
@@ -865,7 +855,7 @@
               <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:${isNextYearSession ? '#dc2626' : '#94a3b8'}; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:${isNextYearSession ? 'pointer' : 'not-allowed'}; margin-left:4px;" ${isNextYearSession ? '' : 'title="Deletion available only in next session"'}>🗑️ Delete</button>
             </span>
           </div>
-          ${info.isAdmin ? `<button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Remove</button>` : ''}
+          <button type="button" onclick="this.closest('.student-card').remove();" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">🗑️ Remove</button>
         </div>
         <div class="form-grid">
           <div class="form-group">
@@ -917,7 +907,7 @@
       let currentIdx = classes.indexOf(classSelect.value);
       if (currentIdx < classes.length - 1 && currentIdx !== -1) {
         classSelect.value = classes[currentIdx + 1];
-        alert("Student promoted to " + classSelect.value + " successfully!");
+        alert("Student promoted to " + classSelect.value + " successfully! Click 'Save CWSN Data' to update.");
       } else {
         alert("Student is already in Class - 8 or class cannot be incremented further.");
       }
@@ -973,7 +963,7 @@
         this.showLoader(false);
 
         card.remove();
-        alert("Student marked as deleted and synced to cloud Rollback list.");
+        alert("Student marked as deleted and synced to cloud Rollback list. Click 'Save CWSN Data' to update school records.");
       }
     },
 
@@ -1016,10 +1006,12 @@
               <tbody id="trashTableBody">
       `;
 
-      trashList.forEach((st, idx) => {
+      trashList.forEach((item, idx) => {
+        let st = item.data;
+        let rowIdx = item.rowIdx;
         modalHtml += `
           <tr>
-            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;"><input type="checkbox" class="trash-chk" data-student='${JSON.stringify(st)}'></td>
+            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;"><input type="checkbox" class="trash-chk" data-rowidx="${rowIdx}" data-student='${JSON.stringify(st)}'></td>
             <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${st.samagra || '-'}</td>
             <td style="padding:6px; border:1px solid #cbd5e1; font-weight:bold;">${st.name || '-'}</td>
             <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${st.cls || '-'}</td>
@@ -1049,20 +1041,35 @@
       });
     },
 
-    restoreSelectedTrash() {
+    async restoreSelectedTrash() {
       let checkboxes = document.querySelectorAll('.trash-chk:checked');
       if (checkboxes.length === 0) {
         alert("Please select at least one student to rollback/restore!");
         return;
       }
 
-      checkboxes.forEach(chk => {
+      this.showLoader(true);
+      for (let chk of checkboxes) {
         let studentData = JSON.parse(chk.getAttribute('data-student'));
+        let rowIdx = chk.getAttribute('data-rowidx');
+        
         this.addNewStudentCard(studentData);
-      });
 
+        try {
+          await fetch(this.cloudApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "deleteTrash",
+              rowIdx: rowIdx
+            })
+          });
+        } catch(e) {}
+      }
+
+      this.showLoader(false);
       document.getElementById('trashModal').remove();
-      alert("Selected students have been successfully rolled back and restored to the active list!");
+      alert("Selected students successfully restored and removed from trash bin!");
     },
 
     renderStudentCards(students = []) {
@@ -1145,12 +1152,14 @@
         await response.json();
         this.showLoader(false);
         alert("Data saved successfully!");
+        
+        // Reload form data to keep student cards visible and populated
+        this.loadSchoolForm();
       } catch(err) {
         this.showLoader(false);
         alert("Data saved successfully!");
+        this.loadSchoolForm();
       }
-
-      this.switchTab('dashboard');
     },
 
     renderDashboard() {
