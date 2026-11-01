@@ -23,8 +23,8 @@
   .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
   .sub-nav-btn.active { background: #f4b400; color: #071b38; }
   
-  /* Proper bottom padding & spacing so Save button and page elements are fully visible and scrollable */
-  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 120px 15px; }
+  /* Added generous bottom padding so bottom save button is completely visible and scrollable */
+  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 140px 15px; }
   
   .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
   .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -224,8 +224,8 @@
         <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>
       </div>
 
-      <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
-        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:10px 22px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save CWSN Data</button>
+      <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save CWSN Data</button>
       </div>
     </div>
   </section>
@@ -442,7 +442,6 @@
         selectionBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
       }
 
-      // Show Admin Remove Bin button only for Admin
       let adminRemoveBinBtn = document.getElementById('adminRemoveBinBtn');
       if (adminRemoveBinBtn) {
         adminRemoveBinBtn.style.display = info.isAdmin ? 'inline-flex' : 'none';
@@ -797,8 +796,6 @@
         return;
       }
 
-      let info = this.getUserRoleInfo();
-      
       expBoys.disabled = false;
       expGirls.disabled = false;
       addBtn.disabled = false; addBtn.style.background = "#1d4ed8"; addBtn.style.cursor = "pointer";
@@ -862,7 +859,7 @@
               <button type="button" onclick="CwsnApp.deleteStudentCard(this)" style="background:${isNextYearSession ? '#dc2626' : '#94a3b8'}; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:${isNextYearSession ? 'pointer' : 'not-allowed'}; margin-left:4px;" ${isNextYearSession ? '' : 'title="Deletion available only in next session"'}>🗑️ Delete</button>
             </span>
           </div>
-          <!-- Remove button restricted strictly to Admin only -->
+          <!-- Admin-only remove button -->
           ${info.isAdmin ? `<button type="button" onclick="CwsnApp.adminRemoveStudent(this)" style="background:#dc2626; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" title="Admin Remove & Backup">🗑️ Admin Remove</button>` : ''}
         </div>
         <div class="form-grid">
@@ -898,6 +895,9 @@
           <div class="form-group"><label>Teacher Name</label><input type="text" class="s-teacher" value="${st.teacher || ''}" placeholder="Teacher Name"></div>
           <div class="form-group"><label>Teacher Mobile</label><input type="text" class="s-teachermob" maxlength="10" value="${st.teacherMob || ''}" placeholder="Teacher Mob"></div>
         </div>
+        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+          <button type="button" onclick="CwsnApp.saveSingleStudent(this)" style="background:#0284c7; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">💾 Save Student</button>
+        </div>
       `;
       container.appendChild(card);
     },
@@ -915,7 +915,7 @@
       let currentIdx = classes.indexOf(classSelect.value);
       if (currentIdx < classes.length - 1 && currentIdx !== -1) {
         classSelect.value = classes[currentIdx + 1];
-        alert("Student promoted to " + classSelect.value + " successfully! Click 'Save CWSN Data' to update.");
+        alert("Student promoted to " + classSelect.value + " successfully! Click 'Save CWSN Data' or 'Save Student' to update.");
       } else {
         alert("Student is already in Class - 8 or class cannot be incremented further.");
       }
@@ -948,14 +948,15 @@
         this.showLoader(false);
 
         card.remove();
-        alert("Student marked as deleted and synced to cloud Rollback list. Click 'Save CWSN Data' to update school records.");
+        this.saveData(); // Automatically update school records after deletion
+        alert("Student deleted and moved to Rollback list successfully.");
       }
     },
 
     async adminRemoveStudent(btn) {
       let activeSessDropdown = document.getElementById("globalSessionSelect");
       let activeSess = activeSessDropdown ? activeSessDropdown.value : (localStorage.getItem("brc_active_session") || "2026-27");
-      if (confirm("⚠️ Admin Action: Are you sure you want to remove this student? It will be backed up in the Admin Remove Bin and can be restored.")) {
+      if (confirm("⚠️ Admin Action: Are you sure you want to remove this student? It will be backed up in Admin Remove Bin.")) {
         let card = btn.closest('.student-card');
         let studentData = this.extractCardData(card);
 
@@ -975,6 +976,7 @@
         this.showLoader(false);
 
         card.remove();
+        this.saveData();
         alert("Student removed by Admin and safely backed up to Admin Remove Bin.");
       }
     },
@@ -1005,6 +1007,10 @@
         teacherMob: card.querySelector('.s-teachermob').value,
         deletedAt: new Date().toLocaleString()
       };
+    },
+
+    saveSingleStudent(btn) {
+      this.saveData();
     },
 
     async openTrashBin() {
@@ -1180,7 +1186,8 @@
       let modalId = type === 'remove' ? 'removeModal' : 'trashModal';
       let modalElem = document.getElementById(modalId);
       if (modalElem) modalElem.remove();
-      alert("Selected students successfully restored and removed from backup bin!");
+      this.saveData();
+      alert("Selected students successfully restored!");
     },
 
     renderStudentCards(students = []) {
@@ -1229,7 +1236,7 @@
           equipment: card.querySelector('.s-equip').value, address: card.querySelector('.s-address').value,
           pin: card.querySelector('.s-pin').value, bank: card.querySelector('.s-bank').value,
           ifsc: card.querySelector('.s-ifsc').value, accNo: card.querySelector('.s-acc').value,
-          teacher: card.querySelector('.s-teacher').value, teacherMob: teacherMob
+          teacher: card.querySelector('.s-teacher').value, teacherMob: card.querySelector('.s-teachermob').value
         });
       });
 
