@@ -505,7 +505,7 @@
           </div>
           <div class="form-group">
             <label>Unique ID *</label>
-            <input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Regular: AA000 | Guest: A11111111" oninput="R4App.validateFieldLive(this, 'unique')">
+            <input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Regular: AA0000 | Guest: A11111111" oninput="R4App.validateFieldLive(this, 'unique')">
             <div class="error-msg">Invalid format.</div>
           </div>
           <div class="form-group">
@@ -717,7 +717,7 @@
         let natureVal = card.querySelector('.t-nature') ? card.querySelector('.t-nature').value : "";
         
         if (uniqueVal !== "") {
-          let regPattern = /^[A-Z]{2}\d{3}$/i; 
+          let regPattern = /^[A-Z]{2}\d{4}$/i; 
           let guestPattern = /^[A-Z]\d{9}$/i;  
           
           if (natureVal === "Regular" && !regPattern.test(uniqueVal)) {
