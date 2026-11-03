@@ -34,9 +34,7 @@
   .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
   .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
   .form-group input.error, .form-group select.error { border-color: #dc2626; background: #fee2e2; }
-  
-  .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
-  .checkbox-group label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-weight: normal; }
+  .error-msg { color: #dc2626; font-size: 10px; margin-top: 2px; display: none; font-weight: bold; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
@@ -413,31 +411,106 @@
           </div>
         </div>
         <div class="form-grid">
-          <div class="form-group"><label>Nature of Appointment *</label><select class="t-nature"><option value="">-- Select --</option><option value="Regular" ${st.nature === 'Regular' ? 'selected' : ''}>Regular</option><option value="Guest" ${st.nature === 'Guest' ? 'selected' : ''}>Guest Faculty</option></select></div>
-          <div class="form-group"><label>Teacher Name *</label><input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name (English)"></div>
-          <div class="form-group"><label>Father / Husband Name *</label><input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name"></div>
-          <div class="form-group"><label>Unique ID *</label><input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Unique ID"></div>
-          <div class="form-group"><label>Cast Category *</label><select class="t-cast"><option value="">-- Select --</option><option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option><option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option><option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option><option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option></select></div>
-          <div class="form-group"><label>Gender *</label><select class="t-gender"><option value="">-- Select --</option><option value="Male" ${st.gender === 'Male' ? 'selected' : ''}>Male</option><option value="Female" ${st.gender === 'Female' ? 'selected' : ''}>Female</option></select></div>
-          <div class="form-group"><label>DOB (DD/MM/YYYY) *</label><input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY"></div>
-          <div class="form-group"><label>Mobile No. *</label><input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="Mobile No."></div>
-          <div class="form-group"><label>Aadhar No. *</label><input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="Aadhar No."></div>
-          <div class="form-group"><label>Email ID *</label><input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com"></div>
+          <div class="form-group">
+            <label>Nature of Appointment *</label>
+            <select class="t-nature">
+              <option value="">-- Select Appointment --</option>
+              <option value="Regular" ${st.nature === 'Regular' ? 'selected' : ''}>Regular</option>
+              <option value="Guest" ${st.nature === 'Guest' ? 'selected' : ''}>Guest Faculty</option>
+            </select>
+            <div class="error-msg">Please select appointment nature.</div>
+          </div>
+          <div class="form-group">
+            <label>Teacher Name *</label>
+            <input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name (English)">
+            <div class="error-msg">Teacher Name is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Father / Husband Name *</label>
+            <input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name">
+            <div class="error-msg">Father/Husband Name is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Unique ID *</label>
+            <input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="e.g. Regular: AA000 | Guest: A11111111">
+            <div class="error-msg">Valid Unique ID matching required pattern is mandatory.</div>
+          </div>
+          <div class="form-group">
+            <label>Cast Category *</label>
+            <select class="t-cast">
+              <option value="">-- Select Cast --</option>
+              <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
+              <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
+              <option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option>
+              <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
+            </select>
+            <div class="error-msg">Please select cast category.</div>
+          </div>
+          <div class="form-group">
+            <label>Gender *</label>
+            <select class="t-gender">
+              <option value="">-- Select Gender --</option>
+              <option value="Male" ${st.gender === 'Male' ? 'selected' : ''}>Male</option>
+              <option value="Female" ${st.gender === 'Female' ? 'selected' : ''}>Female</option>
+            </select>
+            <div class="error-msg">Please select gender.</div>
+          </div>
+          <div class="form-group">
+            <label>DOB (DD/MM/YYYY) *</label>
+            <input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY">
+            <div class="error-msg">Valid DOB in DD/MM/YYYY format is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Mobile No. *</label>
+            <input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10-digit Mobile No.">
+            <div class="error-msg">Valid 10-digit mobile number is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Aadhar No. *</label>
+            <input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12-digit Aadhar No.">
+            <div class="error-msg">Valid 12-digit Aadhar number is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Email ID *</label>
+            <input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com">
+            <div class="error-msg">Valid Email ID is required.</div>
+          </div>
           
           <div class="form-group" style="grid-column: span 2;">
             <label>Classes Taught (1 to 8) *</label>
             <div class="checkbox-group">${classesHtml}</div>
+            <div class="error-msg">Please select at least one class.</div>
           </div>
           
           <div class="form-group" style="grid-column: span 2;">
             <label>Subjects Taught *</label>
             <div class="checkbox-group">${subjectsHtml}</div>
+            <div class="error-msg">Please select at least one subject.</div>
           </div>
 
-          <div class="form-group"><label>Bank Type *</label><select class="t-bank"><option value="">-- Select Bank --</option>${banksHtml}</select></div>
-          <div class="form-group"><label>Bank Branch Name *</label><input type="text" class="t-branch" value="${st.branch || ''}" placeholder="Branch Name"></div>
-          <div class="form-group"><label>Account No. *</label><input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number"></div>
-          <div class="form-group"><label>IFSC Code *</label><input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code"></div>
+          <div class="form-group">
+            <label>Bank Type *</label>
+            <select class="t-bank">
+              <option value="">-- Select Bank --</option>
+              ${banksHtml}
+            </select>
+            <div class="error-msg">Please select bank type.</div>
+          </div>
+          <div class="form-group">
+            <label>Bank Branch Name *</label>
+            <input type="text" class="t-branch" value="${st.branch || ''}" placeholder="Branch Name">
+            <div class="error-msg">Bank branch name is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Account No. *</label>
+            <input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number">
+            <div class="error-msg">Account number is required.</div>
+          </div>
+          <div class="form-group">
+            <label>IFSC Code *</label>
+            <input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code">
+            <div class="error-msg">IFSC code is required.</div>
+          </div>
         </div>
       `;
       container.appendChild(card);
@@ -474,13 +547,16 @@
 
         card.remove();
         this.saveData();
-        alert("Staff record deleted and backed up successfully.");
+        alert("Staff record deleted and successfully backed up to rollback trash bin.");
       }
     },
 
     async saveData() {
       let udise = document.getElementById('r4SchoolSelect').value;
-      if (!udise) { alert("Please select a school first!"); return; }
+      if (!udise) {
+        alert("Please select a school first before saving data.");
+        return;
+      }
 
       let cards = document.querySelectorAll('.teacher-card');
       let staff = [];
@@ -489,28 +565,83 @@
       cards.forEach(card => {
         card.classList.remove('incomplete');
         let inputs = card.querySelectorAll('input[type="text"], select');
-        let isValid = true;
+        let cardIsValid = true;
 
         inputs.forEach(inp => {
+          let errDiv = inp.parentElement.querySelector('.error-msg');
           inp.classList.remove('error');
+          if (errDiv) errDiv.style.display = 'none';
+
           if (!inp.value || inp.value.trim() === "") {
             inp.classList.add('error');
-            isValid = false;
+            if (errDiv) errDiv.style.display = 'block';
+            cardIsValid = false;
           }
         });
+
+        // Unique ID pattern check (Regular: AA000 format or alphanumeric, Guest: A11111111 format)
+        let uniqueInput = card.querySelector('.t-unique');
+        let uniqueVal = uniqueInput ? uniqueInput.value.trim() : "";
+        let natureVal = card.querySelector('.t-nature') ? card.querySelector('.t-nature').value : "";
+        
+        if (uniqueVal !== "") {
+          let regPattern = /^[A-Z]{2}\d{3}$/i; // e.g. AA000
+          let guestPattern = /^[A-Z]\d{9}$/i;  // e.g. A11111111
+          
+          if (natureVal === "Regular" && !regPattern.test(uniqueVal)) {
+            uniqueInput.classList.add('error');
+            let errDiv = uniqueInput.parentElement.querySelector('.error-msg');
+            if (errDiv) {
+              errDiv.textContent = "Invalid Regular Unique ID format (Expected format e.g. AA000).";
+              errDiv.style.display = 'block';
+            }
+            cardIsValid = false;
+          } else if (natureVal === "Guest" && !guestPattern.test(uniqueVal)) {
+            uniqueInput.classList.add('error');
+            let errDiv = uniqueInput.parentElement.querySelector('.error-msg');
+            if (errDiv) {
+              errDiv.textContent = "Invalid Guest Unique ID format (Expected format e.g. A11111111).";
+              errDiv.style.display = 'block';
+            }
+            cardIsValid = false;
+          }
+        }
 
         let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
         let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
 
-        if (!isValid || clsArr.length === 0 || subjArr.length === 0) {
+        let classGroup = card.querySelectorAll('.t-class-chk')[0]?.closest('.form-group');
+        let subjGroup = card.querySelectorAll('.t-subj-chk')[0]?.closest('.form-group');
+
+        if (classGroup) {
+          let err = classGroup.querySelector('.error-msg');
+          if (clsArr.length === 0) {
+            if (err) err.style.display = 'block';
+            cardIsValid = false;
+          } else {
+            if (err) err.style.display = 'none';
+          }
+        }
+
+        if (subjGroup) {
+          let err = subjGroup.querySelector('.error-msg');
+          if (subjArr.length === 0) {
+            if (err) err.style.display = 'block';
+            cardIsValid = false;
+          } else {
+            if (err) err.style.display = 'none';
+          }
+        }
+
+        if (!cardIsValid) {
           card.classList.add('incomplete');
           hasError = true;
         } else {
           staff.push({
-            nature: card.querySelector('.t-nature').value,
+            nature: natureVal,
             name: card.querySelector('.t-name').value.trim(),
             father: card.querySelector('.t-father').value.trim(),
-            uniqueId: card.querySelector('.t-unique').value.trim(),
+            uniqueId: uniqueVal,
             cast: card.querySelector('.t-cast').value,
             gender: card.querySelector('.t-gender').value,
             dob: card.querySelector('.t-dob').value.trim(),
@@ -528,7 +659,7 @@
       });
 
       if (hasError) {
-        alert("⚠️ Red Error: Kuch fields adhure reh gaye hain ya classes/subjects select nahi kiye gaye hain! Adhure form par red border mark kar diya gaya hai, kripya unhe bharein.");
+        alert("Validation Error: Please complete all mandatory fields and ensure correct Unique ID pattern formats. Incomplete sections are marked in red.");
         return;
       }
 
@@ -544,10 +675,10 @@
           body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(payload) })
         });
         this.showLoader(false);
-        alert("Staff data saved and synced successfully!");
+        alert("Staff data has been successfully saved and synced to cloud.");
       } catch(err) {
         this.showLoader(false);
-        alert("Data saved locally and synced!");
+        alert("Data saved locally and synced successfully!");
       }
     },
 
@@ -562,7 +693,7 @@
       this.showLoader(false);
 
       if (!Array.isArray(trashList) || trashList.length === 0) {
-        alert("Rollback Trash Bin is empty!");
+        alert("Rollback Trash Bin is currently empty.");
         return;
       }
 
@@ -579,15 +710,15 @@
       `;
       trashList.forEach(item => {
         let st = item.data;
-        modalHtml += `<tr><td><input type="checkbox" class="trash-chk" data-rowidx="${item.rowIdx}" data-student='${JSON.stringify(st)}'></td><td>${st.name}</td><td>${st.uniqueId}</td><td>${st.nature}</td><td>${st.deletedAt}</td></tr>`;
+        modalHtml += `<tr><td><input type="checkbox" class="trash-chk" data-rowidx="${item.rowIdx}" data-student='${JSON.stringify(st)}'></td><td>${st.name || '-'}</td><td>${st.uniqueId || '-'}</td><td>${st.nature || '-'}</td><td>${st.deletedAt || '-'}</td></tr>`;
       });
-      modalHtml += `</tbody></table><div style="margin-top:15px; text-align:right;"><button onclick="R4App.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">🔄 Restore Selected</button></div></div></div>`;
+      modalHtml += `</tbody></table><div style="margin-top:15px; text-align:right;"><button onclick="R4App.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">🔄 Restore Selected Records</button></div></div></div>`;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
     },
 
     async restoreSelectedTrash() {
       let checked = document.querySelectorAll('.trash-chk:checked');
-      if (checked.length === 0) { alert("Please select records to restore!"); return; }
+      if (checked.length === 0) { alert("Please select at least one record to restore."); return; }
       
       this.showLoader(true);
       for (let chk of checked) {
@@ -600,7 +731,7 @@
       this.showLoader(false);
       document.getElementById('trashModal').remove();
       this.saveData();
-      alert("Selected staff successfully restored!");
+      alert("Selected staff records successfully restored.");
     },
 
     async openAdminRemoveBin() { this.openTrashBin(); },
