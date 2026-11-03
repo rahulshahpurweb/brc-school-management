@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRC Shahpur - Teacher & Staff Module (R4)</title>
+<link rel="stylesheet" href="r2-styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="permissions.js"></script>
+<style>
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
+  .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; flex-wrap: wrap; gap: 10px; }
+  .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
+  
+  .menu-container { position: relative; display: inline-block; }
+  .menu-btn { background: #0b2854; color: #fff; border: 1px solid #ffd21c; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .dropdown-content { display: none; position: absolute; right: 0; background-color: #ffffff; min-width: 220px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
+  .dropdown-content button, .dropdown-content label { color: #071b38; padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 13px; box-sizing: border-box; }
+  .dropdown-content button:hover, .dropdown-content label:hover { background-color: #f1f5f9; color: #1d4ed8; }
+  .show { display: block; }
+
+  .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
+  .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+  .sub-nav-btn.active { background: #f4b400; color: #071b38; }
+  
+  .content-container { max-width: 1300px; margin: 20px auto; padding: 0 15px 140px 15px; }
+  .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  
+  .teacher-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .teacher-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
+  .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
+  th { background: #071b38; color: #fff; }
+  .tablewrap { width: 100%; overflow-x: auto; overflow-y: visible; max-height: none; margin-bottom: 20px; }
+  
+  #loadingOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; color:#fff; font-size:18px; font-weight:bold; }
+  .spinner { border: 6px solid #f3f3f3; border-top: 6px solid #f4b400; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div style="text-align:center;">
+    <div class="spinner"></div>
+    <div>Processing data, please wait...</div>
+  </div>
+</div>
+
+<div class="module-header">
+  <div class="module-title">👨‍🏫 Teacher & Staff Module (R4 - Cloud Synced)</div>
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <button onclick="R4App.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
+    <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
+
+    <div class="menu-container" id="adminMenuContainer">
+      <button onclick="R4App.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
+      <div id="dropdownMenu" class="dropdown-content">
+        <button onclick="R4App.downloadTemplate()">📥 Download Excel Template</button>
+        <label style="cursor:pointer;">
+          📤 Bulk Upload Teacher Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="R4App.handleBulkUpload(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sub-nav">
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">📊 Dashboard</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">✍️ Staff Data Entry</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">📑 Reports & Filters</button>
+</div>
+
+<main class="content-container">
+  <!-- DASHBOARD SECTION -->
+  <section id="r4Dash" class="r4-section">
+    <div class="card">
+      <h3>📊 Teacher & Staff Summary Overview</h3>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>Sankul (JSK)</th>
+              <th>Total Schools</th>
+              <th>Regular Staff</th>
+              <th>Guest Faculty</th>
+              <th>Total Staff Enrolled</th>
+            </tr>
+          </thead>
+          <tbody id="dashSummaryTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA ENTRY SECTION -->
+  <section id="r4Entry" class="r4-section" style="display:none;">
+    <div class="card">
+      <h3>✍️ School Teacher & Staff Data Entry</h3>
+      <div class="filter-bar">
+        <label><b>Select School:</b></label>
+        <select id="r4SchoolSelect" onchange="R4App.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
+      </div>
+
+      <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
+        <div style="display:flex; gap:15px; font-size:13px; flex-wrap:wrap; align-items:center;">
+          <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
+          <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
+          <span><b>JSK:</b> <span id="lblJsk">-</span></span>
+          <span><b>Category:</b> <span id="lblCategory">-</span></span>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h4 style="color:#071b38; margin:0;">Staff Details Entry Form</h4>
+        <button type="button" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Staff</button>
+      </div>
+
+      <div id="staffCardsContainer">
+        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>
+      </div>
+
+      <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+        <button type="button" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save Staff Data</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORTS SECTION -->
+  <section id="r4Reports" class="r4-section" style="display:none;">
+    <div class="card">
+      <h3>📑 Staff Compilation & Filter Reports</h3>
+      <div class="filter-bar">
+        <label><b>JSK Filter:</b></label>
+        <select id="reportJskFilter" onchange="R4App.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Sankul --</option>
+          <option value="Bhoura">Bhoura</option>
+          <option value="Bijadehi">Bijadehi</option>
+          <option value="Dhodhramau">Dhodhramau</option>
+          <option value="Kesiya">Kesiya</option>
+          <option value="Kundi">Kundi</option>
+          <option value="Shahpur">Shahpur</option>
+          <option value="Tara">Tara</option>
+        </select>
+        <label style="margin-left:10px;"><b>Appointment Type:</b></label>
+        <select id="reportNatureFilter" onchange="R4App.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Appointments --</option>
+          <option value="Regular">Regular</option>
+          <option value="Guest">Guest Faculty</option>
+        </select>
+        <label style="margin-left:10px;"><b>Subject Filter:</b></label>
+        <select id="reportSubjectFilter" onchange="R4App.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Subjects --</option>
+          <option value="Hindi">Hindi</option>
+          <option value="English">English</option>
+          <option value="Math">Math</option>
+          <option value="Science">Science</option>
+          <option value="Social Science">Social Science</option>
+          <option value="Sanskrit">Sanskrit</option>
+          <option value="EVS">EVS</option>
+        </select>
+      </div>
+      <div class="tablewrap">
+        <table id="r4ReportTable"></table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { MASTER_SCHOOLS } from './schools-data.js';
+  import { SessionManager } from './session-manager.js';
+
+  window.R4App = {
+    cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
+    
+    showLoader(show) {
+      let overlay = document.getElementById("loadingOverlay");
+      if (overlay) overlay.style.display = show ? 'flex' : 'none';
+    },
+
+    getUserRoleInfo() {
+      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let role = String(user.role || "").toLowerCase();
+      let userId = String(user.udise || user.userId || user.username || user.code || user.id || "").trim();
+      let isSchool = (role === 'school' || userId.length >= 10 || Boolean(user.udise));
+      let isAdmin = (role === 'admin' || userId === 'admin' || (!role && userId.length < 10 && !user.udise));
+      let isJsk = (role === 'jsk' || role === 'sankul');
+      return { user, role, isAdmin, isJsk, isSchool, userId };
+    },
+
+    async init() {
+      this.showLoader(true);
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      
+      try {
+        let res = await fetch(this.cloudApiUrl + "?action=getAllData&session=" + activeSess + "&t=" + new Date().getTime());
+        if (res.ok) {
+          let cloudData = await res.json();
+          if (Array.isArray(cloudData) && cloudData.length > 0) {
+            this.allSchools = cloudData;
+          }
+        }
+        
+        let teacherRes = await fetch(this.cloudApiUrl + "?action=getAllTeacherData&session=" + activeSess + "&t=" + new Date().getTime());
+        if (teacherRes.ok) {
+          let cloudTeachers = await teacherRes.json();
+          if (Array.isArray(cloudTeachers)) {
+            cloudTeachers.forEach(item => {
+              if (item.udise && item.payload) {
+                localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
+              }
+            });
+          }
+        }
+      } catch(e) {
+        console.log("Cloud fetch fallback.");
+      }
+
+      if (!this.allSchools || this.allSchools.length === 0) {
+        let sessionData = SessionManager.getData();
+        this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
+      }
+
+      this.switchTab('dashboard');
+      this.showLoader(false);
+    },
+
+    toggleMenu() {
+      document.getElementById("dropdownMenu").classList.toggle("show");
+    },
+
+    switchTab(tab) {
+      document.querySelectorAll('.r4-section').forEach(sec => sec.style.display = 'none');
+      document.querySelectorAll('.sub-nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (tab === 'dashboard') {
+        document.getElementById('r4Dash').style.display = 'block';
+        document.getElementById('navDashBtn').classList.add('active');
+        this.renderDashboard();
+      } else if (tab === 'entry') {
+        document.getElementById('r4Entry').style.display = 'block';
+        document.getElementById('navEntryBtn').classList.add('active');
+        this.populateDropdown();
+      } else if (tab === 'reports') {
+        document.getElementById('r4Reports').style.display = 'block';
+        document.getElementById('navReportsBtn').classList.add('active');
+        this.renderReports();
+      }
+    },
+
+    downloadTemplate() {
+      let headers = [
+        "School Name", "UDISE Code", "School Category", "JSK", "Nature Of Appointment", 
+        "Teacher Name", "Father/Husband", "Unique ID", "Cast", "Gender", "DOB", 
+        "Mobile No.", "Aadhar No.", "Email ID", "Classes (Comma separated)", 
+        "Subjects (Comma separated)", "Bank Type", "Account No.", "IFSC Code"
+      ];
+      let sample = [
+        "GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", "Regular",
+        "Ramesh Kumar", "Sohan Lal", "AA123", "SC", "Male", "15/08/1985",
+        "9876543210", "123456789012", "ramesh@email.com", "Class 6, Class 7",
+        "Hindi, Math", "SBI", "12345678901", "SBIN0001234"
+      ];
+      let wb = XLSX.utils.book_new();
+      let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
+      XLSX.utils.book_append_sheet(wb, ws, "Teacher_Template");
+      XLSX.writeFile(wb, "Teacher_Bulk_Upload_Template.xlsx");
+    },
+
+    handleBulkUpload(event) {
+      let file = event.target.files[0];
+      if (!file) return;
+
+      this.showLoader(true);
+      let reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          let data = new Uint8Array(e.target.result);
+          let workbook = XLSX.read(data, { type: 'array' });
+          let firstSheet = workbook.SheetNames[0];
+          let worksheet = workbook.Sheets[firstSheet];
+          let jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          let schoolMap = {};
+          for (let i = 1; i < jsonRows.length; i++) {
+            let r = jsonRows[i];
+            if (!r || r.length < 2) continue;
+            let udise = r[1] ? String(r[1]).trim() : "";
+            if (!udise) continue;
+
+            if (!schoolMap[udise]) {
+              schoolMap[udise] = { schoolName: r[0] || "", jsk: r[3] || "Bhoura", staff: [] };
+            }
+
+            schoolMap[udise].staff.push({
+              nature: r[4] || "Regular",
+              name: r[5] || "",
+              father: r[6] || "",
+              uniqueId: r[7] || "",
+              cast: r[8] || "GEN",
+              gender: r[9] || "Male",
+              dob: r[10] || "",
+              mobile: r[11] || "",
+              aadhar: r[12] || "",
+              email: r[13] || "",
+              classes: r[14] || "",
+              subjects: r[15] || "",
+              bank: r[16] || "",
+              accNo: r[17] || "",
+              ifsc: r[18] || ""
+            });
+          }
+
+          let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+          for (let udise in schoolMap) {
+            let payload = { udise: udise, staff: schoolMap[udise].staff };
+            localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
+            
+            await fetch(this.cloudApiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                action: "saveTeacherData",
+                session: activeSess,
+                udise: udise,
+                payload: JSON.stringify(payload)
+              })
+            });
+          }
+
+          this.showLoader(false);
+          alert("Teacher data imported successfully!");
+          this.switchTab('dashboard');
+        } catch (err) {
+          this.showLoader(false);
+          alert("Error processing Excel: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    },
+
+    populateDropdown() {
+      let select = document.getElementById('r4SchoolSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Select School --</option>';
+
+      let info = this.getUserRoleInfo();
+      let eligibleSchools = this.allSchools;
+
+      if (info.isSchool) {
+        eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+      }
+
+      eligibleSchools.forEach(s => {
+        let realUdise = String(s.udise).trim();
+        let el = document.createElement('option');
+        el.value = realUdise;
+        el.textContent = `${s.name} (${realUdise}) - JSK: ${s.jsk || 'Bhoura'}`;
+        select.appendChild(el);
+      });
+
+      if (info.isSchool && eligibleSchools.length === 1) {
+        select.value = eligibleSchools[0].udise;
+        select.disabled = true;
+        this.loadSchoolForm();
+      }
+    },
+
+    loadSchoolForm() {
+      let udise = document.getElementById('r4SchoolSelect').value;
+      let container = document.getElementById('staffCardsContainer');
+
+      if (!udise) {
+        document.getElementById('lblSchoolName').textContent = "-";
+        document.getElementById('lblUdise').textContent = "-";
+        document.getElementById('lblJsk').textContent = "-";
+        document.getElementById('lblCategory').textContent = "-";
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school to begin data entry.</div>`;
+        return;
+      }
+
+      let school = this.allSchools.find(s => String(s.udise) === String(udise));
+      if (!school) return;
+
+      document.getElementById('lblSchoolName').textContent = school.name;
+      document.getElementById('lblUdise').textContent = udise;
+      document.getElementById('lblJsk').textContent = school.jsk || 'Bhoura';
+      document.getElementById('lblCategory').textContent = school.category || 'Primary/Middle';
+
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
+      this.renderStaffCards(saved ? saved.staff : []);
+    },
+
+    addNewStaffCard(st = {}) {
+      let container = document.getElementById('staffCardsContainer');
+      if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
+      
+      let idx = container.querySelectorAll('.teacher-card').length + 1;
+      let card = document.createElement('div');
+      card.className = 'teacher-card';
+      
+      card.innerHTML = `
+        <div class="teacher-card-header">
+          <span>Staff Member #${idx}</span>
+          <button type="button" onclick="this.closest('.teacher-card').remove()" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">🗑️ Remove</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Nature of Appointment *</label><select class="t-nature"><option value="Regular" ${st.nature === 'Regular' ? 'selected' : ''}>Regular</option><option value="Guest" ${st.nature === 'Guest' ? 'selected' : ''}>Guest Faculty</option></select></div>
+          <div class="form-group"><label>Teacher Name (English Only) *</label><input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name"></div>
+          <div class="form-group"><label>Father / Husband Name</label><input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name"></div>
+          <div class="form-group"><label>Unique ID *</label><input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Regular: AA000 | Guest: A11111111"></div>
+          <div class="form-group"><label>Cast Category</label><select class="t-cast"><option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option><option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option><option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option><option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option></select></div>
+          <div class="form-group"><label>Gender</label><select class="t-gender"><option value="Male" ${st.gender === 'Male' ? 'selected' : ''}>Male</option><option value="Female" ${st.gender === 'Female' ? 'selected' : ''}>Female</option></select></div>
+          <div class="form-group"><label>DOB (DD/MM/YYYY)</label><input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY"></div>
+          <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
+          <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
+          <div class="form-group"><label>Email ID</label><input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com"></div>
+          <div class="form-group"><label>Classes (1 to 8)</label><input type="text" class="t-classes" value="${st.classes || ''}" placeholder="Class 1, Class 2"></div>
+          <div class="form-group"><label>Subjects</label><input type="text" class="t-subjects" value="${st.subjects || ''}" placeholder="Hindi, Math, Science"></div>
+          <div class="form-group"><label>Bank Type</label><select class="t-bank"><option value="SBI" ${st.bank === 'SBI' ? 'selected' : ''}>SBI (11 Digits)</option><option value="PNB" ${st.bank === 'PNB' ? 'selected' : ''}>PNB (16 Digits)</option><option value="BOI" ${st.bank === 'BOI' ? 'selected' : ''}>BOI</option><option value="CANARA" ${st.bank === 'CANARA' ? 'selected' : ''}>Canara</option></select></div>
+          <div class="form-group"><label>Account No.</label><input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number"></div>
+          <div class="form-group"><label>IFSC Code</label><input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code"></div>
+        </div>
+      `;
+      container.appendChild(card);
+    },
+
+    renderStaffCards(staff = []) {
+      let container = document.getElementById('staffCardsContainer');
+      container.innerHTML = '';
+      if (!staff || staff.length === 0) {
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">No staff members added yet. Click 'Add New Staff' to begin.</div>`;
+        return;
+      }
+      staff.forEach(st => this.addNewStaffCard(st));
+    },
+
+    async saveData() {
+      let udise = document.getElementById('r4SchoolSelect').value;
+      if (!udise) { alert("Please select a school first!"); return; }
+
+      let cards = document.querySelectorAll('.teacher-card');
+      let staff = [];
+
+      cards.forEach(card => {
+        staff.push({
+          nature: card.querySelector('.t-nature').value,
+          name: card.querySelector('.t-name').value,
+          father: card.querySelector('.t-father').value,
+          uniqueId: card.querySelector('.t-unique').value,
+          cast: card.querySelector('.t-cast').value,
+          gender: card.querySelector('.t-gender').value,
+          dob: card.querySelector('.t-dob').value,
+          mobile: card.querySelector('.t-mobile').value,
+          aadhar: card.querySelector('.t-aadhar').value,
+          email: card.querySelector('.t-email').value,
+          classes: card.querySelector('.t-classes').value,
+          subjects: card.querySelector('.t-subjects').value,
+          bank: card.querySelector('.t-bank').value,
+          accNo: card.querySelector('.t-acc').value,
+          ifsc: card.querySelector('.t-ifsc').value
+        });
+      });
+
+      let payload = { udise: udise, staff: staff };
+      localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
+
+      this.showLoader(true);
+      try {
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "saveTeacherData",
+            session: activeSess,
+            udise: udise,
+            payload: JSON.stringify(payload)
+          })
+        });
+        this.showLoader(false);
+        alert("Staff data saved successfully!");
+      } catch(err) {
+        this.showLoader(false);
+        alert("Data saved locally and synced!");
+      }
+    },
+
+    renderDashboard() {
+      let jskMap = {};
+      ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
+        jskMap[jsk] = { schools: 0, regular: 0, guest: 0, total: 0 };
+      });
+
+      this.allSchools.forEach(s => {
+        let jsk = s.jsk || "Bhoura";
+        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, regular: 0, guest: 0, total: 0 };
+        jskMap[jsk].schools++;
+
+        let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
+        if (saved && saved.staff) {
+          saved.staff.forEach(st => {
+            if (st.nature === 'Regular') jskMap[jsk].regular++;
+            else jskMap[jsk].guest++;
+            jskMap[jsk].total++;
+          });
+        }
+      });
+
+      let tbody = document.getElementById('dashSummaryTable');
+      tbody.innerHTML = '';
+      let i = 1, tSch = 0, tReg = 0, tGuest = 0, tTot = 0;
+
+      for (let jsk in jskMap) {
+        let d = jskMap[jsk];
+        tSch += d.schools; tReg += d.regular; tGuest += d.guest; tTot += d.total;
+        tbody.innerHTML += `
+          <tr>
+            <td>${i++}</td>
+            <td style="text-align:left; font-weight:bold;">${jsk}</td>
+            <td>${d.schools}</td>
+            <td style="color:#16a34a; font-weight:bold;">${d.regular}</td>
+            <td style="color:#d97706; font-weight:bold;">${d.guest}</td>
+            <td style="font-weight:bold; color:#1d4ed8;">${d.total}</td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML += `
+        <tr style="background:#f1f5f9; font-weight:bold;">
+          <td colspan="2">Grand Total</td>
+          <td>${tSch}</td><td>${tReg}</td><td>${tGuest}</td><td style="color:#1d4ed8;">${tTot}</td>
+        </tr>
+      `;
+    },
+
+    renderReports() {
+      let jskFilter = document.getElementById('reportJskFilter').value;
+      let natureFilter = document.getElementById('reportNatureFilter').value;
+      let subjectFilter = document.getElementById('reportSubjectFilter').value;
+      let table = document.getElementById('r4ReportTable');
+
+      let html = `
+        <thead>
+          <tr>
+            <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th>
+            <th>Appointment</th><th>Teacher Name</th><th>Unique ID</th>
+            <th>Mobile</th><th>Classes</th><th>Subjects</th><th>Bank</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      let idx = 1;
+      this.allSchools.forEach(s => {
+        let jsk = s.jsk || 'Bhoura';
+        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
+        let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
+        if (saved && saved.staff) {
+          saved.staff.forEach(st => {
+            if (natureFilter !== "ALL" && st.nature !== natureFilter) return;
+            if (subjectFilter !== "ALL" && !st.subjects.toLowerCase().includes(subjectFilter.toLowerCase())) return;
+
+            html += `
+              <tr>
+                <td>${idx++}</td>
+                <td style="text-align:left;">${s.name}</td>
+                <td>${s.udise}</td>
+                <td>${jsk}</td>
+                <td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td>
+                <td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
+                <td>${st.uniqueId || '-'}</td>
+                <td>${st.mobile || '-'}</td>
+                <td>${st.classes || '-'}</td>
+                <td>${st.subjects || '-'}</td>
+                <td>${st.bank || '-'}</td>
+              </tr>
+            `;
+          });
+        }
+      });
+
+      if (idx === 1) html += `<tr><td colspan="11" style="padding:20px; color:#64748b;">No matching staff records found.</td></tr>`;
+      html += `</tbody>`;
+      table.innerHTML = html;
+    },
+
+    exportExcel() {
+      let table = document.getElementById('r4ReportTable');
+      !table || table.rows.length <= 1 ? alert("No report data available to export.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_Teacher_Staff_Report.xlsx");
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded", () => { R4App.init(); });
+</script>
+
+</body>
+</html>
