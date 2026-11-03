@@ -37,7 +37,7 @@
   .form-group input.error, .form-group select.error { border-color: #dc2626; background: #fee2e2; }
   .error-msg { color: #dc2626; font-size: 10px; margin-top: 2px; display: none; font-weight: bold; }
 
-  /* Fully Fixed Tight Dropdown Alignment */
+  /* Custom Dropdown Styles with External Tags */
   .custom-dropdown { position: relative; width: 100%; }
   .dropdown-select-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-height: 32px; }
   .dropdown-select-box.error { border-color: #dc2626; background: #fee2e2; }
@@ -80,9 +80,9 @@
       <div id="dropdownMenu" class="dropdown-content">
         <button onclick="R4App.openTrashBin()">Rollback Trash Bin</button>
         <button onclick="R4App.openAdminRemoveBin()" id="menuAdminRemoveBtn">Admin Remove Bin</button>
-        <button onclick="R4App.downloadTemplate()">Download Excel Template</button>
+        <button onclick="R4App.downloadTemplate()">Download CSV/Excel Template</button>
         <label style="cursor:pointer;">
-          Bulk Upload Teacher Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="R4App.handleBulkUpload(event)">
+          Bulk Upload Teacher File <input type="file" id="bulkExcelFile" accept=".xlsx, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv" style="display:none" onchange="R4App.handleBulkUpload(event)">
         </label>
       </div>
     </div>
@@ -280,10 +280,14 @@
     downloadTemplate() {
       let headers = ["School Name", "UDISE Code", "School Category", "JSK", "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", "Cast", "Gender", "DOB", "Mobile No.", "Aadhar No.", "Email ID", "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code"];
       let sample = ["GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", "Regular", "Ramesh Kumar", "Sohan Lal", "AA123", "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", "Class 1, Class 2", "Hindi, Math", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234"];
-      let wb = XLSX.utils.book_new();
-      let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
-      XLSX.utils.book_append_sheet(wb, ws, "Teacher_Template");
-      XLSX.writeFile(wb, "Teacher_Bulk_Upload_Template.xlsx");
+      let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), sample.join(",")].join("\n");
+      let encodedUri = encodeURI(csvContent);
+      let link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Teacher_Bulk_Upload_Template.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
 
     handleBulkUpload(event) {
@@ -347,7 +351,7 @@
           this.switchTab('dashboard');
         } catch (err) {
           this.showLoader(false);
-          alert("Error processing Excel: " + err.message);
+          alert("Error processing file: " + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
