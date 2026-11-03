@@ -28,10 +28,12 @@
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
   
   .teacher-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .teacher-card.incomplete { border: 2px solid #dc2626; background: #fff5f5; }
   .teacher-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
   .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
   .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+  .form-group input.error, .form-group select.error { border-color: #dc2626; background: #fee2e2; }
   
   .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
   .checkbox-group label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-weight: normal; }
@@ -485,34 +487,50 @@
       let hasError = false;
 
       cards.forEach(card => {
-        let nature = card.querySelector('.t-nature').value;
-        let name = card.querySelector('.t-name').value.trim();
-        let father = card.querySelector('.t-father').value.trim();
-        let uniqueId = card.querySelector('.t-unique').value.trim();
-        let cast = card.querySelector('.t-cast').value;
-        let gender = card.querySelector('.t-gender').value;
-        let dob = card.querySelector('.t-dob').value.trim();
-        let mobile = card.querySelector('.t-mobile').value.trim();
-        let aadhar = card.querySelector('.t-aadhar').value.trim();
-        let email = card.querySelector('.t-email').value.trim();
-        let bank = card.querySelector('.t-bank').value;
-        let branch = card.querySelector('.t-branch').value.trim();
-        let accNo = card.querySelector('.t-acc').value.trim();
-        let ifsc = card.querySelector('.t-ifsc').value.trim();
+        card.classList.remove('incomplete');
+        let inputs = card.querySelectorAll('input[type="text"], select');
+        let isValid = true;
+
+        inputs.forEach(inp => {
+          inp.classList.remove('error');
+          if (!inp.value || inp.value.trim() === "") {
+            inp.classList.add('error');
+            isValid = false;
+          }
+        });
 
         let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
         let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
 
-        if (!nature || !name || !father || !uniqueId || !cast || !gender || !dob || !mobile || !aadhar || !email || !bank || !branch || !accNo || !ifsc || clsArr.length === 0 || subjArr.length === 0) {
-          alert("All fields in staff entry are mandatory! Please fill all required fields and select at least one Class and Subject.");
+        if (!isValid || clsArr.length === 0 || subjArr.length === 0) {
+          card.classList.add('incomplete');
           hasError = true;
-          return;
+        } else {
+          staff.push({
+            nature: card.querySelector('.t-nature').value,
+            name: card.querySelector('.t-name').value.trim(),
+            father: card.querySelector('.t-father').value.trim(),
+            uniqueId: card.querySelector('.t-unique').value.trim(),
+            cast: card.querySelector('.t-cast').value,
+            gender: card.querySelector('.t-gender').value,
+            dob: card.querySelector('.t-dob').value.trim(),
+            mobile: card.querySelector('.t-mobile').value.trim(),
+            aadhar: card.querySelector('.t-aadhar').value.trim(),
+            email: card.querySelector('.t-email').value.trim(),
+            classes: clsArr,
+            subjects: subjArr,
+            bank: card.querySelector('.t-bank').value,
+            branch: card.querySelector('.t-branch').value.trim(),
+            accNo: card.querySelector('.t-acc').value.trim(),
+            ifsc: card.querySelector('.t-ifsc').value.trim()
+          });
         }
-
-        staff.push({ nature, name, father, uniqueId, cast, gender, dob, mobile, aadhar, email, classes: clsArr, subjects: subjArr, bank, branch, accNo, ifsc });
       });
 
-      if (hasError) return;
+      if (hasError) {
+        alert("⚠️ Red Error: Kuch fields adhure reh gaye hain ya classes/subjects select nahi kiye gaye hain! Adhure form par red border mark kar diya gaya hai, kripya unhe bharein.");
+        return;
+      }
 
       let payload = { udise: udise, staff: staff };
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
