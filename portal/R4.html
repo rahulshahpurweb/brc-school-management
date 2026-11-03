@@ -39,6 +39,7 @@
   /* Compact Multi-Select Dropdown Styles */
   .custom-dropdown { position: relative; width: 100%; }
   .dropdown-select-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-height: 32px; }
+  .dropdown-select-box.error { border-color: #dc2626; background: #fee2e2; }
   .dropdown-list-container { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 50; max-height: 180px; overflow-y: auto; padding: 8px; }
   .dropdown-list-container.open { display: block; }
   .dropdown-list-container label { display: flex; align-items: center; gap: 6px; padding: 5px; font-size: 11px; font-weight: normal; cursor: pointer; border-radius: 4px; }
@@ -64,19 +65,19 @@
 </div>
 
 <div class="module-header">
-  <div class="module-title">👨‍🏫 Teacher & Staff Module (R4 - Cloud Synced)</div>
+  <div class="module-title">Teacher & Staff Module (R4)</div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <button onclick="R4App.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">📥 Excel Export</button>
-    <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">🖨️ Print / PDF</button>
+    <button onclick="R4App.exportExcel()" class="sub-nav-btn" style="background:#16a34a;">Excel Export</button>
+    <button onclick="window.print()" class="sub-nav-btn" style="background:#d97706;">Print / PDF</button>
 
     <div class="menu-container" id="adminMenuContainer">
-      <button onclick="R4App.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
+      <button onclick="R4App.toggleMenu()" class="menu-btn">Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
-        <button onclick="R4App.openTrashBin()">🗑️ Rollback Trash Bin</button>
-        <button onclick="R4App.openAdminRemoveBin()" id="menuAdminRemoveBtn">🗂️ Admin Remove Bin</button>
-        <button onclick="R4App.downloadTemplate()">📥 Download Excel Template</button>
+        <button onclick="R4App.openTrashBin()">Rollback Trash Bin</button>
+        <button onclick="R4App.openAdminRemoveBin()" id="menuAdminRemoveBtn">Admin Remove Bin</button>
+        <button onclick="R4App.downloadTemplate()">Download Excel Template</button>
         <label style="cursor:pointer;">
-          📤 Bulk Upload Teacher Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="R4App.handleBulkUpload(event)">
+          Bulk Upload Teacher Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="R4App.handleBulkUpload(event)">
         </label>
       </div>
     </div>
@@ -84,15 +85,15 @@
 </div>
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">📊 Dashboard</button>
-  <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">✍️ Staff Data Entry</button>
-  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">📑 Reports & Filters</button>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">Staff Data Entry</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports & Filters</button>
 </div>
 
 <main class="content-container">
   <section id="r4Dash" class="r4-section">
     <div class="card">
-      <h3>📊 Teacher & Staff Summary Overview</h3>
+      <h3>Teacher & Staff Summary Overview</h3>
       <div class="tablewrap">
         <table>
           <thead>
@@ -113,7 +114,7 @@
 
   <section id="r4Entry" class="r4-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School Teacher & Staff Data Entry</h3>
+      <h3>School Teacher & Staff Data Entry</h3>
       <div class="filter-bar">
         <label><b>Select School:</b></label>
         <select id="r4SchoolSelect" onchange="R4App.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -130,7 +131,7 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h4 style="color:#071b38; margin:0;">Staff Details Entry Form</h4>
-        <button type="button" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Staff</button>
+        <button type="button" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">Add New Staff</button>
       </div>
 
       <div id="staffCardsContainer">
@@ -138,14 +139,14 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save Staff Data</button>
+        <button type="button" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
       </div>
     </div>
   </section>
 
   <section id="r4Reports" class="r4-section" style="display:none;">
     <div class="card">
-      <h3>📑 Staff Compilation & Filter Reports</h3>
+      <h3>Staff Compilation & Filter Reports</h3>
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
         <select id="reportJskFilter" onchange="R4App.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
@@ -337,7 +338,7 @@
           }
 
           this.showLoader(false);
-          alert("Teacher data imported successfully!");
+          alert("Teacher data imported successfully.");
           this.switchTab('dashboard');
         } catch (err) {
           this.showLoader(false);
@@ -398,7 +399,6 @@
 
     toggleCustomDropdown(btn) {
       let dropdown = btn.nextElementSibling;
-      // Close all other open dropdowns first
       document.querySelectorAll('.dropdown-list-container').forEach(d => {
         if (d !== dropdown) d.classList.remove('open');
       });
@@ -407,14 +407,50 @@
 
     updateDropdownText(container, selector, defaultText) {
       let checked = container.querySelectorAll(selector + ':checked');
-      let textSpan = container.previousElementSibling.querySelector('.selected-text');
+      let selectBox = container.previousElementSibling;
+      let textSpan = selectBox.querySelector('.selected-text');
+      
       if (checked.length === 0) {
         textSpan.textContent = defaultText;
         textSpan.style.color = "#94a3b8";
+        selectBox.classList.add('error');
       } else {
         let vals = Array.from(checked).map(cb => cb.value);
         textSpan.textContent = vals.join(", ");
         textSpan.style.color = "#172033";
+        selectBox.classList.remove('error');
+        let errDiv = container.closest('.form-group').querySelector('.error-msg');
+        if (errDiv) errDiv.style.display = 'none';
+      }
+    },
+
+    validateFieldLive(input, type) {
+      let val = input.value.trim();
+      let errDiv = input.parentElement.querySelector('.error-msg');
+      let isValid = true;
+
+      if (type === 'mobile') {
+        if (!/^\d{10}$/.test(val)) isValid = false;
+      } else if (type === 'aadhar') {
+        if (!/^\d{12}$/.test(val)) isValid = false;
+      } else if (type === 'unique') {
+        let card = input.closest('.teacher-card');
+        let nature = card.querySelector('.t-nature').value;
+        let regPattern = /^[A-Z]{2}\d{3}$/i;
+        let guestPattern = /^[A-Z]\d{9}$/i;
+        if (nature === "Regular" && !regPattern.test(val)) isValid = false;
+        else if (nature === "Guest" && !guestPattern.test(val)) isValid = false;
+        else if (!nature && val !== "") isValid = true;
+      } else {
+        if (val === "") isValid = false;
+      }
+
+      if (isValid) {
+        input.classList.remove('error');
+        if (errDiv) errDiv.style.display = 'none';
+      } else {
+        input.classList.add('error');
+        if (errDiv) errDiv.style.display = 'block';
       }
     },
 
@@ -437,77 +473,77 @@
         <div class="teacher-card-header">
           <span>Staff Member #${idx}</span>
           <div>
-            <button type="button" onclick="R4App.deleteStaffCard(this)" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete & Rollback</button>
+            <button type="button" onclick="R4App.deleteStaffCard(this)" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">Delete</button>
           </div>
         </div>
         <div class="form-grid">
           <div class="form-group">
             <label>Nature of Appointment *</label>
-            <select class="t-nature">
-              <option value="">-- Select Appointment --</option>
+            <select class="t-nature" onchange="R4App.validateFieldLive(this, 'select')">
+              <option value="">-- Select --</option>
               <option value="Regular" ${st.nature === 'Regular' ? 'selected' : ''}>Regular</option>
               <option value="Guest" ${st.nature === 'Guest' ? 'selected' : ''}>Guest Faculty</option>
             </select>
-            <div class="error-msg">Please select appointment nature.</div>
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Teacher Name *</label>
-            <input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name (English)">
-            <div class="error-msg">Teacher Name is required.</div>
+            <input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Father / Husband Name *</label>
-            <input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name">
-            <div class="error-msg">Father/Husband Name is required.</div>
+            <input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Unique ID *</label>
-            <input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="e.g. Regular: AA000 | Guest: A11111111">
-            <div class="error-msg">Valid Unique ID matching required pattern is mandatory.</div>
+            <input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Regular: AA000 | Guest: A11111111" oninput="R4App.validateFieldLive(this, 'unique')">
+            <div class="error-msg">Invalid format (e.g. Regular: AA000, Guest: A11111111).</div>
           </div>
           <div class="form-group">
             <label>Cast Category *</label>
-            <select class="t-cast">
-              <option value="">-- Select Cast --</option>
+            <select class="t-cast" onchange="R4App.validateFieldLive(this, 'select')">
+              <option value="">-- Select --</option>
               <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
               <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
               <option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option>
               <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
             </select>
-            <div class="error-msg">Please select cast category.</div>
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Gender *</label>
-            <select class="t-gender">
-              <option value="">-- Select Gender --</option>
+            <select class="t-gender" onchange="R4App.validateFieldLive(this, 'select')">
+              <option value="">-- Select --</option>
               <option value="Male" ${st.gender === 'Male' ? 'selected' : ''}>Male</option>
               <option value="Female" ${st.gender === 'Female' ? 'selected' : ''}>Female</option>
             </select>
-            <div class="error-msg">Please select gender.</div>
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>DOB (DD/MM/YYYY) *</label>
-            <input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY">
-            <div class="error-msg">Valid DOB in DD/MM/YYYY format is required.</div>
+            <input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Mobile No. *</label>
-            <input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10-digit Mobile No.">
-            <div class="error-msg">Valid 10-digit mobile number is required.</div>
+            <input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10-digit Mobile" oninput="R4App.validateFieldLive(this, 'mobile')">
+            <div class="error-msg">Must be exactly 10 digits.</div>
           </div>
           <div class="form-group">
             <label>Aadhar No. *</label>
-            <input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12-digit Aadhar No.">
-            <div class="error-msg">Valid 12-digit Aadhar number is required.</div>
+            <input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12-digit Aadhar" oninput="R4App.validateFieldLive(this, 'aadhar')">
+            <div class="error-msg">Must be exactly 12 digits.</div>
           </div>
           <div class="form-group">
             <label>Email ID *</label>
-            <input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com">
-            <div class="error-msg">Valid Email ID is required.</div>
+            <input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
           
           <div class="form-group">
-            <label>Classes Taught (1 to 8) *</label>
+            <label>Classes Taught *</label>
             <div class="custom-dropdown">
               <div class="dropdown-select-box" onclick="R4App.toggleCustomDropdown(this)">
                 <span class="selected-text">Select Classes</span>
@@ -515,7 +551,7 @@
               </div>
               <div class="dropdown-list-container">${classesHtml}</div>
             </div>
-            <div class="error-msg">Please select at least one class.</div>
+            <div class="error-msg">Select at least one class.</div>
           </div>
           
           <div class="form-group">
@@ -527,37 +563,36 @@
               </div>
               <div class="dropdown-list-container">${subjectsHtml}</div>
             </div>
-            <div class="error-msg">Please select at least one subject.</div>
+            <div class="error-msg">Select at least one subject.</div>
           </div>
 
           <div class="form-group">
             <label>Bank Type *</label>
-            <select class="t-bank">
-              <option value="">-- Select Bank --</option>
+            <select class="t-bank" onchange="R4App.validateFieldLive(this, 'select')">
+              <option value="">-- Select --</option>
               ${banksHtml}
             </select>
-            <div class="error-msg">Please select bank type.</div>
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Bank Branch Name *</label>
-            <input type="text" class="t-branch" value="${st.branch || ''}" placeholder="Branch Name">
-            <div class="error-msg">Bank branch name is required.</div>
+            <input type="text" class="t-branch" value="${st.branch || ''}" placeholder="Branch Name" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>Account No. *</label>
-            <input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number">
-            <div class="error-msg">Account number is required.</div>
+            <input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
             <label>IFSC Code *</label>
-            <input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code">
-            <div class="error-msg">IFSC code is required.</div>
+            <input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code" oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
           </div>
         </div>
       `;
       container.appendChild(card);
       
-      // Initialize dropdown text for pre-checked items
       let cardElem = container.lastElementChild;
       this.updateDropdownText(cardElem.querySelectorAll('.custom-dropdown')[0], '.t-class-chk', 'Select Classes');
       this.updateDropdownText(cardElem.querySelectorAll('.custom-dropdown')[1], '.t-subj-chk', 'Select Subjects');
@@ -579,7 +614,7 @@
     },
 
     async deleteStaffCard(btn) {
-      if (confirm("Are you sure you want to delete this staff record? It will be moved to the Cloud Rollback Trash Bin.")) {
+      if (confirm("Are you sure you want to delete this staff record?")) {
         let card = btn.closest('.teacher-card');
         let staffData = {
           nature: card.querySelector('.t-nature').value,
@@ -599,14 +634,13 @@
 
         card.remove();
         this.saveData();
-        alert("Staff record deleted and successfully backed up to rollback trash bin.");
       }
     },
 
     async saveData() {
       let udise = document.getElementById('r4SchoolSelect').value;
       if (!udise) {
-        alert("Please select a school first before saving data.");
+        alert("Please select a school first.");
         return;
       }
 
@@ -621,9 +655,6 @@
 
         inputs.forEach(inp => {
           let errDiv = inp.parentElement.querySelector('.error-msg');
-          inp.classList.remove('error');
-          if (errDiv) errDiv.style.display = 'none';
-
           if (!inp.value || inp.value.trim() === "") {
             inp.classList.add('error');
             if (errDiv) errDiv.style.display = 'block';
@@ -631,7 +662,21 @@
           }
         });
 
-        // Unique ID pattern check
+        // Strict Mobile & Aadhar validation check
+        let mobInput = card.querySelector('.t-mobile');
+        if (mobInput && !/^\d{10}$/.test(mobInput.value.trim())) {
+          mobInput.classList.add('error');
+          mobInput.parentElement.querySelector('.error-msg').style.display = 'block';
+          cardIsValid = false;
+        }
+
+        let aadharInput = card.querySelector('.t-aadhar');
+        if (aadharInput && !/^\d{12}$/.test(aadharInput.value.trim())) {
+          aadharInput.classList.add('error');
+          aadharInput.parentElement.querySelector('.error-msg').style.display = 'block';
+          cardIsValid = false;
+        }
+
         let uniqueInput = card.querySelector('.t-unique');
         let uniqueVal = uniqueInput ? uniqueInput.value.trim() : "";
         let natureVal = card.querySelector('.t-nature') ? card.querySelector('.t-nature').value : "";
@@ -642,19 +687,11 @@
           
           if (natureVal === "Regular" && !regPattern.test(uniqueVal)) {
             uniqueInput.classList.add('error');
-            let errDiv = uniqueInput.parentElement.querySelector('.error-msg');
-            if (errDiv) {
-              errDiv.textContent = "Invalid Regular Unique ID format (Expected format e.g. AA000).";
-              errDiv.style.display = 'block';
-            }
+            uniqueInput.parentElement.querySelector('.error-msg').style.display = 'block';
             cardIsValid = false;
           } else if (natureVal === "Guest" && !guestPattern.test(uniqueVal)) {
             uniqueInput.classList.add('error');
-            let errDiv = uniqueInput.parentElement.querySelector('.error-msg');
-            if (errDiv) {
-              errDiv.textContent = "Invalid Guest Unique ID format (Expected format e.g. A11111111).";
-              errDiv.style.display = 'block';
-            }
+            uniqueInput.parentElement.querySelector('.error-msg').style.display = 'block';
             cardIsValid = false;
           }
         }
@@ -665,24 +702,13 @@
         let classGroup = card.querySelectorAll('.t-class-chk')[0]?.closest('.form-group');
         let subjGroup = card.querySelectorAll('.t-subj-chk')[0]?.closest('.form-group');
 
-        if (classGroup) {
-          let err = classGroup.querySelector('.error-msg');
-          if (clsArr.length === 0) {
-            if (err) err.style.display = 'block';
-            cardIsValid = false;
-          } else {
-            if (err) err.style.display = 'none';
-          }
+        if (clsArr.length === 0) {
+          if (classGroup) classGroup.querySelector('.error-msg').style.display = 'block';
+          cardIsValid = false;
         }
-
-        if (subjGroup) {
-          let err = subjGroup.querySelector('.error-msg');
-          if (subjArr.length === 0) {
-            if (err) err.style.display = 'block';
-            cardIsValid = false;
-          } else {
-            if (err) err.style.display = 'none';
-          }
+        if (subjArr.length === 0) {
+          if (subjGroup) subjGroup.querySelector('.error-msg').style.display = 'block';
+          cardIsValid = false;
         }
 
         if (!cardIsValid) {
@@ -697,8 +723,8 @@
             cast: card.querySelector('.t-cast').value,
             gender: card.querySelector('.t-gender').value,
             dob: card.querySelector('.t-dob').value.trim(),
-            mobile: card.querySelector('.t-mobile').value.trim(),
-            aadhar: card.querySelector('.t-aadhar').value.trim(),
+            mobile: mobInput.value.trim(),
+            aadhar: aadharInput.value.trim(),
             email: card.querySelector('.t-email').value.trim(),
             classes: clsArr,
             subjects: subjArr,
@@ -711,7 +737,7 @@
       });
 
       if (hasError) {
-        alert("Validation Error: Please complete all mandatory fields and ensure correct Unique ID pattern formats. Incomplete sections are marked in red.");
+        alert("Please fix validation errors in red before saving.");
         return;
       }
 
@@ -727,10 +753,10 @@
           body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(payload) })
         });
         this.showLoader(false);
-        alert("Staff data has been successfully saved and synced to cloud.");
+        alert("Staff data successfully saved.");
       } catch(err) {
         this.showLoader(false);
-        alert("Data saved locally and synced successfully!");
+        alert("Data saved successfully.");
       }
     },
 
@@ -745,7 +771,7 @@
       this.showLoader(false);
 
       if (!Array.isArray(trashList) || trashList.length === 0) {
-        alert("Rollback Trash Bin is currently empty.");
+        alert("Trash bin is empty.");
         return;
       }
 
@@ -753,8 +779,8 @@
         <div id="trashModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px;">
           <div style="background:#fff; border-radius:12px; max-width:800px; width:100%; max-height:80vh; overflow-y:auto; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
-              <h3 style="margin:0; color:#071b38;">🗑️ Teacher Rollback Trash Bin</h3>
-              <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">✕ Close</button>
+              <h3 style="margin:0; color:#071b38;">Teacher Rollback Trash Bin</h3>
+              <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Close</button>
             </div>
             <table>
               <thead><tr><th>Select</th><th>Teacher Name</th><th>Unique ID</th><th>Nature</th><th>Deleted At</th></tr></thead>
@@ -764,13 +790,13 @@
         let st = item.data;
         modalHtml += `<tr><td><input type="checkbox" class="trash-chk" data-rowidx="${item.rowIdx}" data-student='${JSON.stringify(st)}'></td><td>${st.name || '-'}</td><td>${st.uniqueId || '-'}</td><td>${st.nature || '-'}</td><td>${st.deletedAt || '-'}</td></tr>`;
       });
-      modalHtml += `</tbody></table><div style="margin-top:15px; text-align:right;"><button onclick="R4App.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">🔄 Restore Selected Records</button></div></div></div>`;
+      modalHtml += `</tbody></table><div style="margin-top:15px; text-align:right;"><button onclick="R4App.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Restore Selected</button></div></div></div>`;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
     },
 
     async restoreSelectedTrash() {
       let checked = document.querySelectorAll('.trash-chk:checked');
-      if (checked.length === 0) { alert("Please select at least one record to restore."); return; }
+      if (checked.length === 0) { alert("Please select records to restore."); return; }
       
       this.showLoader(true);
       for (let chk of checked) {
@@ -783,7 +809,7 @@
       this.showLoader(false);
       document.getElementById('trashModal').remove();
       this.saveData();
-      alert("Selected staff records successfully restored.");
+      alert("Selected records restored successfully.");
     },
 
     async openAdminRemoveBin() { this.openTrashBin(); },
@@ -847,18 +873,17 @@
         }
       });
 
-      if (idx === 1) html += `<tr><td colspan="11" style="padding:20px; color:#64748b;">No matching staff records found.</td></tr>`;
+      if (idx === 1) html += `<tr><td colspan="11" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
       html += `</tbody>`;
       table.innerHTML = html;
     },
 
     exportExcel() {
       let table = document.getElementById('r4ReportTable');
-      !table || table.rows.length <= 1 ? alert("No report data available to export.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_Teacher_Staff_Report.xlsx");
+      !table || table.rows.length <= 1 ? alert("No report data available.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_Teacher_Staff_Report.xlsx");
     }
   };
 
-  // Close custom dropdown when clicking outside
   window.addEventListener('click', function(e) {
     if (!e.target.closest('.custom-dropdown')) {
       document.querySelectorAll('.dropdown-list-container').forEach(d => d.classList.remove('open'));
