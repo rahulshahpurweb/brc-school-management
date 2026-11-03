@@ -31,16 +31,17 @@
   .teacher-card.incomplete { border: 2px solid #dc2626; background: #fff5f5; }
   .teacher-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .form-group { position: relative; }
   .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
-  .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+  .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; background: #fff; }
   .form-group input.error, .form-group select.error { border-color: #dc2626; background: #fee2e2; }
   .error-msg { color: #dc2626; font-size: 10px; margin-top: 2px; display: none; font-weight: bold; }
 
-  /* Professional Fixed Dropdown Styles for Classes & Subjects */
+  /* Professional Non-Overlapping Custom Dropdown */
   .custom-dropdown { position: relative; width: 100%; }
   .dropdown-select-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-height: 32px; }
   .dropdown-select-box.error { border-color: #dc2626; background: #fee2e2; }
-  .dropdown-list-container { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: none; z-index: 999; max-height: 180px; overflow-y: auto; padding: 8px; }
+  .dropdown-list-container { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: none; z-index: 9999; max-height: 160px; overflow-y: auto; padding: 8px; }
   .dropdown-list-container.open { display: block; }
   .dropdown-list-container label { display: flex; align-items: center; gap: 8px; padding: 6px 8px; font-size: 12px; font-weight: normal; cursor: pointer; border-radius: 4px; }
   .dropdown-list-container label:hover { background: #f1f5f9; }
@@ -495,13 +496,13 @@
           </div>
           <div class="form-group">
             <label>Teacher Name *</label>
-            <input type="text" class="t-name" value="${st.name || ''}" placeholder="Enter Teacher name" oninput="R4App.validateFieldLive(this, 'name')">
-            <div class="error-msg">Min 3 letters</div>
+            <input type="text" class="t-name" value="${st.name || ''}" placeholder="Min 3 letters (Alphabets only)" oninput="R4App.validateFieldLive(this, 'name')">
+            <div class="error-msg">Min 3 letters (Alphabets only).</div>
           </div>
           <div class="form-group">
             <label>Parent / Spouse / Guardian Name *</label>
-            <input type="text" class="t-father" value="${st.father || ''}" placeholder="Enter Parent / Spouse / Guardian Name " oninput="R4App.validateFieldLive(this, 'name')">
-            <div class="error-msg">Min 3 letters </div>
+            <input type="text" class="t-father" value="${st.father || ''}" placeholder="Min 3 letters (Alphabets only)" oninput="R4App.validateFieldLive(this, 'name')">
+            <div class="error-msg">Min 3 letters (Alphabets only).</div>
           </div>
           <div class="form-group">
             <label>Unique ID *</label>
@@ -684,6 +685,13 @@
           cardIsValid = false;
         }
 
+        let dobInput = card.querySelector('.t-dob');
+        if (dobInput && !/^\d{2}\/\d{2}\/\d{4}$/.test(dobInput.value.trim())) {
+          dobInput.classList.add('error');
+          dobInput.parentElement.querySelector('.error-msg').style.display = 'block';
+          cardIsValid = false;
+        }
+
         let mobInput = card.querySelector('.t-mobile');
         if (mobInput && !/^\d{10}$/.test(mobInput.value.trim())) {
           mobInput.classList.add('error');
@@ -757,7 +765,7 @@
             uniqueId: uniqueVal,
             cast: card.querySelector('.t-cast').value,
             gender: card.querySelector('.t-gender').value,
-            dob: card.querySelector('.t-dob').value.trim(),
+            dob: dobInput.value.trim(),
             mobile: mobInput.value.trim(),
             aadhar: aadharInput.value.trim(),
             email: card.querySelector('.t-email').value.trim(),
