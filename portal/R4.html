@@ -14,7 +14,7 @@
   
   .menu-container { position: relative; display: inline-block; }
   .menu-btn { background: #0b2854; color: #fff; border: 1px solid #ffd21c; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; }
-  .dropdown-content { display: none; position: absolute; right: 0; background-color: #ffffff; min-width: 220px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
+  .dropdown-content { display: none; position: absolute; right: 0; background-color: #ffffff; min-width: 240px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
   .dropdown-content button, .dropdown-content label { color: #071b38; padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 13px; box-sizing: border-box; }
   .dropdown-content button:hover, .dropdown-content label:hover { background-color: #f1f5f9; color: #1d4ed8; }
   .show { display: block; }
@@ -29,9 +29,12 @@
   
   .teacher-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
   .teacher-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
   .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
   .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+  
+  .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; }
+  .checkbox-group label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-weight: normal; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
@@ -61,6 +64,8 @@
     <div class="menu-container" id="adminMenuContainer">
       <button onclick="R4App.toggleMenu()" class="menu-btn">☰ Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
+        <button onclick="R4App.openTrashBin()">🗑️ Rollback Trash Bin</button>
+        <button onclick="R4App.openAdminRemoveBin()" id="menuAdminRemoveBtn">🗂️ Admin Remove Bin</button>
         <button onclick="R4App.downloadTemplate()">📥 Download Excel Template</button>
         <label style="cursor:pointer;">
           📤 Bulk Upload Teacher Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display:none" onchange="R4App.handleBulkUpload(event)">
@@ -77,7 +82,6 @@
 </div>
 
 <main class="content-container">
-  <!-- DASHBOARD SECTION -->
   <section id="r4Dash" class="r4-section">
     <div class="card">
       <h3>📊 Teacher & Staff Summary Overview</h3>
@@ -99,7 +103,6 @@
     </div>
   </section>
 
-  <!-- DATA ENTRY SECTION -->
   <section id="r4Entry" class="r4-section" style="display:none;">
     <div class="card">
       <h3>✍️ School Teacher & Staff Data Entry</h3>
@@ -132,7 +135,6 @@
     </div>
   </section>
 
-  <!-- REPORTS SECTION -->
   <section id="r4Reports" class="r4-section" style="display:none;">
     <div class="card">
       <h3>📑 Staff Compilation & Filter Reports</h3>
@@ -179,7 +181,10 @@
 
   window.R4App = {
     cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
-    
+    banksList: ["SBI", "PNB", "Bank of India (BOI)", "Bank of Baroda (BOB)", "Canara Bank", "Union Bank of India", "Central Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab & Sind Bank", "UCO Bank", "Indian Bank"],
+    subjectsList: ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"],
+    classesList: ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
+
     showLoader(show) {
       let overlay = document.getElementById("loadingOverlay");
       if (overlay) overlay.style.display = show ? 'flex' : 'none';
@@ -203,9 +208,7 @@
         let res = await fetch(this.cloudApiUrl + "?action=getAllData&session=" + activeSess + "&t=" + new Date().getTime());
         if (res.ok) {
           let cloudData = await res.json();
-          if (Array.isArray(cloudData) && cloudData.length > 0) {
-            this.allSchools = cloudData;
-          }
+          if (Array.isArray(cloudData) && cloudData.length > 0) this.allSchools = cloudData;
         }
         
         let teacherRes = await fetch(this.cloudApiUrl + "?action=getAllTeacherData&session=" + activeSess + "&t=" + new Date().getTime());
@@ -219,17 +222,22 @@
             });
           }
         }
-      } catch(e) {
-        console.log("Cloud fetch fallback.");
-      }
+      } catch(e) { console.log("Cloud fetch fallback."); }
 
       if (!this.allSchools || this.allSchools.length === 0) {
         let sessionData = SessionManager.getData();
         this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
       }
 
+      this.checkAdminRole();
       this.switchTab('dashboard');
       this.showLoader(false);
+    },
+
+    checkAdminRole() {
+      let info = this.getUserRoleInfo();
+      let adminRemoveBtn = document.getElementById('menuAdminRemoveBtn');
+      if (adminRemoveBtn) adminRemoveBtn.style.display = info.isAdmin ? 'block' : 'none';
     },
 
     toggleMenu() {
@@ -256,18 +264,8 @@
     },
 
     downloadTemplate() {
-      let headers = [
-        "School Name", "UDISE Code", "School Category", "JSK", "Nature Of Appointment", 
-        "Teacher Name", "Father/Husband", "Unique ID", "Cast", "Gender", "DOB", 
-        "Mobile No.", "Aadhar No.", "Email ID", "Classes (Comma separated)", 
-        "Subjects (Comma separated)", "Bank Type", "Account No.", "IFSC Code"
-      ];
-      let sample = [
-        "GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", "Regular",
-        "Ramesh Kumar", "Sohan Lal", "AA123", "SC", "Male", "15/08/1985",
-        "9876543210", "123456789012", "ramesh@email.com", "Class 6, Class 7",
-        "Hindi, Math", "SBI", "12345678901", "SBIN0001234"
-      ];
+      let headers = ["School Name", "UDISE Code", "School Category", "JSK", "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", "Cast", "Gender", "DOB", "Mobile No.", "Aadhar No.", "Email ID", "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code"];
+      let sample = ["GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", "Regular", "Ramesh Kumar", "Sohan Lal", "AA123", "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", "Class 1, Class 2", "Hindi, Math", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234"];
       let wb = XLSX.utils.book_new();
       let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
       XLSX.utils.book_append_sheet(wb, ws, "Teacher_Template");
@@ -310,11 +308,12 @@
               mobile: r[11] || "",
               aadhar: r[12] || "",
               email: r[13] || "",
-              classes: r[14] || "",
-              subjects: r[15] || "",
-              bank: r[16] || "",
-              accNo: r[17] || "",
-              ifsc: r[18] || ""
+              classes: Array.isArray(r[14]) ? r[14] : String(r[14] || "").split(",").map(x => x.trim()).filter(Boolean),
+              subjects: Array.isArray(r[15]) ? r[15] : String(r[15] || "").split(",").map(x => x.trim()).filter(Boolean),
+              bank: r[16] || "SBI",
+              branch: r[17] || "",
+              accNo: r[18] || "",
+              ifsc: r[19] || ""
             });
           }
 
@@ -322,16 +321,10 @@
           for (let udise in schoolMap) {
             let payload = { udise: udise, staff: schoolMap[udise].staff };
             localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
-            
             await fetch(this.cloudApiUrl, {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                action: "saveTeacherData",
-                session: activeSess,
-                udise: udise,
-                payload: JSON.stringify(payload)
-              })
+              body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(payload) })
             });
           }
 
@@ -353,10 +346,7 @@
 
       let info = this.getUserRoleInfo();
       let eligibleSchools = this.allSchools;
-
-      if (info.isSchool) {
-        eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
-      }
+      if (info.isSchool) eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
 
       eligibleSchools.forEach(s => {
         let realUdise = String(s.udise).trim();
@@ -405,28 +395,47 @@
       let idx = container.querySelectorAll('.teacher-card').length + 1;
       let card = document.createElement('div');
       card.className = 'teacher-card';
+
+      let selectedClasses = Array.isArray(st.classes) ? st.classes : [];
+      let selectedSubjects = Array.isArray(st.subjects) ? st.subjects : [];
+      
+      let classesHtml = this.classesList.map(c => `<label><input type="checkbox" class="t-class-chk" value="${c}" ${selectedClasses.includes(c) ? 'checked' : ''}> ${c}</label>`).join('');
+      let subjectsHtml = this.subjectsList.map(sub => `<label><input type="checkbox" class="t-subj-chk" value="${sub}" ${selectedSubjects.includes(sub) ? 'checked' : ''}> ${sub}</label>`).join('');
+      let banksHtml = this.banksList.map(b => `<option value="${b}" ${st.bank === b ? 'selected' : ''}>${b}</option>`).join('');
       
       card.innerHTML = `
         <div class="teacher-card-header">
           <span>Staff Member #${idx}</span>
-          <button type="button" onclick="this.closest('.teacher-card').remove()" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">🗑️ Remove</button>
+          <div>
+            <button type="button" onclick="R4App.deleteStaffCard(this)" style="background:#dc2626; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">🗑️ Delete & Rollback</button>
+          </div>
         </div>
         <div class="form-grid">
-          <div class="form-group"><label>Nature of Appointment *</label><select class="t-nature"><option value="Regular" ${st.nature === 'Regular' ? 'selected' : ''}>Regular</option><option value="Guest" ${st.nature === 'Guest' ? 'selected' : ''}>Guest Faculty</option></select></div>
-          <div class="form-group"><label>Teacher Name (English Only) *</label><input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name"></div>
-          <div class="form-group"><label>Father / Husband Name</label><input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name"></div>
-          <div class="form-group"><label>Unique ID *</label><input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Regular: AA000 | Guest: A11111111"></div>
-          <div class="form-group"><label>Cast Category</label><select class="t-cast"><option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option><option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option><option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option><option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option></select></div>
-          <div class="form-group"><label>Gender</label><select class="t-gender"><option value="Male" ${st.gender === 'Male' ? 'selected' : ''}>Male</option><option value="Female" ${st.gender === 'Female' ? 'selected' : ''}>Female</option></select></div>
-          <div class="form-group"><label>DOB (DD/MM/YYYY)</label><input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY"></div>
-          <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
-          <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
-          <div class="form-group"><label>Email ID</label><input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com"></div>
-          <div class="form-group"><label>Classes (1 to 8)</label><input type="text" class="t-classes" value="${st.classes || ''}" placeholder="Class 1, Class 2"></div>
-          <div class="form-group"><label>Subjects</label><input type="text" class="t-subjects" value="${st.subjects || ''}" placeholder="Hindi, Math, Science"></div>
-          <div class="form-group"><label>Bank Type</label><select class="t-bank"><option value="SBI" ${st.bank === 'SBI' ? 'selected' : ''}>SBI (11 Digits)</option><option value="PNB" ${st.bank === 'PNB' ? 'selected' : ''}>PNB (16 Digits)</option><option value="BOI" ${st.bank === 'BOI' ? 'selected' : ''}>BOI</option><option value="CANARA" ${st.bank === 'CANARA' ? 'selected' : ''}>Canara</option></select></div>
-          <div class="form-group"><label>Account No.</label><input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number"></div>
-          <div class="form-group"><label>IFSC Code</label><input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code"></div>
+          <div class="form-group"><label>Nature of Appointment *</label><select class="t-nature"><option value="">-- Select --</option><option value="Regular" ${st.nature === 'Regular' ? 'selected' : ''}>Regular</option><option value="Guest" ${st.nature === 'Guest' ? 'selected' : ''}>Guest Faculty</option></select></div>
+          <div class="form-group"><label>Teacher Name *</label><input type="text" class="t-name" value="${st.name || ''}" placeholder="Full Name (English)"></div>
+          <div class="form-group"><label>Father / Husband Name *</label><input type="text" class="t-father" value="${st.father || ''}" placeholder="Father/Husband Name"></div>
+          <div class="form-group"><label>Unique ID *</label><input type="text" class="t-unique" value="${st.uniqueId || ''}" placeholder="Unique ID"></div>
+          <div class="form-group"><label>Cast Category *</label><select class="t-cast"><option value="">-- Select --</option><option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option><option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option><option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option><option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option></select></div>
+          <div class="form-group"><label>Gender *</label><select class="t-gender"><option value="">-- Select --</option><option value="Male" ${st.gender === 'Male' ? 'selected' : ''}>Male</option><option value="Female" ${st.gender === 'Female' ? 'selected' : ''}>Female</option></select></div>
+          <div class="form-group"><label>DOB (DD/MM/YYYY) *</label><input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY"></div>
+          <div class="form-group"><label>Mobile No. *</label><input type="text" class="t-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="Mobile No."></div>
+          <div class="form-group"><label>Aadhar No. *</label><input type="text" class="t-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="Aadhar No."></div>
+          <div class="form-group"><label>Email ID *</label><input type="text" class="t-email" value="${st.email || ''}" placeholder="name@email.com"></div>
+          
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Classes Taught (1 to 8) *</label>
+            <div class="checkbox-group">${classesHtml}</div>
+          </div>
+          
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Subjects Taught *</label>
+            <div class="checkbox-group">${subjectsHtml}</div>
+          </div>
+
+          <div class="form-group"><label>Bank Type *</label><select class="t-bank"><option value="">-- Select Bank --</option>${banksHtml}</select></div>
+          <div class="form-group"><label>Bank Branch Name *</label><input type="text" class="t-branch" value="${st.branch || ''}" placeholder="Branch Name"></div>
+          <div class="form-group"><label>Account No. *</label><input type="text" class="t-acc" value="${st.accNo || ''}" placeholder="Account Number"></div>
+          <div class="form-group"><label>IFSC Code *</label><input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code"></div>
         </div>
       `;
       container.appendChild(card);
@@ -442,32 +451,68 @@
       staff.forEach(st => this.addNewStaffCard(st));
     },
 
+    async deleteStaffCard(btn) {
+      if (confirm("Are you sure you want to delete this staff record? It will be moved to the Cloud Rollback Trash Bin.")) {
+        let card = btn.closest('.teacher-card');
+        let staffData = {
+          nature: card.querySelector('.t-nature').value,
+          name: card.querySelector('.t-name').value,
+          uniqueId: card.querySelector('.t-unique').value,
+          deletedAt: new Date().toLocaleString()
+        };
+
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        try {
+          await fetch(this.cloudApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ action: "saveTeacherTrash", session: activeSess, type: "delete", payload: JSON.stringify(staffData) })
+          });
+        } catch(e) {}
+
+        card.remove();
+        this.saveData();
+        alert("Staff record deleted and backed up successfully.");
+      }
+    },
+
     async saveData() {
       let udise = document.getElementById('r4SchoolSelect').value;
       if (!udise) { alert("Please select a school first!"); return; }
 
       let cards = document.querySelectorAll('.teacher-card');
       let staff = [];
+      let hasError = false;
 
       cards.forEach(card => {
-        staff.push({
-          nature: card.querySelector('.t-nature').value,
-          name: card.querySelector('.t-name').value,
-          father: card.querySelector('.t-father').value,
-          uniqueId: card.querySelector('.t-unique').value,
-          cast: card.querySelector('.t-cast').value,
-          gender: card.querySelector('.t-gender').value,
-          dob: card.querySelector('.t-dob').value,
-          mobile: card.querySelector('.t-mobile').value,
-          aadhar: card.querySelector('.t-aadhar').value,
-          email: card.querySelector('.t-email').value,
-          classes: card.querySelector('.t-classes').value,
-          subjects: card.querySelector('.t-subjects').value,
-          bank: card.querySelector('.t-bank').value,
-          accNo: card.querySelector('.t-acc').value,
-          ifsc: card.querySelector('.t-ifsc').value
-        });
+        let nature = card.querySelector('.t-nature').value;
+        let name = card.querySelector('.t-name').value.trim();
+        let father = card.querySelector('.t-father').value.trim();
+        let uniqueId = card.querySelector('.t-unique').value.trim();
+        let cast = card.querySelector('.t-cast').value;
+        let gender = card.querySelector('.t-gender').value;
+        let dob = card.querySelector('.t-dob').value.trim();
+        let mobile = card.querySelector('.t-mobile').value.trim();
+        let aadhar = card.querySelector('.t-aadhar').value.trim();
+        let email = card.querySelector('.t-email').value.trim();
+        let bank = card.querySelector('.t-bank').value;
+        let branch = card.querySelector('.t-branch').value.trim();
+        let accNo = card.querySelector('.t-acc').value.trim();
+        let ifsc = card.querySelector('.t-ifsc').value.trim();
+
+        let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
+        let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
+
+        if (!nature || !name || !father || !uniqueId || !cast || !gender || !dob || !mobile || !aadhar || !email || !bank || !branch || !accNo || !ifsc || clsArr.length === 0 || subjArr.length === 0) {
+          alert("All fields in staff entry are mandatory! Please fill all required fields and select at least one Class and Subject.");
+          hasError = true;
+          return;
+        }
+
+        staff.push({ nature, name, father, uniqueId, cast, gender, dob, mobile, aadhar, email, classes: clsArr, subjects: subjArr, bank, branch, accNo, ifsc });
       });
+
+      if (hasError) return;
 
       let payload = { udise: udise, staff: staff };
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
@@ -478,20 +523,69 @@
         await fetch(this.cloudApiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "saveTeacherData",
-            session: activeSess,
-            udise: udise,
-            payload: JSON.stringify(payload)
-          })
+          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(payload) })
         });
         this.showLoader(false);
-        alert("Staff data saved successfully!");
+        alert("Staff data saved and synced successfully!");
       } catch(err) {
         this.showLoader(false);
         alert("Data saved locally and synced!");
       }
     },
+
+    async openTrashBin() {
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      this.showLoader(true);
+      let trashList = [];
+      try {
+        let res = await fetch(this.cloudApiUrl + "?action=getTeacherTrash&session=" + activeSess + "&type=delete&t=" + new Date().getTime());
+        if (res.ok) trashList = await res.json();
+      } catch(e) {}
+      this.showLoader(false);
+
+      if (!Array.isArray(trashList) || trashList.length === 0) {
+        alert("Rollback Trash Bin is empty!");
+        return;
+      }
+
+      let modalHtml = `
+        <div id="trashModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#fff; border-radius:12px; max-width:800px; width:100%; max-height:80vh; overflow-y:auto; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
+              <h3 style="margin:0; color:#071b38;">🗑️ Teacher Rollback Trash Bin</h3>
+              <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">✕ Close</button>
+            </div>
+            <table>
+              <thead><tr><th>Select</th><th>Teacher Name</th><th>Unique ID</th><th>Nature</th><th>Deleted At</th></tr></thead>
+              <tbody>
+      `;
+      trashList.forEach(item => {
+        let st = item.data;
+        modalHtml += `<tr><td><input type="checkbox" class="trash-chk" data-rowidx="${item.rowIdx}" data-student='${JSON.stringify(st)}'></td><td>${st.name}</td><td>${st.uniqueId}</td><td>${st.nature}</td><td>${st.deletedAt}</td></tr>`;
+      });
+      modalHtml += `</tbody></table><div style="margin-top:15px; text-align:right;"><button onclick="R4App.restoreSelectedTrash()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">🔄 Restore Selected</button></div></div></div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    async restoreSelectedTrash() {
+      let checked = document.querySelectorAll('.trash-chk:checked');
+      if (checked.length === 0) { alert("Please select records to restore!"); return; }
+      
+      this.showLoader(true);
+      for (let chk of checked) {
+        let st = JSON.parse(chk.getAttribute('data-student'));
+        let rowIdx = chk.getAttribute('data-rowidx');
+        this.addNewStaffCard(st);
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        await fetch(this.cloudApiUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ action: "deleteTeacherTrash", type: "delete", session: activeSess, rowIdx: rowIdx }) });
+      }
+      this.showLoader(false);
+      document.getElementById('trashModal').remove();
+      this.saveData();
+      alert("Selected staff successfully restored!");
+    },
+
+    async openAdminRemoveBin() { this.openTrashBin(); },
 
     renderDashboard() {
       let jskMap = {};
@@ -521,23 +615,9 @@
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
         tSch += d.schools; tReg += d.regular; tGuest += d.guest; tTot += d.total;
-        tbody.innerHTML += `
-          <tr>
-            <td>${i++}</td>
-            <td style="text-align:left; font-weight:bold;">${jsk}</td>
-            <td>${d.schools}</td>
-            <td style="color:#16a34a; font-weight:bold;">${d.regular}</td>
-            <td style="color:#d97706; font-weight:bold;">${d.guest}</td>
-            <td style="font-weight:bold; color:#1d4ed8;">${d.total}</td>
-          </tr>
-        `;
+        tbody.innerHTML += `<tr><td>${i++}</td><td style="text-align:left; font-weight:bold;">${jsk}</td><td>${d.schools}</td><td style="color:#16a34a; font-weight:bold;">${d.regular}</td><td style="color:#d97706; font-weight:bold;">${d.guest}</td><td style="font-weight:bold; color:#1d4ed8;">${d.total}</td></tr>`;
       }
-      tbody.innerHTML += `
-        <tr style="background:#f1f5f9; font-weight:bold;">
-          <td colspan="2">Grand Total</td>
-          <td>${tSch}</td><td>${tReg}</td><td>${tGuest}</td><td style="color:#1d4ed8;">${tTot}</td>
-        </tr>
-      `;
+      tbody.innerHTML += `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="2">Grand Total</td><td>${tSch}</td><td>${tReg}</td><td>${tGuest}</td><td style="color:#1d4ed8;">${tTot}</td></tr>`;
     },
 
     renderReports() {
@@ -546,16 +626,7 @@
       let subjectFilter = document.getElementById('reportSubjectFilter').value;
       let table = document.getElementById('r4ReportTable');
 
-      let html = `
-        <thead>
-          <tr>
-            <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th>
-            <th>Appointment</th><th>Teacher Name</th><th>Unique ID</th>
-            <th>Mobile</th><th>Classes</th><th>Subjects</th><th>Bank</th>
-          </tr>
-        </thead>
-        <tbody>
-      `;
+      let html = `<thead><tr><th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Appointment</th><th>Teacher Name</th><th>Unique ID</th><th>Mobile</th><th>Classes</th><th>Subjects</th><th>Bank</th></tr></thead><tbody>`;
 
       let idx = 1;
       this.allSchools.forEach(s => {
@@ -566,23 +637,11 @@
         if (saved && saved.staff) {
           saved.staff.forEach(st => {
             if (natureFilter !== "ALL" && st.nature !== natureFilter) return;
-            if (subjectFilter !== "ALL" && !st.subjects.toLowerCase().includes(subjectFilter.toLowerCase())) return;
+            let subjStr = Array.isArray(st.subjects) ? st.subjects.join(", ") : String(st.subjects || "");
+            if (subjectFilter !== "ALL" && !subjStr.toLowerCase().includes(subjectFilter.toLowerCase())) return;
 
-            html += `
-              <tr>
-                <td>${idx++}</td>
-                <td style="text-align:left;">${s.name}</td>
-                <td>${s.udise}</td>
-                <td>${jsk}</td>
-                <td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td>
-                <td style="text-align:left; font-weight:bold;">${st.name || '-'}</td>
-                <td>${st.uniqueId || '-'}</td>
-                <td>${st.mobile || '-'}</td>
-                <td>${st.classes || '-'}</td>
-                <td>${st.subjects || '-'}</td>
-                <td>${st.bank || '-'}</td>
-              </tr>
-            `;
+            let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : String(st.classes || "");
+            html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td><td style="text-align:left; font-weight:bold;">${st.name}</td><td>${st.uniqueId}</td><td>${st.mobile}</td><td>${clsStr}</td><td>${subjStr}</td><td>${st.bank} (${st.branch})</td></tr>`;
           });
         }
       });
