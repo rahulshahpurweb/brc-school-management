@@ -444,7 +444,7 @@
       } else if (type === 'unique') {
         let card = input.closest('.teacher-card');
         let nature = card.querySelector('.t-nature').value;
-        let regPattern = /^[A-Z]{2}\d{3}$/i;
+        let regPattern = /^[A-Z]{2}\d{4}$/i;
         let guestPattern = /^[A-Z]\d{9}$/i;
         if (nature === "Regular" && !regPattern.test(val)) isValid = false;
         else if (nature === "Guest" && !guestPattern.test(val)) isValid = false;
