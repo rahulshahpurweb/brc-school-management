@@ -244,6 +244,12 @@
           if (Array.isArray(cloudTeachers)) {
             cloudTeachers.forEach(item => {
               if (item.udise && item.payload) {
+                // FORCE RESET: Agar purane data mein isFrozen true hai par user ne manually freeze nahi kiya, to ise false kar do
+                if (item.payload.staff) {
+                  item.payload.staff.forEach(st => {
+                    if (st.isFrozen !== true) st.isFrozen = false;
+                  });
+                }
                 localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
               }
             });
@@ -368,7 +374,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: false // Default false on bulk upload until explicitly frozen
+              isFrozen: false // Default false, must be frozen manually
             });
           }
 
@@ -440,6 +446,11 @@
       document.getElementById('lblCategory').textContent = school.category || 'Primary/Middle';
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
+      if (saved && saved.staff) {
+        saved.staff.forEach(st => {
+          if (st.isFrozen !== true) st.isFrozen = false;
+        });
+      }
       this.renderStaffCards(saved ? saved.staff : []);
     },
 
@@ -521,7 +532,7 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
-      // STRICT CHECK: Default is false. Only true if explicitly frozen.
+      // STRICT CHECK: Default is false unless explicitly true
       let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
       card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
@@ -1059,9 +1070,6 @@
           }
           if (saved && saved.staff) {
             saved.staff.forEach(st => {
-              if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
-              if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
-
               if (st.isFrozen === true) {
                 jskMap[jsk].total++;
                 if (st.gender === 'Male') jskMap[jsk].male++;
