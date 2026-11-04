@@ -172,7 +172,6 @@
         <select id="reportFormatSelect" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold; color:#1d4ed8;">
           <option value="F_1">F_1: Detailed Teacher List</option>
           <option value="F_2">F_2: School-wise Teacher Count (Male / Female / Total)</option>
-          <option value="F_3">F_3: JSK-wise Summary & Pending Status</option>
         </select>
 
         <label style="margin-left:5px;"><b>F4 (Gender Filter):</b></label>
@@ -782,9 +781,13 @@
           jskMap[jsk].pendingSchools++;
         }
 
+        let schoolCompletedCount = 0;
+        let schoolTotalCount = hasStaff ? saved.staff.length : 0;
+
         if (hasStaff) {
           saved.staff.forEach(st => {
             if (st.isFrozen) {
+              schoolCompletedCount++;
               jskMap[jsk].total++;
               if (st.gender === 'Male') jskMap[jsk].male++;
               else if (st.gender === 'Female') jskMap[jsk].female++;
@@ -792,12 +795,8 @@
           });
         }
         
-        // Teacher Pending = Total Staff minus Completed/Frozen entries in that school
-        let completedInSchool = hasStaff ? saved.staff.filter(st => st.isFrozen).length : 0;
-        // Assuming an estimated baseline or tracking pending per school staff
-        // Formula: Total Staff expected minus completed saved entries
-        let schoolTotalStaff = hasStaff ? saved.staff.length : 0;
-        let schoolPending = schoolTotalStaff - completedInSchool;
+        // Teacher Pending = Total Staff minus Completed/Frozen entries
+        let schoolPending = schoolTotalCount - schoolCompletedCount;
         jskMap[jsk].teacherPending += schoolPending;
       });
 
