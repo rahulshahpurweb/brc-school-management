@@ -91,7 +91,7 @@
 </div>
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard</button>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard (Block Summary)</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">Staff Data Entry</button>
   <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports & Formats</button>
 </div>
@@ -173,6 +173,7 @@
         <select id="reportFormatSelect" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold; color:#1d4ed8;">
           <option value="F_1">F_1: Detailed Teacher List</option>
           <option value="F_2">F_2: School-wise Teacher Count (Male / Female / Total)</option>
+          <option value="F_3">F_3: JSK-wise Summary & Pending Status</option>
         </select>
 
         <label style="margin-left:5px;"><b>F4 (Gender Filter):</b></label>
@@ -264,7 +265,6 @@
     checkUserRestrictions() {
       let info = this.getUserRoleInfo();
       if (info.isSchool) {
-        // Hide JSK filter bar for school logins so they only see their own school info
         let filterBar = document.getElementById('reportFilterBar');
         if (filterBar) filterBar.style.display = 'none';
       }
@@ -303,6 +303,7 @@
     },
 
     downloadTemplate() {
+      // Updated and cleaned CSV Template headers matching exact R4 structure
       let headers = ["School Name", "UDISE Code", "School Category", "JSK", "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", "Cast", "Gender", "DOB", "Mobile No.", "Aadhar No.", "Email ID", "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code"];
       let sample = ["GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", "Regular", "Ramesh Kumar", "Sohan Lal", "AA1234", "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", "Class 1, Class 2", "Hindi, Math", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234"];
       let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), sample.join(",")].join("\n");
@@ -777,7 +778,6 @@
       let info = this.getUserRoleInfo();
       let schoolsToProcess = this.allSchools;
 
-      // If user is a school login, restrict view to only their school
       if (info.isSchool) {
         schoolsToProcess = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
         let headerTitle = document.getElementById('dashHeaderTitle');
@@ -830,7 +830,7 @@
 
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
-        if (d.schools === 0) continue; // Skip JSKs with 0 schools for school login
+        if (d.schools === 0) continue;
 
         tSch += d.schools; 
         tPend += d.pendingSchools; 
@@ -1010,6 +1010,68 @@
         </tr>`;
         html += `</tbody>`;
         countText = `Total Schools: ${totalSchCount} | Total Staff: ${grandTotalStaff}, Complete Entry: ${gComplete}, Teacher Pending: ${gTeacherPending}`;
+
+      } else if (format === "F_3") {
+        html = `<thead><tr>
+          <th>S.No.</th><th>Sankul (JSK)</th><th>Total Schools</th>
+          <th>Male Teachers</th><th>Female Teachers</th>
+          <th>Pending Schools</th><th>Total Staff</th>
+        </tr></thead><tbody>`;
+
+        let jskMap = {};
+        ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
+          jskMap[jsk] = { schools: 0, male: 0, female: 0, pending: 0, total: 0 };
+        });
+
+        targetSchools.forEach(s => {
+          let jsk = s.jsk || "Bhoura";
+          if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+          if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, male: 0, female: 0, pending: 0, total: 0 };
+          jskMap[jsk].schools++;
+
+          let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
+          if (!saved || !saved.staff || saved.staff.length === 0 || !saved.staff.every(st => st.isFrozen)) {
+            jskMap[jsk].pending++;
+          }
+          if (saved && saved.staff) {
+            saved.staff.forEach(st => {
+              if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+              if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+
+              if (st.isFrozen) {
+                jskMap[jsk].total++;
+                if (st.gender === 'Male') jskMap[jsk].male++;
+                else if (st.gender === 'Female') jskMap[jsk].female++;
+              }
+            });
+          }
+        });
+
+        let i = 1, tSch = 0, tM = 0, tF = 0, tPend = 0, tTot = 0;
+        for (let jsk in jskMap) {
+          let d = jskMap[jsk];
+          if (d.schools === 0) continue;
+          tSch += d.schools; tM += d.male; tF += d.female; tPend += d.pending; tTot += d.total;
+          html += `<tr>
+            <td>${i++}</td>
+            <td style="text-align:left; font-weight:bold;">${jsk}</td>
+            <td>${d.schools}</td>
+            <td style="color:#1d4ed8; font-weight:bold;">${d.male}</td>
+            <td style="color:#d97706; font-weight:bold;">${d.female}</td>
+            <td style="color:#dc2626; font-weight:bold;">${d.pending}</td>
+            <td style="font-weight:bold; color:#1d4ed8;">${d.total}</td>
+          </tr>`;
+        }
+        html += `<tr style="background:#f1f5f9; font-weight:bold;">
+          <td colspan="2">Grand Total</td>
+          <td>${tSch}</td>
+          <td style="color:#1d4ed8;">${tM}</td>
+          <td style="color:#d97706;">${tF}</td>
+          <td style="color:#dc2626;">${tPend}</td>
+          <td style="color:#1d4ed8;">${tTot}</td>
+        </tr>`;
+        html += `</tbody>`;
+        countText = `JSK Summary View | Total Schools: ${tSch}, Total Staff: ${tTot}, Pending: ${tPend}`;
       }
 
       table.innerHTML = html;
