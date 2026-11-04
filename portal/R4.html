@@ -91,7 +91,7 @@
 </div>
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard (Block Summary)</button>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">Staff Data Entry</button>
   <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports & Formats</button>
 </div>
@@ -99,13 +99,13 @@
 <main class="content-container">
   <section id="r4Dash" class="r4-section">
     <div class="card">
-      <h3>📊 BRC Shahpur - Block Level Teacher Summary (Male & Female Separate)</h3>
+      <h3 id="dashHeaderTitle">📊 BRC Shahpur - Block Level Teacher Summary (Male & Female Separate)</h3>
       <div class="tablewrap">
         <table>
           <thead>
             <tr>
               <th>S.No.</th>
-              <th>Sankul (JSK)</th>
+              <th>School Name / Sankul (JSK)</th>
               <th>Total Schools</th>
               <th>Pending Schools</th>
               <th>Male Teachers</th>
@@ -156,7 +156,7 @@
   <section id="r4Reports" class="r4-section" style="display:none;">
     <div class="card">
       <h3>📑 Teacher Compilation Reports & Formats</h3>
-      <div class="filter-bar">
+      <div class="filter-bar" id="reportFilterBar">
         <label><b>JSK Filter:</b></label>
         <select id="reportJskFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold;">
           <option value="ALL">-- All Sankul --</option>
@@ -255,9 +255,19 @@
         this.allSchools = (sessionData && sessionData.length > 0) ? sessionData : MASTER_SCHOOLS;
       }
 
+      this.checkUserRestrictions();
       this.checkAdminRole();
       this.switchTab('dashboard');
       this.showLoader(false);
+    },
+
+    checkUserRestrictions() {
+      let info = this.getUserRoleInfo();
+      if (info.isSchool) {
+        // Hide JSK filter bar for school logins so they only see their own school info
+        let filterBar = document.getElementById('reportFilterBar');
+        if (filterBar) filterBar.style.display = 'none';
+      }
     },
 
     checkAdminRole() {
@@ -764,12 +774,24 @@
     },
 
     renderDashboard() {
+      let info = this.getUserRoleInfo();
+      let schoolsToProcess = this.allSchools;
+
+      // If user is a school login, restrict view to only their school
+      if (info.isSchool) {
+        schoolsToProcess = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+        let headerTitle = document.getElementById('dashHeaderTitle');
+        if (headerTitle && schoolsToProcess.length > 0) {
+          headerTitle.textContent = `📊 School Teacher Summary - ${schoolsToProcess[0].name} (${schoolsToProcess[0].udise})`;
+        }
+      }
+
       let jskMap = {};
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
         jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
       });
 
-      this.allSchools.forEach(s => {
+      schoolsToProcess.forEach(s => {
         let jsk = s.jsk || "Bhoura";
         if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
         jskMap[jsk].schools++;
@@ -787,7 +809,6 @@
 
         if (hasStaff) {
           saved.staff.forEach(st => {
-            // Count all saved staff (Draft or Frozen) so numbers show up immediately
             jskMap[jsk].total++;
             if (st.gender === 'Male') jskMap[jsk].male++;
             else if (st.gender === 'Female') jskMap[jsk].female++;
@@ -799,7 +820,6 @@
         }
 
         jskMap[jsk].completeEntry += schoolCompleteCount;
-        // Teacher Pending = Total Staff minus Complete Entry (Save & Freeze)
         let schoolTeacherPending = schoolTotalCount - schoolCompleteCount;
         jskMap[jsk].teacherPending += schoolTeacherPending;
       });
@@ -810,6 +830,8 @@
 
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
+        if (d.schools === 0) continue; // Skip JSKs with 0 schools for school login
+
         tSch += d.schools; 
         tPend += d.pendingSchools; 
         tM += d.male; 
@@ -843,6 +865,7 @@
     },
 
     renderReports() {
+      let info = this.getUserRoleInfo();
       let jskFilter = document.getElementById('reportJskFilter').value;
       let format = document.getElementById('reportFormatSelect').value;
       let genderFilter = document.getElementById('reportGenderFilter').value;
@@ -850,6 +873,11 @@
       let table = document.getElementById('r4ReportTable');
       let html = "";
       let countText = "";
+
+      let targetSchools = this.allSchools;
+      if (info.isSchool) {
+        targetSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+      }
 
       if (format === "F_1") {
         html = `<thead><tr>
@@ -862,9 +890,9 @@
         let idx = 1;
         let totalReg = 0, totalGuest = 0;
 
-        this.allSchools.forEach(s => {
+        targetSchools.forEach(s => {
           let jsk = s.jsk || 'Bhoura';
-          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+          if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
@@ -923,9 +951,9 @@
         let idx = 1;
         let totalSchCount = 0, grandTotalStaff = 0, gMale = 0, gFemale = 0, gComplete = 0, gTeacherPending = 0;
 
-        this.allSchools.forEach(s => {
+        targetSchools.forEach(s => {
           let jsk = s.jsk || 'Bhoura';
-          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+          if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
