@@ -766,12 +766,12 @@
     renderDashboard() {
       let jskMap = {};
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
-        jskMap[jsk] = { schools: 0, pending: 0, male: 0, female: 0, total: 0, teacherPending: 0 };
+        jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, teacherPending: 0 };
       });
 
       this.allSchools.forEach(s => {
         let jsk = s.jsk || "Bhoura";
-        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pending: 0, male: 0, female: 0, total: 0, teacherPending: 0 };
+        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, teacherPending: 0 };
         jskMap[jsk].schools++;
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
@@ -779,8 +779,7 @@
         let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen);
 
         if (!allFrozen) {
-          jskMap[jsk].pending++;
-          jskMap[jsk].teacherPending++;
+          jskMap[jsk].pendingSchools++;
         }
 
         if (hasStaff) {
@@ -792,6 +791,14 @@
             }
           });
         }
+        
+        // Teacher Pending = Total Staff minus Completed/Frozen entries in that school
+        let completedInSchool = hasStaff ? saved.staff.filter(st => st.isFrozen).length : 0;
+        // Assuming an estimated baseline or tracking pending per school staff
+        // Formula: Total Staff expected minus completed saved entries
+        let schoolTotalStaff = hasStaff ? saved.staff.length : 0;
+        let schoolPending = schoolTotalStaff - completedInSchool;
+        jskMap[jsk].teacherPending += schoolPending;
       });
 
       let tbody = document.getElementById('dashSummaryTable');
@@ -800,12 +807,12 @@
 
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
-        tSch += d.schools; tPend += d.pending; tM += d.male; tF += d.female; tTot += d.total; tTeacherPend += d.teacherPending;
+        tSch += d.schools; tPend += d.pendingSchools; tM += d.male; tF += d.female; tTot += d.total; tTeacherPend += d.teacherPending;
         tbody.innerHTML += `<tr>
           <td>${i++}</td>
           <td style="text-align:left; font-weight:bold;">${jsk}</td>
           <td>${d.schools}</td>
-          <td style="color:#dc2626; font-weight:bold;">${d.pending}</td>
+          <td style="color:#dc2626; font-weight:bold;">${d.pendingSchools}</td>
           <td style="color:#1d4ed8; font-weight:bold;">${d.male}</td>
           <td style="color:#d97706; font-weight:bold;">${d.female}</td>
           <td style="font-weight:bold;">${d.total}</td>
