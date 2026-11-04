@@ -521,12 +521,13 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
+      let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
-      card.className = 'teacher-card ' + (st.isFrozen ? 'frozen' : '');
+      card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
 
       let selectedClasses = Array.isArray(st.classes) ? st.classes : [];
       let selectedSubjects = Array.isArray(st.subjects) ? st.subjects : [];
-      let disabledAttr = st.isFrozen ? 'disabled' : '';
+      let disabledAttr = isExplicitlyFrozen ? 'disabled' : '';
       
       let classesHtml = this.classesList.map(c => `<label><input type="checkbox" class="t-class-chk" value="${c}" ${selectedClasses.includes(c) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-class-chk', 'Select Classes')"> ${c}</label>`).join('');
       let subjectsHtml = this.subjectsList.map(sub => `<label><input type="checkbox" class="t-subj-chk" value="${sub}" ${selectedSubjects.includes(sub) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-subj-chk', 'Select Subjects')"> ${sub}</label>`).join('');
@@ -534,7 +535,7 @@
       
       card.innerHTML = `
         <div class="teacher-card-header">
-          <span>Staff Member [Status: ${st.isFrozen ? '🔒 Frozen / Saved' : '✍️ Incomplete'}]</span>
+          <span>Staff Member [Status: ${isExplicitlyFrozen ? '🔒 Frozen / Saved' : '✍️ Incomplete'}]</span>
           <div style="display:flex; gap:6px;">
             <button type="button" onclick="R4App.editCard(this)" style="background:#d97706; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">✏️ Edit</button>
             <button type="button" onclick="R4App.freezeCard(this)" style="background:#16a34a; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">🔒 Save & Freeze</button>
@@ -610,7 +611,7 @@
           <div class="form-group">
             <label>Classes Taught *</label>
             <div class="custom-dropdown">
-              <div class="dropdown-select-box" onclick="${st.isFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
+              <div class="dropdown-select-box" onclick="${isExplicitlyFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
                 <span class="selected-text">Select Classes</span>
                 <span>▼</span>
               </div>
@@ -623,7 +624,7 @@
           <div class="form-group">
             <label>Subjects Taught *</label>
             <div class="custom-dropdown">
-              <div class="dropdown-select-box" onclick="${st.isFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
+              <div class="dropdown-select-box" onclick="${isExplicitlyFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
                 <span class="selected-text">Select Subjects</span>
                 <span>▼</span>
               </div>
@@ -808,6 +809,7 @@
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
         let hasStaff = saved && saved.staff && saved.staff.length > 0;
+        
         let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
         if (!allFrozen) {
@@ -819,7 +821,6 @@
 
         if (hasStaff) {
           saved.staff.forEach(st => {
-            // Only count total staff & genders if the entry is fully frozen/complete
             if (st.isFrozen === true) {
               jskMap[jsk].total++;
               if (st.gender === 'Male') jskMap[jsk].male++;
