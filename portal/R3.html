@@ -36,6 +36,7 @@
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
   .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 3px; }
   .form-group input, .form-group select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+  .input-error { border: 2px solid #dc2626 !important; background-color: #fef2f2 !important; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
@@ -65,7 +66,7 @@
 </div>
 
 <div class="module-header">
-  <div class="module-title" style="width: 100%; margin-bottom: 5px;">♿ CWSN Module (R3 - Cloud Synced)[span_1](start_span)[span_1](end_span)</div>
+  <div class="module-title" style="width: 100%; margin-bottom: 5px;">♿ CWSN Module (R3 - Cloud Synced)[span_0](start_span)[span_0](end_span)</div>
   <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 5px; flex-wrap: nowrap;">
     
     <!-- Session Dropdown -->
@@ -80,18 +81,18 @@
     </div>
 
     <!-- Excel Export Button -->
-    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background: #16a34a; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Excel[span_2](start_span)[span_2](end_span)</button>
+    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background: #16a34a; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Excel[span_1](start_span)[span_1](end_span)</button>
     
     <!-- Print / PDF Button -->
-    <button onclick="window.print()" class="sub-nav-btn" style="background: #d97706; padding: 6px 10px; font-size: 12px; white-space: nowrap;">🖨️ Print[span_3](start_span)[span_3](end_span)</button>
+    <button onclick="window.print()" class="sub-nav-btn" style="background: #d97706; padding: 6px 10px; font-size: 12px; white-space: nowrap;">🖨️ Print[span_2](start_span)[span_2](end_span)</button>
 
     <!-- ☰ Menu Dropdown -->
     <div class="menu-container" id="adminMenuContainer" style="position: relative; display: inline-block;">
-      <button onclick="CwsnApp.toggleMenu()" class="menu-btn" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">☰ Menu[span_4](start_span)[span_4](end_span)</button>
+      <button onclick="CwsnApp.toggleMenu()" class="menu-btn" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">☰ Menu[span_3](start_span)[span_3](end_span)</button>
       <div id="dropdownMenu" class="dropdown-content" style="right: 0; left: auto;">
-        <button onclick="CwsnApp.openTrashBin()">🗑️ Rollback Trash Bin[span_5](start_span)[span_5](end_span)</button>
-        <button onclick="CwsnApp.openAdminRemoveBin()" id="menuAdminRemoveBtn" style="display: none;">🗂️ Admin Remove Bin[span_6](start_span)[span_6](end_span)</button>
-        <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template[span_7](start_span)[span_7](end_span)</button>
+        <button onclick="CwsnApp.openTrashBin()">🗑️ Rollback Trash Bin[span_4](start_span)[span_4](end_span)</button>
+        <button onclick="CwsnApp.openAdminRemoveBin()" id="menuAdminRemoveBtn" style="display: none;">🗂️ Admin Remove Bin[span_5](start_span)[span_5](end_span)</button>
+        <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template[span_6](start_span)[span_6](end_span)</button>
         <label style="cursor: pointer;">
           📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display: none" onchange="CwsnApp.handleBulkUpload(event)">
         </label>
@@ -103,10 +104,10 @@
   
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard[span_8](start_span)[span_8](end_span)</button>
-  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin)[span_9](start_span)[span_9](end_span)</button>
-  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry[span_10](start_span)[span_10](end_span)</button>
-  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports[span_11](start_span)[span_11](end_span)</button>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard[span_7](start_span)[span_7](end_span)</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin)[span_8](start_span)[span_8](end_span)</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry[span_9](start_span)[span_9](end_span)</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports[span_10](start_span)[span_10](end_span)</button>
 </div>
 
 <main class="content-container">
@@ -130,7 +131,7 @@
       </div>
     </div>
     <div class="card">
-      <h3>📊 CWSN Sankul-wise Summary Overview[span_12](start_span)[span_12](end_span)</h3>
+      <h3>📊 CWSN Sankul-wise Summary Overview[span_11](start_span)[span_11](end_span)</h3>
       <div class="tablewrap">
         <table>
           <thead>
@@ -154,20 +155,20 @@
   <section id="cwsnSelection" class="cwsn-section" style="display:none;">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0;">🏫 School-wise CWSN Availability Setup (Admin Only)[span_13](start_span)[span_13](end_span)</h3>
-        <button onclick="CwsnApp.saveSchoolSetupChanges()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;" id="saveSetupBtn">💾 Save Setup Changes[span_14](start_span)[span_14](end_span)</button>
+        <h3 style="margin:0;">🏫 School-wise CWSN Availability Setup (Admin Only)[span_12](start_span)[span_12](end_span)</h3>
+        <button onclick="CwsnApp.saveSchoolSetupChanges()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;" id="saveSetupBtn">💾 Save Setup Changes[span_13](start_span)[span_13](end_span)</button>
       </div>
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
         <select id="selJskFilter" onchange="CwsnApp.renderSchoolSelectionTable()" style="padding:6px; font-weight:bold; border-radius:4px;">
-          <option value="ALL">-- All Sankul --[span_15](start_span)[span_15](end_span)</option>
-          <option value="Bhoura">Bhoura[span_16](start_span)[span_16](end_span)</option>
-          <option value="Bijadehi">Bijadehi[span_17](start_span)[span_17](end_span)</option>
-          <option value="Dhodhramau">Dhodhramau[span_18](start_span)[span_18](end_span)</option>
-          <option value="Kesiya">Kesiya[span_19](start_span)[span_19](end_span)</option>
-          <option value="Kundi">Kundi[span_20](start_span)[span_20](end_span)</option>
-          <option value="Shahpur">Shahpur[span_21](start_span)[span_21](end_span)</option>
-          <option value="Tara">Tara[span_22](start_span)[span_22](end_span)</option>
+          <option value="ALL">-- All Sankul --[span_14](start_span)[span_14](end_span)</option>
+          <option value="Bhoura">Bhoura[span_15](start_span)[span_15](end_span)</option>
+          <option value="Bijadehi">Bijadehi[span_16](start_span)[span_16](end_span)</option>
+          <option value="Dhodhramau">Dhodhramau[span_17](start_span)[span_17](end_span)</option>
+          <option value="Kesiya">Kesiya[span_18](start_span)[span_18](end_span)</option>
+          <option value="Kundi">Kundi[span_19](start_span)[span_19](end_span)</option>
+          <option value="Shahpur">Shahpur[span_20](start_span)[span_20](end_span)</option>
+          <option value="Tara">Tara[span_21](start_span)[span_21](end_span)</option>
         </select>
         <input type="text" id="selSearchBox" placeholder="Search school name or UDISE..." onkeyup="CwsnApp.renderSchoolSelectionTable()" style="flex:1; min-width:200px; padding:6px; border:1px solid #ccc; border-radius:4px;">
       </div>
@@ -180,8 +181,8 @@
               <th>UDISE Code</th>
               <th>Category</th>
               <th>JSK</th>
-              <th>Has CWSN Students? (Yes / No)[span_23](start_span)[span_23](end_span)</th>
-              <th>Admin Freeze / Unfreeze Control[span_24](start_span)[span_24](end_span)</th>
+              <th>Has CWSN Students? (Yes / No)[span_22](start_span)[span_22](end_span)</th>
+              <th>Admin Freeze / Unfreeze Control[span_23](start_span)[span_23](end_span)</th>
             </tr>
           </thead>
           <tbody id="schoolSelectionTableBody"></tbody>
@@ -192,7 +193,7 @@
 
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module[span_25](start_span)[span_25](end_span)</h3>
+      <h3>✍️ School CWSN Data Entry Module[span_24](start_span)[span_24](end_span)</h3>
       <div class="filter-bar">
         <label><b>Select School:</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -207,87 +208,87 @@
           <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <div>
               <label style="font-weight:bold; color:#1d4ed8; font-size:11px;">Expected Boys:</label>
-              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys[span_26](start_span)[span_26](end_span)">
+              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys[span_25](start_span)[span_25](end_span)">
             </div>
             <div>
               <label style="font-weight:bold; color:#db2777; font-size:11px;">Expected Girls:</label>
-              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls[span_27](start_span)[span_27](end_span)">
+              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls[span_26](start_span)[span_26](end_span)">
             </div>
           </div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="color:#071b38; margin:0;">Student Details Entry & Promotion Workflow[span_28](start_span)[span_28](end_span)</h4>
-        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Student[span_29](start_span)[span_29](end_span)</button>
+        <h4 style="color:#071b38; margin:0;">Student Details Entry & Promotion Workflow[span_27](start_span)[span_27](end_span)</h4>
+        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Student[span_28](start_span)[span_28](end_span)</button>
       </div>
 
       <div id="studentCardsContainer">
-        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_30](start_span)[span_30](end_span)</div>
+        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_29](start_span)[span_29](end_span)</div>
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save CWSN Data[span_31](start_span)[span_31](end_span)</button>
+        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save CWSN Data[span_30](start_span)[span_30](end_span)</button>
       </div>
     </div>
   </section>
 
   <section id="cwsnReports" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>📑 CWSN Compilation & Filter Reports[span_32](start_span)[span_32](end_span)</h3>
+      <h3>📑 CWSN Compilation & Filter Reports[span_31](start_span)[span_31](end_span)</h3>
       <div class="filter-bar" id="reportFiltersBar">
         <label><b>JSK Filter:</b></label>
         <select id="reportJskFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="ALL">-- All Sankul --[span_33](start_span)[span_33](end_span)</option>
-          <option value="Bhoura">Bhoura[span_34](start_span)[span_34](end_span)</option>
-          <option value="Bijadehi">Bijadehi[span_35](start_span)[span_35](end_span)</option>
-          <option value="Dhodhramau">Dhodhramau[span_36](start_span)[span_36](end_span)</option>
-          <option value="Kesiya">Kesiya[span_37](start_span)[span_37](end_span)</option>
-          <option value="Kundi">Kundi[span_38](start_span)[span_38](end_span)</option>
-          <option value="Shahpur">Shahpur[span_39](start_span)[span_39](end_span)</option>
-          <option value="Tara">Tara[span_40](start_span)[span_40](end_span)</option>
+          <option value="ALL">-- All Sankul --[span_32](start_span)[span_32](end_span)</option>
+          <option value="Bhoura">Bhoura[span_33](start_span)[span_33](end_span)</option>
+          <option value="Bijadehi">Bijadehi[span_34](start_span)[span_34](end_span)</option>
+          <option value="Dhodhramau">Dhodhramau[span_35](start_span)[span_35](end_span)</option>
+          <option value="Kesiya">Kesiya[span_36](start_span)[span_36](end_span)</option>
+          <option value="Kundi">Kundi[span_37](start_span)[span_37](end_span)</option>
+          <option value="Shahpur">Shahpur[span_38](start_span)[span_38](end_span)</option>
+          <option value="Tara">Tara[span_39](start_span)[span_39](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Disability Filter:</b></label>
         <select id="reportDisabilityFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="ALL">-- All Disabilities --[span_41](start_span)[span_41](end_span)</option>
-          <option value="Specific Learning Disabilities">Specific Learning Disabilities[span_42](start_span)[span_42](end_span)</option>
-          <option value="Intellectual Disability">Intellectual Disability[span_43](start_span)[span_43](end_span)</option>
-          <option value="Locomotor Disability">Locomotor Disability[span_44](start_span)[span_44](end_span)</option>
-          <option value="Blindness">Blindness[span_45](start_span)[span_45](end_span)</option>
-          <option value="Low Vision">Low Vision[span_46](start_span)[span_46](end_span)</option>
-          <option value="Speech and Language Disability">Speech and Language Disability[span_47](start_span)[span_47](end_span)</option>
-          <option value="Sickle Cell Disease">Sickle Cell Disease[span_48](start_span)[span_48](end_span)</option>
-          <option value="Hearing impairment">Hearing impairment[span_49](start_span)[span_49](end_span)</option>
-          <option value="Multiple Disabilities">Multiple Disabilities[span_50](start_span)[span_50](end_span)</option>
-          <option value="Cerebral Palsy">Cerebral Palsy[span_51](start_span)[span_51](end_span)</option>
-          <option value="Thalassemia">Thalassemia[span_52](start_span)[span_52](end_span)</option>
-          <option value="Mental illness">Mental illness[span_53](start_span)[span_53](end_span)</option>
-          <option value="Autism Spectrum Disorder">Autism Spectrum Disorder[span_54](start_span)[span_54](end_span)</option>
-          <option value="Hemophilia">Hemophilia[span_55](start_span)[span_55](end_span)</option>
+          <option value="ALL">-- All Disabilities --[span_40](start_span)[span_40](end_span)</option>
+          <option value="Specific Learning Disabilities">Specific Learning Disabilities[span_41](start_span)[span_41](end_span)</option>
+          <option value="Intellectual Disability">Intellectual Disability[span_42](start_span)[span_42](end_span)</option>
+          <option value="Locomotor Disability">Locomotor Disability[span_43](start_span)[span_43](end_span)</option>
+          <option value="Blindness">Blindness[span_44](start_span)[span_44](end_span)</option>
+          <option value="Low Vision">Low Vision[span_45](start_span)[span_45](end_span)</option>
+          <option value="Speech and Language Disability">Speech and Language Disability[span_46](start_span)[span_46](end_span)</option>
+          <option value="Sickle Cell Disease">Sickle Cell Disease[span_47](start_span)[span_47](end_span)</option>
+          <option value="Hearing impairment">Hearing impairment[span_48](start_span)[span_48](end_span)</option>
+          <option value="Multiple Disabilities">Multiple Disabilities[span_49](start_span)[span_49](end_span)</option>
+          <option value="Cerebral Palsy">Cerebral Palsy[span_50](start_span)[span_50](end_span)</option>
+          <option value="Thalassemia">Thalassemia[span_51](start_span)[span_51](end_span)</option>
+          <option value="Mental illness">Mental illness[span_52](start_span)[span_52](end_span)</option>
+          <option value="Autism Spectrum Disorder">Autism Spectrum Disorder[span_53](start_span)[span_53](end_span)</option>
+          <option value="Hemophilia">Hemophilia[span_54](start_span)[span_54](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Class Filter:</b></label>
         <select id="reportClassFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="ALL">-- All Classes --[span_56](start_span)[span_56](end_span)</option>
-          <option value="Class - 1">Class - 1[span_57](start_span)[span_57](end_span)</option><option value="Class - 2">Class - 2[span_58](start_span)[span_58](end_span)</option><option value="Class - 3">Class - 3[span_59](start_span)[span_59](end_span)</option><option value="Class - 4">Class - 4[span_60](start_span)[span_60](end_span)</option><option value="Class - 5">Class - 5[span_61](start_span)[span_61](end_span)</option>
-          <option value="Class - 6">Class - 6[span_62](start_span)[span_62](end_span)</option><option value="Class - 7">Class - 7[span_63](start_span)[span_63](end_span)</option><option value="Class - 8">Class - 8[span_64](start_span)[span_64](end_span)</option>
+          <option value="ALL">-- All Classes --[span_55](start_span)[span_55](end_span)</option>
+          <option value="Class - 1">Class - 1[span_56](start_span)[span_56](end_span)</option><option value="Class - 2">Class - 2[span_57](start_span)[span_57](end_span)</option><option value="Class - 3">Class - 3[span_58](start_span)[span_58](end_span)</option><option value="Class - 4">Class - 4[span_59](start_span)[span_59](end_span)</option><option value="Class - 5">Class - 5[span_60](start_span)[span_60](end_span)</option>
+          <option value="Class - 6">Class - 6[span_61](start_span)[span_61](end_span)</option><option value="Class - 7">Class - 7[span_62](start_span)[span_62](end_span)</option><option value="Class - 8">Class - 8[span_63](start_span)[span_63](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Report Format:</b></label>
         <select id="reportTypeFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="overall">Overall Students (List)[span_65](start_span)[span_65](end_span)</option>
-          <option value="above40">Disability >= 40% (List)[span_66](start_span)[span_66](end_span)</option>
-          <option value="below40">Disability < 40% (Below / List)[span_67](start_span)[span_67](end_span)</option>
-          <option value="status_report">School Status Report (Pending / Completed)[span_68](start_span)[span_68](end_span)</option>
-          <option value="matrix_overall">Matrix Summary (Overall)[span_69](start_span)[span_69](end_span)</option>
-          <option value="matrix_above40">Matrix Summary (>= 40%)[span_70](start_span)[span_70](end_span)</option>
-          <option value="matrix_below40">Matrix Summary (< 40%)[span_71](start_span)[span_71](end_span)</option>
+          <option value="overall">Overall Students (List)[span_64](start_span)[span_64](end_span)</option>
+          <option value="above40">Disability >= 40% (List)[span_65](start_span)[span_65](end_span)</option>
+          <option value="below40">Disability < 40% (Below / List)[span_66](start_span)[span_66](end_span)</option>
+          <option value="status_report">School Status Report (Pending / Completed)[span_67](start_span)[span_67](end_span)</option>
+          <option value="matrix_overall">Matrix Summary (Overall)[span_68](start_span)[span_68](end_span)</option>
+          <option value="matrix_above40">Matrix Summary (>= 40%)[span_69](start_span)[span_69](end_span)</option>
+          <option value="matrix_below40">Matrix Summary (< 40%)[span_70](start_span)[span_70](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Rows:</b></label>
         <select id="reportPageSize" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="50" selected>50 Rows[span_72](start_span)[span_72](end_span)</option>
-          <option value="100">100 Rows[span_73](start_span)[span_73](end_span)</option>
-          <option value="200">200 Rows[span_74](start_span)[span_74](end_span)</option>
-          <option value="300">300 Rows[span_75](start_span)[span_75](end_span)</option>
-          <option value="ALL">All Rows[span_76](start_span)[span_76](end_span)</option>
+          <option value="50" selected>50 Rows[span_71](start_span)[span_71](end_span)</option>
+          <option value="100">100 Rows[span_72](start_span)[span_72](end_span)</option>
+          <option value="200">200 Rows[span_73](start_span)[span_73](end_span)</option>
+          <option value="300">300 Rows[span_74](start_span)[span_74](end_span)</option>
+          <option value="ALL">All Rows[span_75](start_span)[span_75](end_span)</option>
         </select>
       </div>
       <div class="tablewrap">
@@ -297,7 +298,7 @@
   </section>
 </main>
 
-<!-- Custom Modal Box for OK/Cancel Dialogs (Replaces blocking native alert) -->
+<!-- Custom Modal Box for OK/Cancel Dialogs -->
 <div id="customAlertModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px;">
   <div style="background:#fff; border-radius:12px; max-width:400px; width:100%; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-align:center;">
     <h3 id="customAlertTitle" style="margin-top:0; color:#071b38;">Alert</h3>
@@ -837,7 +838,7 @@
         expGirls.value = ""; expGirls.disabled = true;
         addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
         saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
-        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>`;
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_76](start_span)[span_76](end_span)</div>`;
         return;
       }
 
@@ -908,27 +909,27 @@
         </div>
         <div class="form-grid">
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Samagra ID (9 Digits) *</label>
+            <label>Samagra ID (9 Digits) *</label>
             <input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID" ${hasSamagra ? 'readonly style="background:#e2e8f0; cursor:not-allowed;" title="Samagra ID is locked after entry"' : ''}>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Student Name (Min 3 Letters) *</label>
+            <label>Student Name (Min 3 Letters) *</label>
             <input type="text" class="s-name" value="${st.name || ''}" placeholder="Student Name">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Father Name *</label>
+            <label>Father Name *</label>
             <input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Mother Name *</label>
+            <label>Mother Name *</label>
             <input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Gender *</label>
+            <label>Gender *</label>
             <select class="s-gender"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Category *</label>
+            <label>Category *</label>
             <select class="s-cast">
               <option value="" ${!st.cast ? 'selected' : ''}>-- Select --</option>
               <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
@@ -938,31 +939,31 @@
             </select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Class *</label>
+            <label>Class *</label>
             <select class="s-class">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Mobile No. (10 Digits) *</label>
+            <label>Mobile No. (10 Digits) *</label>
             <input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">UDID No. *</label>
+            <label>UDID No. *</label>
             <input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No.">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Aadhar No. (12 Digits) *</label>
+            <label>Aadhar No. (12 Digits) *</label>
             <input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">DOB (DD/MM/YYYY) *</label>
+            <label>DOB (DD/MM/YYYY) *</label>
             <input type="text" class="s-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Disability Type *</label>
+            <label>Disability Type *</label>
             <select class="s-dis">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Certificate *</label>
+            <label>Certificate *</label>
             <select class="s-cert">
               <option value="" ${!st.cert ? 'selected' : ''}>-- Select --</option>
               <option value="Yes" ${st.cert === 'Yes' ? 'selected' : ''}>Yes</option>
@@ -970,45 +971,45 @@
             </select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Disability % *</label>
+            <label>Disability % *</label>
             <select class="s-percent">
               <option value="" ${!st.percent ? 'selected' : ''}>-- Select % --</option>
               ${this.disabilityPercents.map(p => `<option value="${p}" ${st.percent === p ? 'selected' : ''}>${p}</option>`).join('')}
             </select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Equipment *</label>
+            <label>Equipment *</label>
             <input type="text" class="s-equip" value="${st.equipment || ''}" placeholder="Equipment">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Address *</label>
+            <label>Address *</label>
             <input type="text" class="s-address" value="${st.address || ''}" placeholder="Address">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Pin Code (6 Digits) *</label>
+            <label>Pin Code (6 Digits) *</label>
             <input type="text" class="s-pin" maxlength="6" value="${st.pin || ''}" placeholder="6 Digit Pin">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Bank Name *</label>
+            <label>Bank Name *</label>
             <select class="s-bank">
               <option value="" ${!st.bank ? 'selected' : ''}>-- Select Bank --</option>
               ${this.bankList.map(b => `<option value="${b}" ${st.bank === b ? 'selected' : ''}>${b}</option>`).join('')}
             </select>
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">IFSC Code *</label>
+            <label>IFSC Code *</label>
             <input type="text" class="s-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Account No. *</label>
+            <label>Account No. *</label>
             <input type="text" class="s-acc" value="${st.accNo || ''}" placeholder="Account No.">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Teacher Name *</label>
+            <label>Teacher Name *</label>
             <input type="text" class="s-teacher" value="${st.teacher || ''}" placeholder="Teacher Name">
           </div>
           <div class="form-group">
-            <label style="color:#dc2626; font-weight:bold;">Teacher Mobile (10 Digits) *</label>
+            <label>Teacher Mobile (10 Digits) *</label>
             <input type="text" class="s-teachermob" maxlength="10" value="${st.teacherMob || ''}" placeholder="Teacher Mob">
           </div>
         </div>
@@ -1336,49 +1337,74 @@
       let hasError = false;
 
       for (let card of cards) {
-        let samagra = card.querySelector('.s-samagra').value.trim();
-        let name = card.querySelector('.s-name').value.trim();
-        let father = card.querySelector('.s-father').value.trim();
-        let mother = card.querySelector('.s-mother').value.trim();
-        let cast = card.querySelector('.s-cast').value;
-        let cls = card.querySelector('.s-class').value;
-        let mobile = card.querySelector('.s-mobile').value.trim();
-        let udid = card.querySelector('.s-udid').value.trim();
-        let aadhar = card.querySelector('.s-aadhar').value.trim();
-        let dob = card.querySelector('.s-dob').value.trim();
-        let disability = card.querySelector('.s-dis').value;
-        let cert = card.querySelector('.s-cert').value;
-        let percent = card.querySelector('.s-percent').value;
-        let equipment = card.querySelector('.s-equip').value.trim();
-        let address = card.querySelector('.s-address').value.trim();
-        let pin = card.querySelector('.s-pin').value.trim();
-        let bank = card.querySelector('.s-bank').value;
-        let ifsc = card.querySelector('.s-ifsc').value.trim();
-        let accNo = card.querySelector('.s-acc').value.trim();
-        let teacher = card.querySelector('.s-teacher').value.trim();
-        let teacherMob = card.querySelector('.s-teachermob').value.trim();
+        let samagraInput = card.querySelector('.s-samagra');
+        let nameInput = card.querySelector('.s-name');
+        let fatherInput = card.querySelector('.s-father');
+        let motherInput = card.querySelector('.s-mother');
+        let castInput = card.querySelector('.s-cast');
+        let clsInput = card.querySelector('.s-class');
+        let mobileInput = card.querySelector('.s-mobile');
+        let udidInput = card.querySelector('.s-udid');
+        let aadharInput = card.querySelector('.s-aadhar');
+        let dobInput = card.querySelector('.s-dob');
+        let disInput = card.querySelector('.s-dis');
+        let certInput = card.querySelector('.s-cert');
+        let percentInput = card.querySelector('.s-percent');
+        let equipInput = card.querySelector('.s-equip');
+        let addressInput = card.querySelector('.s-address');
+        let pinInput = card.querySelector('.s-pin');
+        let bankInput = card.querySelector('.s-bank');
+        let ifscInput = card.querySelector('.s-ifsc');
+        let accInput = card.querySelector('.s-acc');
+        let teacherInput = card.querySelector('.s-teacher');
+        let teacherMobInput = card.querySelector('.s-teachermob');
 
-        if (!name || name.length < 3) { this.showAlert("Student Name must be at least 3 letters!"); hasError = true; break; }
-        if (!father) { this.showAlert("Father Name is mandatory!"); hasError = true; break; }
-        if (!mother) { this.showAlert("Mother Name is mandatory!"); hasError = true; break; }
-        if (!cast) { this.showAlert("Please select student's CAST Category!"); hasError = true; break; }
-        if (!cls) { this.showAlert("Please select Class!"); hasError = true; break; }
-        if (!udid) { this.showAlert("UDID No. is mandatory!"); hasError = true; break; }
-        if (!dob) { this.showAlert("DOB is mandatory!"); hasError = true; break; }
-        if (!cert) { this.showAlert("Please select Certificate status (Yes/No)!"); hasError = true; break; }
-        if (!percent) { this.showAlert("Please select Disability Percentage category!"); hasError = true; break; }
-        if (!equipment) { this.showAlert("Equipment field is mandatory!"); hasError = true; break; }
-        if (!address) { this.showAlert("Address is mandatory!"); hasError = true; break; }
-        if (!bank) { this.showAlert("Please select Bank Name!"); hasError = true; break; }
-        if (!ifsc) { this.showAlert("IFSC Code is mandatory!"); hasError = true; break; }
-        if (!accNo) { this.showAlert("Account No. is mandatory!"); hasError = true; break; }
-        if (!teacher) { this.showAlert("Teacher Name is mandatory!"); hasError = true; break; }
+        // Reset previous error highlights
+        card.querySelectorAll('input, select').forEach(el => el.classList.remove('input-error'));
 
-        if (!(/^\d{9}$/.test(samagra))) { this.showAlert("Samagra ID must be exactly 9 digits!"); hasError = true; break; }
-        if (!(/^\d{10}$/.test(mobile))) { this.showAlert("Parent's Mobile No. must be exactly 10 digits!"); hasError = true; break; }
-        if (!(/^\d{12}$/.test(aadhar))) { this.showAlert("Aadhar Number must be exactly 12 digits!"); hasError = true; break; }
-        if (!(/^\d{6}$/.test(pin))) { this.showAlert("Pin Code must be exactly 6 digits!"); hasError = true; break; }
-        if (!(/^\d{10}$/.test(teacherMob))) { this.showAlert("Teacher Mobile No. must be exactly 10 digits!"); hasError = true; break; }
+        let samagra = samagraInput.value.trim();
+        let name = nameInput.value.trim();
+        let father = fatherInput.value.trim();
+        let mother = motherInput.value.trim();
+        let cast = castInput.value;
+        let cls = clsInput.value;
+        let mobile = mobileInput.value.trim();
+        let udid = udidInput.value.trim();
+        let aadhar = aadharInput.value.trim();
+        let dob = dobInput.value.trim();
+        let disability = disInput.value;
+        let cert = certInput.value;
+        let percent = percentInput.value;
+        let equipment = equipInput.value.trim();
+        let address = addressInput.value.trim();
+        let pin = pinInput.value.trim();
+        let bank = bankInput.value;
+        let ifsc = ifscInput.value.trim();
+        let accNo = accInput.value.trim();
+        let teacher = teacherInput.value.trim();
+        let teacherMob = teacherMobInput.value.trim();
+
+        if (!name || name.length < 3) { nameInput.classList.add('input-error'); this.showAlert("Student Name must be at least 3 letters!"); hasError = true; break; }
+        if (!father) { fatherInput.classList.add('input-error'); this.showAlert("Father Name is mandatory!"); hasError = true; break; }
+        if (!mother) { motherInput.classList.add('input-error'); this.showAlert("Mother Name is mandatory!"); hasError = true; break; }
+        if (!cast) { castInput.classList.add('input-error'); this.showAlert("Please select student's CAST Category!"); hasError = true; break; }
+        if (!cls) { clsInput.classList.add('input-error'); this.showAlert("Please select Class!"); hasError = true; break; }
+        if (!udid) { udidInput.classList.add('input-error'); this.showAlert("UDID No. is mandatory!"); hasError = true; break; }
+        if (!dob) { dobInput.classList.add('input-error'); this.showAlert("DOB is mandatory!"); hasError = true; break; }
+        if (!cert) { certInput.classList.add('input-error'); this.showAlert("Please select Certificate status (Yes/No)!"); hasError = true; break; }
+        if (!percent) { percentInput.classList.add('input-error'); this.showAlert("Please select Disability Percentage category!"); hasError = true; break; }
+        if (!equipment) { equipInput.classList.add('input-error'); this.showAlert("Equipment field is mandatory!"); hasError = true; break; }
+        if (!address) { addressInput.classList.add('input-error'); this.showAlert("Address is mandatory!"); hasError = true; break; }
+        if (!bank) { bankInput.classList.add('input-error'); this.showAlert("Please select Bank Name!"); hasError = true; break; }
+        if (!ifsc) { ifscInput.classList.add('input-error'); this.showAlert("IFSC Code is mandatory!"); hasError = true; break; }
+        if (!accNo) { accInput.classList.add('input-error'); this.showAlert("Account No. is mandatory!"); hasError = true; break; }
+        if (!teacher) { teacherInput.classList.add('input-error'); this.showAlert("Teacher Name is mandatory!"); hasError = true; break; }
+
+        if (!(/^\d{9}$/.test(samagra))) { samagraInput.classList.add('input-error'); this.showAlert("Samagra ID must be exactly 9 digits!"); hasError = true; break; }
+        if (!(/^\d{10}$/.test(mobile))) { mobileInput.classList.add('input-error'); this.showAlert("Parent's Mobile No. must be exactly 10 digits!"); hasError = true; break; }
+        if (!(/^\d{12}$/.test(aadhar))) { aadharInput.classList.add('input-error'); this.showAlert("Aadhar Number must be exactly 12 digits!"); hasError = true; break; }
+        if (!(/^\d{6}$/.test(pin))) { pinInput.classList.add('input-error'); this.showAlert("Pin Code must be exactly 6 digits!"); hasError = true; break; }
+        if (!(/^\d{10}$/.test(teacherMob))) { teacherMobInput.classList.add('input-error'); this.showAlert("Teacher Mobile No. must be exactly 10 digits!"); hasError = true; break; }
 
         students.push({
           samagra: samagra, name: name,
