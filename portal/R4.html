@@ -351,6 +351,8 @@
               schoolMap[udise] = { schoolName: r[0] || "", jsk: r[3] || "Bhoura", staff: [] };
             }
 
+            let isRowComplete = r[4] && r[5] && r[7] && r[9]; // Basic validation check for bulk upload rows
+
             schoolMap[udise].staff.push({
               nature: r[4] || "Regular",
               name: r[5] || "",
@@ -368,7 +370,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: true
+              isFrozen: Boolean(isRowComplete)
             });
           }
 
@@ -521,6 +523,7 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
+      // Strict check: Only treat as frozen if explicitly true AND data is complete
       let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
       card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
@@ -677,6 +680,7 @@
       card.querySelectorAll('input, select').forEach(el => el.disabled = false);
       card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Incomplete]';
       card.querySelectorAll('.dropdown-select-box').forEach(box => box.setAttribute('onclick', 'R4App.toggleCustomDropdown(this)'));
+      this.saveData(); // Save state immediately as incomplete
     },
 
     freezeCard(btn) {
@@ -692,7 +696,7 @@
       let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
       let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
       if (clsArr.length === 0 || subjArr.length === 0 || !isValid) {
-        alert("Validation Notice: Please complete all mandatory fields before freezing this staff record.");
+        alert("Validation Notice: Please complete all mandatory fields and select classes/subjects before freezing this staff record.");
         return;
       }
       card.classList.add('frozen');
@@ -751,19 +755,30 @@
 
       cards.forEach(card => {
         let isFrozen = card.classList.contains('frozen');
+        
+        // Double check validation: if any field is empty or class/subject not selected, force isFrozen to false
+        let nameVal = card.querySelector('.t-name').value.trim();
+        let uniqueVal = card.querySelector('.t-unique').value.trim();
+        let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
+        let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
+
+        if (!nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
+          isFrozen = false;
+        }
+
         staff.push({
           nature: card.querySelector('.t-nature').value,
-          name: card.querySelector('.t-name').value.trim(),
+          name: nameVal,
           father: card.querySelector('.t-father').value.trim(),
-          uniqueId: card.querySelector('.t-unique').value.trim(),
+          uniqueId: uniqueVal,
           cast: card.querySelector('.t-cast').value,
           gender: card.querySelector('.t-gender').value,
           dob: card.querySelector('.t-dob').value.trim(),
           mobile: card.querySelector('.t-mobile').value.trim(),
           aadhar: card.querySelector('.t-aadhar').value.trim(),
           email: card.querySelector('.t-email').value.trim(),
-          classes: Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value),
-          subjects: Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value),
+          classes: clsArr,
+          subjects: subjArr,
           bank: card.querySelector('.t-bank').value,
           branch: card.querySelector('.t-branch').value.trim(),
           accNo: card.querySelector('.t-acc').value.trim(),
@@ -810,7 +825,7 @@
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
         let hasStaff = saved && saved.staff && saved.staff.length > 0;
         
-        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
+        let allFrozen = hasStaff && saved.staff.length > 0 && saved.staff.every(st => st.isFrozen === true);
 
         if (!allFrozen) {
           jskMap[jsk].pendingSchools++;
@@ -972,7 +987,7 @@
           let schoolTotal = hasStaff ? saved.staff.length : 0;
           let schoolComplete = 0;
           
-          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
+          let allFrozen = hasStaff && saved.staff.length > 0 && saved.staff.every(st => st.isFrozen === true);
 
           if (hasStaff) {
             saved.staff.forEach(st => {
