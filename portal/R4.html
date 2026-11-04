@@ -368,7 +368,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: false // Default false on bulk upload until validated/frozen
+              isFrozen: false // Default false on bulk upload until explicitly frozen
             });
           }
 
@@ -521,7 +521,7 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
-      // Strict check: Default to false unless explicitly true
+      // STRICT CHECK: Default is false. Only true if explicitly frozen.
       let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
       card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
@@ -752,6 +752,7 @@
       let staff = [];
 
       cards.forEach(card => {
+        // ONLY TRUE if the card explicitly has the 'frozen' CSS class (set by Save & Freeze button)
         let isFrozen = card.classList.contains('frozen');
         
         let nameVal = card.querySelector('.t-name').value.trim();
@@ -759,8 +760,7 @@
         let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
         let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
 
-        // If card is not explicitly frozen or has empty fields, force isFrozen to false
-        if (!card.classList.contains('frozen') || !nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
+        if (!isFrozen || !nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
           isFrozen = false;
         }
 
@@ -1192,7 +1192,7 @@
       await fetch(this.cloudApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
+        body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: targetUdise, payload: JSON.stringify(saved) })
       });
 
       await fetch(this.cloudApiUrl, {
