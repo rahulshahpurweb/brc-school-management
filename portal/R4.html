@@ -351,8 +351,6 @@
               schoolMap[udise] = { schoolName: r[0] || "", jsk: r[3] || "Bhoura", staff: [] };
             }
 
-            let isRowComplete = r[4] && r[5] && r[7] && r[9]; // Basic validation check for bulk upload rows
-
             schoolMap[udise].staff.push({
               nature: r[4] || "Regular",
               name: r[5] || "",
@@ -370,7 +368,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: Boolean(isRowComplete)
+              isFrozen: false // Default false on bulk upload until validated/frozen
             });
           }
 
@@ -523,7 +521,7 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
-      // Strict check: Only treat as frozen if explicitly true AND data is complete
+      // Strict check: Default to false unless explicitly true
       let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
       card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
@@ -680,7 +678,7 @@
       card.querySelectorAll('input, select').forEach(el => el.disabled = false);
       card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Incomplete]';
       card.querySelectorAll('.dropdown-select-box').forEach(box => box.setAttribute('onclick', 'R4App.toggleCustomDropdown(this)'));
-      this.saveData(); // Save state immediately as incomplete
+      this.saveData();
     },
 
     freezeCard(btn) {
@@ -756,13 +754,13 @@
       cards.forEach(card => {
         let isFrozen = card.classList.contains('frozen');
         
-        // Double check validation: if any field is empty or class/subject not selected, force isFrozen to false
         let nameVal = card.querySelector('.t-name').value.trim();
         let uniqueVal = card.querySelector('.t-unique').value.trim();
         let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
         let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
 
-        if (!nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
+        // If card is not explicitly frozen or has empty fields, force isFrozen to false
+        if (!card.classList.contains('frozen') || !nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
           isFrozen = false;
         }
 
@@ -1194,7 +1192,7 @@
       await fetch(this.cloudApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: targetUdise, payload: JSON.stringify(saved) })
+        body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
       });
 
       await fetch(this.cloudApiUrl, {
