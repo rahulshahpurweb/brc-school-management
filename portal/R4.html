@@ -154,7 +154,7 @@
 
   <section id="r4Reports" class="r4-section" style="display:none;">
     <div class="card">
-      <h3>📑 Teacher Compilation Reports & Advanced Formats</h3>
+      <h3>📑 Teacher Compilation Reports & Formats</h3>
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
         <select id="reportJskFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold;">
@@ -168,13 +168,25 @@
           <option value="Tara">Tara</option>
         </select>
 
-        <label style="margin-left:10px;"><b>Report Format:</b></label>
+        <label style="margin-left:5px;"><b>Report Format:</b></label>
         <select id="reportFormatSelect" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold; color:#1d4ed8;">
           <option value="F_1">F_1: Detailed Teacher List</option>
-          <option value="F_2">F_2: School-wise Teacher Count (Male / Female / Total & Status)</option>
+          <option value="F_2">F_2: School-wise Teacher Count (Male / Female / Total)</option>
           <option value="F_3">F_3: JSK-wise Summary & Pending Status</option>
-          <option value="F_4">F_4: Class-wise Teacher Distribution Report</option>
-          <option value="F_5">F_5: Gender-wise Breakdown Report (Male / Female)</option>
+        </select>
+
+        <label style="margin-left:5px;"><b>F4 (Gender Filter):</b></label>
+        <select id="reportGenderFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold;">
+          <option value="ALL">All Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+
+        <label style="margin-left:5px;"><b>F5 (Class Filter):</b></label>
+        <select id="reportClassFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold;">
+          <option value="ALL">All Classes</option>
+          <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option>
+          <option value="Class 5">Class 5</option><option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option>
         </select>
       </div>
 
@@ -763,13 +775,15 @@
         jskMap[jsk].schools++;
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-        if (!saved || !saved.staff || saved.staff.length === 0) {
+        let hasStaff = saved && saved.staff && saved.staff.length > 0;
+        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen);
+
+        if (!allFrozen) {
           jskMap[jsk].pending++;
           jskMap[jsk].teacherPending++;
-        } else {
-          let hasUnfrozen = saved.staff.some(st => !st.isFrozen);
-          if (hasUnfrozen) jskMap[jsk].teacherPending++;
+        }
 
+        if (hasStaff) {
           saved.staff.forEach(st => {
             if (st.isFrozen) {
               jskMap[jsk].total++;
@@ -812,6 +826,8 @@
     renderReports() {
       let jskFilter = document.getElementById('reportJskFilter').value;
       let format = document.getElementById('reportFormatSelect').value;
+      let genderFilter = document.getElementById('reportGenderFilter').value;
+      let classFilter = document.getElementById('reportClassFilter').value;
       let table = document.getElementById('r4ReportTable');
       let html = "";
       let countText = "";
@@ -835,9 +851,14 @@
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
 
           if (!hasStaff) {
-            html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="16" style="color:#64748b;">No staff data entered yet</td></tr>`;
+            if (genderFilter === "ALL" && classFilter === "ALL") {
+              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="16" style="color:#64748b;">No staff data entered yet</td></tr>`;
+            }
           } else {
             saved.staff.forEach(st => {
+              if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+              if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+
               if (st.isFrozen) {
                 if (st.nature === 'Regular') totalReg++; else totalGuest++;
               }
@@ -894,6 +915,9 @@
 
           if (hasStaff) {
             saved.staff.forEach(st => {
+              if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+              if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+
               if (st.isFrozen) {
                 if (st.gender === 'Male') maleCount++;
                 else if (st.gender === 'Female') femaleCount++;
@@ -952,6 +976,9 @@
           }
           if (saved && saved.staff) {
             saved.staff.forEach(st => {
+              if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+              if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+
               if (st.isFrozen) {
                 jskMap[jsk].total++;
                 if (st.gender === 'Male') jskMap[jsk].male++;
@@ -986,76 +1013,6 @@
         </tr>`;
         html += `</tbody>`;
         countText = `JSK Summary View | Total Schools: ${tSch}, Total Staff: ${tTot}, Pending: ${tPend}`;
-
-      } else if (format === "F_4") {
-        html = `<thead><tr>
-          <th>Sr. No.</th><th>School Name</th><th>UDISE Code</th><th>Sankul (JSK)</th>
-          <th>Teacher Name</th><th>Classes Taught</th>
-        </tr></thead><tbody>`;
-
-        let idx = 1;
-        this.allSchools.forEach(s => {
-          let jsk = s.jsk || 'Bhoura';
-          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
-
-          let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-          if (saved && saved.staff) {
-            saved.staff.forEach(st => {
-              if (!st.isFrozen) return;
-              let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
-              html += `<tr>
-                <td>${idx++}</td>
-                <td style="text-align:left;">${s.name}</td>
-                <td>${s.udise}</td>
-                <td>${jsk}</td>
-                <td style="text-align:left; font-weight:bold;">${st.name}</td>
-                <td>${clsStr}</td>
-              </tr>`;
-            });
-          }
-        });
-        if (idx === 1) html += `<tr><td colspan="6" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
-        html += `<tr style="background:#f1f5f9; font-weight:bold;">
-          <td colspan="5">Subtotal / Grand Total Count</td>
-          <td style="color:#1d4ed8;">${idx - 1}</td>
-        </tr>`;
-        html += `</tbody>`;
-        countText = `Class-wise Distribution Report (F_4) | Total Records: ${idx - 1}`;
-
-      } else if (format === "F_5") {
-        html = `<thead><tr>
-          <th>Sr. No.</th><th>School Name</th><th>UDISE Code</th><th>Sankul (JSK)</th>
-          <th>Teacher Name</th><th>Gender</th><th>Appointment Type</th>
-        </tr></thead><tbody>`;
-
-        let idx = 1;
-        this.allSchools.forEach(s => {
-          let jsk = s.jsk || 'Bhoura';
-          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
-
-          let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-          if (saved && saved.staff) {
-            saved.staff.forEach(st => {
-              if (!st.isFrozen) return;
-              html += `<tr>
-                <td>${idx++}</td>
-                <td style="text-align:left;">${s.name}</td>
-                <td>${s.udise}</td>
-                <td>${jsk}</td>
-                <td style="text-align:left; font-weight:bold;">${st.name}</td>
-                <td><span style="color:${st.gender==='Male'?'#1d4ed8':'#d97706'}; font-weight:bold;">${st.gender}</span></td>
-                <td>${st.nature}</td>
-              </tr>`;
-            });
-          }
-        });
-        if (idx === 1) html += `<tr><td colspan="7" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
-        html += `<tr style="background:#f1f5f9; font-weight:bold;">
-          <td colspan="6">Subtotal / Grand Total Count</td>
-          <td style="color:#1d4ed8;">${idx - 1}</td>
-        </tr>`;
-        html += `</tbody>`;
-        countText = `Gender-wise Breakdown Report (F_5) | Total Records: ${idx - 1}`;
       }
 
       table.innerHTML = html;
