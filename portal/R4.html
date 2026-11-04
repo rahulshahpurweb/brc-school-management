@@ -303,9 +303,20 @@
     },
 
     downloadTemplate() {
-      // Updated and cleaned CSV Template headers matching exact R4 structure
-      let headers = ["School Name", "UDISE Code", "School Category", "JSK", "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", "Cast", "Gender", "DOB", "Mobile No.", "Aadhar No.", "Email ID", "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code"];
-      let sample = ["GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", "Regular", "Ramesh Kumar", "Sohan Lal", "AA1234", "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", "Class 1, Class 2", "Hindi, Math", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234"];
+      // Properly wrapped CSV template where comma-containing fields are enclosed in double quotes (e.g. "Class 1, Class 2")
+      let headers = [
+        "School Name", "UDISE Code", "School Category", "JSK", 
+        "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", 
+        "Cast", "Gender", "DOB", "Mobile No.", "Aadhar No.", "Email ID", 
+        "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code"
+      ];
+      let sample = [
+        "GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", 
+        "Regular", "Ramesh Kumar", "Sohan Lal", "AA1234", 
+        "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", 
+        "\"Class 1, Class 2\"", "\"Hindi, Math\"", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234"
+      ];
+      
       let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), sample.join(",")].join("\n");
       let encodedUri = encodeURI(csvContent);
       let link = document.createElement("a");
@@ -883,7 +894,7 @@
         html = `<thead><tr>
           <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Status</th><th>Appointment</th>
           <th>Teacher Name</th><th>Parent/Guardian</th><th>Unique ID</th><th>Cast</th><th>Gender</th>
-          <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes</th><th>Subjects</th>
+          <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes Taught</th><th>Subjects Taught</th>
           <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th>
         </tr></thead><tbody>`;
 
@@ -928,8 +939,8 @@
                 <td>${st.mobile}</td>
                 <td>${st.aadhar}</td>
                 <td>${st.email}</td>
-                <td>${clsStr}</td>
-                <td>${subjStr}</td>
+                <td style="text-align:left;">${clsStr}</td>
+                <td style="text-align:left;">${subjStr}</td>
                 <td>${st.bank}</td>
                 <td>${st.branch}</td>
                 <td>${st.accNo}</td>
@@ -1189,7 +1200,7 @@
   };
 
   window.addEventListener('click', function(e) {
-    if (!e.target.closest('.custom-dropdown')) {
+    .target.closest('.custom-dropdown')) {
       document.querySelectorAll('.dropdown-list-container').forEach(d => d.classList.remove('open'));
     }
   });
