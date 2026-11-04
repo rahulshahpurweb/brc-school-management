@@ -974,7 +974,6 @@
           let schoolTotal = hasStaff ? saved.staff.length : 0;
           let schoolComplete = 0;
           
-          // Strict School Complete check: Must have staff and ALL staff must be frozen (no red/error fields)
           let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
           if (hasStaff) {
