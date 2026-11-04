@@ -244,10 +244,10 @@
           if (Array.isArray(cloudTeachers)) {
             cloudTeachers.forEach(item => {
               if (item.udise && item.payload) {
-                // FORCE RESET: Agar purane data mein isFrozen true hai par user ne manually freeze nahi kiya, to ise false kar do
+                // FORCE RESET: Purane saare cached records ko strictly unfreeze kar do jab tak user khud freeze na kare
                 if (item.payload.staff) {
                   item.payload.staff.forEach(st => {
-                    if (st.isFrozen !== true) st.isFrozen = false;
+                    st.isFrozen = false; 
                   });
                 }
                 localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
@@ -374,7 +374,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: false // Default false, must be frozen manually
+              isFrozen: false // Default false, must be explicitly frozen
             });
           }
 
@@ -532,7 +532,7 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
-      // STRICT CHECK: Default is false unless explicitly true
+      // STRICT CHECK: By default false unless explicitly frozen via button
       let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
       card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
@@ -763,7 +763,6 @@
       let staff = [];
 
       cards.forEach(card => {
-        // ONLY TRUE if the card explicitly has the 'frozen' CSS class (set by Save & Freeze button)
         let isFrozen = card.classList.contains('frozen');
         
         let nameVal = card.querySelector('.t-name').value.trim();
