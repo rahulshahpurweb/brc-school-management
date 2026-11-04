@@ -53,7 +53,7 @@
   .selected-tag { background: #1d4ed8; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
 
   .tablewrap { width: 100%; overflow-x: auto; max-height: 600px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1200px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 900px; }
   th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; position: sticky; top: 0; z-index: 10; }
   
@@ -80,7 +80,7 @@
     <div class="menu-container" id="adminMenuContainer" style="display:none;">
       <button onclick="R4App.toggleMenu()" class="menu-btn">Admin Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
-        <button onclick="R4App.openTrashBin()">Rollback Trash Bin</button>
+        <button onclick="R4App.openTrashBin()">Rollback & Transfer Bin</button>
         <button onclick="R4App.downloadTemplate()">Download CSV Template</button>
         <label style="cursor:pointer;">
           Bulk Upload Teacher File <input type="file" id="bulkExcelFile" accept=".xlsx, .csv" style="display:none" onchange="R4App.handleBulkUpload(event)">
@@ -93,7 +93,7 @@
 <div class="sub-nav">
   <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard (JSK Summary)</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">Staff Data Entry</button>
-  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports (School & Filter)</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports (School Count)</button>
 </div>
 
 <main class="content-container">
@@ -153,7 +153,7 @@
 
   <section id="r4Reports" class="r4-section" style="display:none;">
     <div class="card">
-      <h3>📑 School-wise Teacher Count Report & Filters</h3>
+      <h3>📑 Report 1: School-wise Teacher Count Report</h3>
       <div class="filter-bar">
         <label><b>JSK:</b></label>
         <select id="reportJskFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px;">
@@ -921,10 +921,27 @@
           alert("Error: Invalid UDISE code or school not found!");
           return;
         }
-        let confirmTransfer = confirm(`Verify School: ${targetSch.name} (${targetSch.udise})?\n\nClick OK to confirm and transfer.`);
-        if (confirmTransfer) {
-          this.executeRestore(rowIdx, st, "other", targetUdise);
-        }
+
+        // Popup verification box with school name and checkbox confirmation
+        let verifyHtml = `
+          <div id="verifyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;">
+            <div style="background:#fff; border-radius:12px; max-width:450px; width:100%; padding:20px; text-align:center;">
+              <h3 style="color:#071b38; margin-top:0;">🏫 Verify Target School</h3>
+              <p style="font-size:14px; color:#475569;">You are transferring teacher <b>${st.name}</b> to:</p>
+              <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin:15px 0; font-weight:bold; color:#1d4ed8;">
+                ${targetSch.name} (UDISE: ${targetSch.udise})
+              </div>
+              <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:20px;">
+                <input type="checkbox" id="confirmSchoolChk" style="width:16px; height:16px;"> I confirm this is the correct school.
+              </label>
+              <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="document.getElementById('verifyModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Cancel</button>
+                <button onclick="if(document.getElementById('confirmSchoolChk').checked){ document.getElementById('verifyModal').remove(); R4App.executeRestore(${rowIdx}, ${JSON.stringify(st)}, 'other', '${targetSch.udise}'); } else { alert('Please check the confirmation box.'); }" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', verifyHtml);
       }
     },
 
@@ -953,7 +970,7 @@
         body: new URLSearchParams({ action: "deleteTeacherTrash", type: "delete", session: activeSess, rowIdx: rowIdx })
       });
 
-      document.getElementById('trashModal').remove();
+      if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
       alert("Success: Record successfully restored/transferred to UDISE " + targetUdise);
       this.loadSchoolForm();
     },
