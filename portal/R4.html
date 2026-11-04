@@ -53,7 +53,7 @@
   .selected-tag { background: #1d4ed8; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; }
 
   .tablewrap { width: 100%; overflow-x: auto; max-height: 600px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 900px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1500px; }
   th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: center; white-space: nowrap; }
   th { background: #071b38; color: #fff; position: sticky; top: 0; z-index: 10; }
   
@@ -80,7 +80,7 @@
     <div class="menu-container" id="adminMenuContainer" style="display:none;">
       <button onclick="R4App.toggleMenu()" class="menu-btn">Admin Menu ▾</button>
       <div id="dropdownMenu" class="dropdown-content">
-        <button onclick="R4App.openTrashBin()">Rollback & Transfer Bin</button>
+        <button onclick="R4App.openTrashBin()">Rollback Trash Bin</button>
         <button onclick="R4App.downloadTemplate()">Download CSV Template</button>
         <label style="cursor:pointer;">
           Bulk Upload Teacher File <input type="file" id="bulkExcelFile" accept=".xlsx, .csv" style="display:none" onchange="R4App.handleBulkUpload(event)">
@@ -91,15 +91,15 @@
 </div>
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard (JSK Summary)</button>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="R4App.switchTab('dashboard')">Dashboard</button>
   <button class="sub-nav-btn" id="navEntryBtn" onclick="R4App.switchTab('entry')">Staff Data Entry</button>
-  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports (School Count)</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="R4App.switchTab('reports')">Reports & Filters</button>
 </div>
 
 <main class="content-container">
   <section id="r4Dash" class="r4-section">
     <div class="card">
-      <h3>📊 JSK-wise Report Summary (Classes 1-5 & 6-8 Breakdown)</h3>
+      <h3>Teacher & Staff Summary Overview (JSK Wise)</h3>
       <div class="tablewrap">
         <table>
           <thead>
@@ -107,10 +107,10 @@
               <th>S.No.</th>
               <th>Sankul (JSK)</th>
               <th>Total Schools</th>
-              <th>Primary (1-5) [Male / Female]</th>
-              <th>Middle (6-8) [Male / Female]</th>
+              <th>Primary (1-5) [M / F]</th>
+              <th>Middle (6-8) [M / F]</th>
               <th>Pending Schools</th>
-              <th>Grand Total Staff</th>
+              <th>Total Staff</th>
             </tr>
           </thead>
           <tbody id="dashSummaryTable"></tbody>
@@ -153,7 +153,7 @@
 
   <section id="r4Reports" class="r4-section" style="display:none;">
     <div class="card">
-      <h3>📑 Report 1: School-wise Teacher Count Report</h3>
+      <h3>School-wise & Advanced Filter Reports</h3>
       <div class="filter-bar">
         <label><b>JSK:</b></label>
         <select id="reportJskFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px;">
@@ -173,10 +173,29 @@
           <option value="Complete">Complete</option>
           <option value="Pending">Pending</option>
         </select>
+
+        <label><b>Class:</b></label>
+        <select id="reportClassFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Classes --</option>
+          <option value="Class 1">Class 1</option><option value="Class 2">Class 2</option><option value="Class 3">Class 3</option><option value="Class 4">Class 4</option>
+          <option value="Class 5">Class 5</option><option value="Class 6">Class 6</option><option value="Class 7">Class 7</option><option value="Class 8">Class 8</option>
+        </select>
+
+        <label><b>Cast:</b></label>
+        <select id="reportCastFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Cast --</option>
+          <option value="GEN">GEN</option><option value="SC">SC</option><option value="ST">ST</option><option value="OBC">OBC</option>
+        </select>
+
+        <label><b>Gender:</b></label>
+        <select id="reportGenderFilter" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Gender --</option>
+          <option value="Male">Male</option><option value="Female">Female</option>
+        </select>
       </div>
 
       <div style="margin-bottom: 12px; font-weight: bold; color: #1d4ed8;" id="reportSummaryCount">
-        Total Schools: 0 | Total Teachers: 0
+        Total Records: 0 | Subtotals: Regular: 0, Guest: 0
       </div>
 
       <div class="tablewrap">
@@ -789,8 +808,8 @@
           <td>${i++}</td>
           <td style="text-align:left; font-weight:bold;">${jsk}</td>
           <td>${d.schools}</td>
-          <td style="color:#16a34a; font-weight:bold;">${d.pMale} Male / ${d.pFemale} Female</td>
-          <td style="color:#d97706; font-weight:bold;">${d.mMale} Male / ${d.mFemale} Female</td>
+          <td style="color:#16a34a; font-weight:bold;">${d.pMale} M / ${d.pFemale} F</td>
+          <td style="color:#d97706; font-weight:bold;">${d.mMale} M / ${d.mFemale} F</td>
           <td style="color:#dc2626; font-weight:bold;">${d.pending}</td>
           <td style="font-weight:bold; color:#1d4ed8;">${d.total}</td>
         </tr>`;
@@ -798,31 +817,30 @@
       tbody.innerHTML += `<tr style="background:#f1f5f9; font-weight:bold;">
         <td colspan="2">Grand Total</td>
         <td>${tSch}</td>
-        <td style="color:#16a34a;">${tPM} Male / ${tPF} Female</td>
-        <td style="color:#d97706;">${tMM} Male / ${tMF} Female</td>
-        <td style="color:#dc2626;">${tPend} Schools Pending</td>
-        <td style="color:#1d4ed8;">${tTot} Teachers</td>
+        <td style="color:#16a34a;">${tPM} M / ${tPF} F</td>
+        <td style="color:#d97706;">${tMM} M / ${tMF} F</td>
+        <td style="color:#dc2626;">${tPend}</td>
+        <td style="color:#1d4ed8;">${tTot}</td>
       </tr>`;
     },
 
     renderReports() {
       let jskFilter = document.getElementById('reportJskFilter').value;
       let statusFilter = document.getElementById('reportStatusFilter').value;
+      let classFilter = document.getElementById('reportClassFilter').value;
+      let castFilter = document.getElementById('reportCastFilter').value;
+      let genderFilter = document.getElementById('reportGenderFilter').value;
       let table = document.getElementById('r4ReportTable');
 
       let html = `<thead><tr>
-        <th>Sr. No.</th>
-        <th>School Name</th>
-        <th>UDISE Code</th>
-        <th>Sankul (JSK)</th>
-        <th>Status</th>
-        <th>Male Teachers</th>
-        <th>Female Teachers</th>
-        <th>Total Teachers</th>
+        <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Status</th><th>Appointment</th>
+        <th>Teacher Name</th><th>Parent/Guardian</th><th>Unique ID</th><th>Cast</th><th>Gender</th>
+        <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes</th><th>Subjects</th>
+        <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th>
       </tr></thead><tbody>`;
 
       let idx = 1;
-      let totalSchCount = 0, grandTotalTeachers = 0;
+      let totalReg = 0, totalGuest = 0;
 
       this.allSchools.forEach(s => {
         let jsk = s.jsk || 'Bhoura';
@@ -830,40 +848,55 @@
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
         let hasStaff = saved && saved.staff && saved.staff.length > 0;
-        let maleCount = 0, femaleCount = 0;
 
-        if (hasStaff) {
+        if (statusFilter === "Complete" && !hasStaff) return;
+        if (statusFilter === "Pending" && hasStaff) return;
+
+        if (!hasStaff && statusFilter !== "Complete") {
+          html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="16" style="color:#64748b;">No staff data entered yet</td></tr>`;
+        } else if (hasStaff) {
           saved.staff.forEach(st => {
-            if (st.gender === 'Male') maleCount++;
-            else if (st.gender === 'Female') femaleCount++;
+            if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+            if (castFilter !== "ALL" && st.cast !== castFilter) return;
+            if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+
+            if (st.nature === 'Regular') totalReg++; else totalGuest++;
+
+            let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
+            let subjStr = Array.isArray(st.subjects) ? st.subjects.join(", ") : "";
+
+            html += `<tr>
+              <td>${idx++}</td>
+              <td style="text-align:left;">${s.name}</td>
+              <td>${s.udise}</td>
+              <td>${jsk}</td>
+              <td><span style="color:${st.isFrozen ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen ? 'Complete' : 'Draft'}</span></td>
+              <td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td>
+              <td style="text-align:left; font-weight:bold;">${st.name}</td>
+              <td>${st.father}</td>
+              <td>${st.uniqueId}</td>
+              <td>${st.cast}</td>
+              <td>${st.gender}</td>
+              <td>${st.dob}</td>
+              <td>${st.mobile}</td>
+              <td>${st.aadhar}</td>
+              <td>${st.email}</td>
+              <td>${clsStr}</td>
+              <td>${subjStr}</td>
+              <td>${st.bank}</td>
+              <td>${st.branch}</td>
+              <td>${st.accNo}</td>
+              <td>${st.ifsc}</td>
+            </tr>`;
           });
         }
-
-        let isComplete = hasStaff && maleCount + femaleCount > 0;
-        if (statusFilter === "Complete" && !isComplete) return;
-        if (statusFilter === "Pending" && isComplete) return;
-
-        totalSchCount++;
-        let totalSchStaff = maleCount + femaleCount;
-        grandTotalTeachers += totalSchStaff;
-
-        html += `<tr>
-          <td>${idx++}</td>
-          <td style="text-align:left; font-weight:bold;">${s.name}</td>
-          <td>${s.udise}</td>
-          <td>${jsk}</td>
-          <td><span style="color:${isComplete ? '#16a34a' : '#dc2626'}; font-weight:bold;">${isComplete ? 'Complete' : 'Pending'}</span></td>
-          <td style="color:#1d4ed8; font-weight:bold;">${maleCount}</td>
-          <td style="color:#d97706; font-weight:bold;">${femaleCount}</td>
-          <td style="font-weight:bold;">${totalSchStaff}</td>
-        </tr>`;
       });
 
-      if (idx === 1) html += `<tr><td colspan="8" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
+      if (idx === 1) html += `<tr><td colspan="21" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
       html += `</tbody>`;
       table.innerHTML = html;
 
-      document.getElementById('reportSummaryCount').textContent = `Total Filtered Schools: ${totalSchCount} | Total Teachers Count: ${grandTotalTeachers}`;
+      document.getElementById('reportSummaryCount').textContent = `Total Filtered Records: ${idx - 1} | Subtotals -> Regular: ${totalReg}, Guest: ${totalGuest}`;
     },
 
     async openTrashBin() {
@@ -889,18 +922,20 @@
               <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Close</button>
             </div>
             <table>
-              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>Original Index</th><th>Deleted At</th><th>Restore Action</th></tr></thead>
+              <thead><tr><th>Select</th><th>Teacher Name</th><th>Unique ID</th><th>Original Index</th><th>Deleted At</th><th>Restore Action</th></tr></thead>
               <tbody>
       `;
       trashList.forEach(item => {
         let st = item.data;
         modalHtml += `<tr>
+          <td><input type="checkbox" class="trash-chk" data-rowidx="${item.rowIdx}" data-student='${JSON.stringify(st)}'></td>
           <td>${st.name || '-'}</td>
           <td>${st.uniqueId || '-'}</td>
           <td>${st.originalIndex !== undefined ? st.originalIndex + 1 : 'End'}</td>
           <td>${st.deletedAt || '-'}</td>
           <td>
-            <button onclick='R4App.promptRestore(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Restore / Transfer</button>
+            <button onclick='R4App.restoreSpecificRecord(${item.rowIdx}, ${JSON.stringify(st)}, "same")' style="background:#16a34a; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Same School</button>
+            <button onclick='R4App.restoreSpecificRecord(${item.rowIdx}, ${JSON.stringify(st)}, "other")' style="background:#1d4ed8; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Other School</button>
           </td>
         </tr>`;
       });
@@ -908,55 +943,31 @@
       document.body.insertAdjacentHTML('beforeend', modalHtml);
     },
 
-    promptRestore(rowIdx, st) {
-      let choice = confirm("Do you want to restore this teacher to the Same School?\n\nClick 'OK' for Same School, or 'Cancel' for Other School.");
-      if (choice) {
-        this.executeRestore(rowIdx, st, "same");
-      } else {
-        let targetUdise = prompt("Enter Target School UDISE Code for Transfer:");
-        if (!targetUdise) return;
-        targetUdise = targetUdise.trim();
+    async restoreSpecificRecord(rowIdx, st, type) {
+      let targetUdise = "";
+      if (type === "other") {
+        let inputUdise = prompt("Enter Target School UDISE Code for Transfer:");
+        if (!inputUdise) return;
+        targetUdise = inputUdise.trim();
         let targetSch = this.allSchools.find(s => String(s.udise).trim() === targetUdise);
         if (!targetSch) {
           alert("Error: Invalid UDISE code or school not found!");
           return;
         }
-
-        // Popup verification box with school name and checkbox confirmation
-        let verifyHtml = `
-          <div id="verifyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;">
-            <div style="background:#fff; border-radius:12px; max-width:450px; width:100%; padding:20px; text-align:center;">
-              <h3 style="color:#071b38; margin-top:0;">🏫 Verify Target School</h3>
-              <p style="font-size:14px; color:#475569;">You are transferring teacher <b>${st.name}</b> to:</p>
-              <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin:15px 0; font-weight:bold; color:#1d4ed8;">
-                ${targetSch.name} (UDISE: ${targetSch.udise})
-              </div>
-              <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:20px;">
-                <input type="checkbox" id="confirmSchoolChk" style="width:16px; height:16px;"> I confirm this is the correct school.
-              </label>
-              <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="document.getElementById('verifyModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Cancel</button>
-                <button onclick="if(document.getElementById('confirmSchoolChk').checked){ document.getElementById('verifyModal').remove(); R4App.executeRestore(${rowIdx}, ${JSON.stringify(st)}, 'other', '${targetSch.udise}'); } else { alert('Please check the confirmation box.'); }" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
-              </div>
-            </div>
-          </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', verifyHtml);
-      }
-    },
-
-    async executeRestore(rowIdx, st, type, otherUdise = "") {
-      let targetUdise = type === "other" ? otherUdise : document.getElementById('r4SchoolSelect').value;
-      if (!targetUdise) {
-        alert("Please select a school in Data Entry tab first.");
-        return;
+      } else {
+        targetUdise = document.getElementById('r4SchoolSelect').value;
+        if (!targetUdise) {
+          alert("Please select a school in Data Entry tab first to restore to same school.");
+          return;
+        }
       }
 
+      // Fetch target school staff
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[]}');
-      let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
-      saved.staff.splice(insertIdx, 0, st);
+      saved.staff.splice(st.originalIndex !== undefined ? st.originalIndex : saved.staff.length, 0, st);
       localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
 
+      // Sync cloud
       let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
       await fetch(this.cloudApiUrl, {
         method: "POST",
@@ -964,20 +975,21 @@
         body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: targetUdise, payload: JSON.stringify(saved) })
       });
 
+      // Delete from trash
       await fetch(this.cloudApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ action: "deleteTeacherTrash", type: "delete", session: activeSess, rowIdx: rowIdx })
       });
 
-      if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
+      document.getElementById('trashModal').remove();
       alert("Success: Record successfully restored/transferred to UDISE " + targetUdise);
       this.loadSchoolForm();
     },
 
     exportExcel() {
       let table = document.getElementById('r4ReportTable');
-      !table || table.rows.length <= 1 ? alert("No report data available.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_School_Teacher_Count_Report.xlsx");
+      !table || table.rows.length <= 1 ? alert("No report data available.") : XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_Teacher_Staff_Report.xlsx");
     }
   };
 
