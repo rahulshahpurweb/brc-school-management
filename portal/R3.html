@@ -309,6 +309,7 @@
       "Hearing impairment", "Multiple Disabilities", "Cerebral Palsy", "Thalassemia", 
       "Mental illness", "Autism Spectrum Disorder", "Hemophilia"
     ],
+    bankList: ["SBI", "CBIN", "BOB", "PNB", "UCO", "AXIS", "HDFC", "ICICI", "OTHER"],
 
     showLoader(show) {
       let overlay = document.getElementById("loadingOverlay");
@@ -509,8 +510,8 @@
         1, "GHSS MODEL SHAHPUR(6 to 12)", "23351003914", "Shahpur", "302877484",
         "Chetan Verma", "Sard", "Rina", "Boy", "SC",
         "Class - 6", "9876543210", "UDID123", "123456789012", "15/08/2012",
-        "Specific Learning Disabilities", "Yes", "40 Percent", "Hearing Aid",
-        "Shahpur", "460440", "CBI", "CBIN0280760", "2227888040",
+        "Specific Learning Disabilities", "Yes", "40 - 49 percent", "Hearing Aid",
+        "Shahpur", "460440", "SBI", "CBIN0280760", "2227888040",
         "Ramesh Kumar", "9425012345"
       ];
       let wb = XLSX.utils.book_new();
@@ -564,8 +565,8 @@
               aadhar: r[13] ? String(r[13]).trim() : "",
               dob: r[14] ? String(r[14]).trim() : "",
               disability: r[15] ? String(r[15]).trim() : "Locomotor Disability",
-              cert: r[16] ? String(r[16]).trim() : "",
-              percent: r[17] ? String(r[17]).trim() : "",
+              cert: r[16] ? String(r[16]).trim() : "Yes",
+              percent: r[17] ? String(r[17]).trim() : "0 - 39 percent",
               equipment: r[18] ? String(r[18]).trim() : "",
               address: r[19] ? String(r[19]).trim() : "",
               pin: r[20] ? String(r[20]).trim() : "",
@@ -865,36 +866,115 @@
         </div>
         <div class="form-grid">
           <div class="form-group">
-            <label>Samagra ID (9 Digits) *</label>
+            <label style="color:#dc2626; font-weight:bold;">Samagra ID (9 Digits) *</label>
             <input type="text" class="s-samagra" maxlength="9" value="${st.samagra || ''}" placeholder="9 Digit Samagra ID" ${hasSamagra ? 'readonly style="background:#e2e8f0; cursor:not-allowed;" title="Samagra ID is locked after entry"' : ''}>
           </div>
-          <div class="form-group"><label>Student Name *</label><input type="text" class="s-name" value="${st.name || ''}" placeholder="Student Name"></div>
-          <div class="form-group"><label>Father Name</label><input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name"></div>
-          <div class="form-group"><label>Mother Name</label><input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name"></div>
-          <div class="form-group"><label>Gender</label><select class="s-gender"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select></div>
-          <div class="form-group"><label>Category *</label><select class="s-cast">
-            <option value="" ${!st.cast ? 'selected' : ''}>-- Select --</option>
-            <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
-            <option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option>
-            <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
-            <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
-          </select></div>
-          <div class="form-group"><label>Class</label><select class="s-class">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-          <div class="form-group"><label>Mobile No. (10 Digits)</label><input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile"></div>
-          <div class="form-group"><label>UDID No.</label><input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No."></div>
-          <div class="form-group"><label>Aadhar No. (12 Digits)</label><input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar"></div>
-          <div class="form-group"><label>DOB (DD/MM/YYYY)</label><input type="text" class="s-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY"></div>
-          <div class="form-group"><label>Disability Type</label><select class="s-dis">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
-          <div class="form-group"><label>Certificate (Yes/No)</label><input type="text" class="s-cert" value="${st.cert || ''}" placeholder="Yes/No"></div>
-          <div class="form-group"><label>Disability %</label><input type="text" class="s-percent" value="${st.percent || ''}" placeholder="%"></div>
-          <div class="form-group"><label>Equipment</label><input type="text" class="s-equip" value="${st.equipment || ''}" placeholder="Equipment"></div>
-          <div class="form-group"><label>Address</label><input type="text" class="s-address" value="${st.address || ''}" placeholder="Address"></div>
-          <div class="form-group"><label>Pin Code</label><input type="text" class="s-pin" value="${st.pin || ''}" placeholder="Pin"></div>
-          <div class="form-group"><label>Bank Name</label><input type="text" class="s-bank" value="${st.bank || ''}" placeholder="Bank"></div>
-          <div class="form-group"><label>IFSC Code</label><input type="text" class="s-ifsc" value="${st.ifsc || ''}" placeholder="IFSC"></div>
-          <div class="form-group"><label>Account No.</label><input type="text" class="s-acc" value="${st.accNo || ''}" placeholder="Account No."></div>
-          <div class="form-group"><label>Teacher Name</label><input type="text" class="s-teacher" value="${st.teacher || ''}" placeholder="Teacher Name"></div>
-          <div class="form-group"><label>Teacher Mobile</label><input type="text" class="s-teachermob" maxlength="10" value="${st.teacherMob || ''}" placeholder="Teacher Mob"></div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Student Name (Min 3 Letters) *</label>
+            <input type="text" class="s-name" value="${st.name || ''}" placeholder="Student Name">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Father Name *</label>
+            <input type="text" class="s-father" value="${st.father || ''}" placeholder="Father Name">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Mother Name *</label>
+            <input type="text" class="s-mother" value="${st.mother || ''}" placeholder="Mother Name">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Gender *</label>
+            <select class="s-gender"><option value="Boy" ${st.gender === 'Boy' ? 'selected' : ''}>Boy</option><option value="Girl" ${st.gender === 'Girl' ? 'selected' : ''}>Girl</option></select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Category *</label>
+            <select class="s-cast">
+              <option value="" ${!st.cast ? 'selected' : ''}>-- Select --</option>
+              <option value="SC" ${st.cast === 'SC' ? 'selected' : ''}>SC</option>
+              <option value="ST" ${st.cast === 'ST' ? 'selected' : ''}>ST</option>
+              <option value="OBC" ${st.cast === 'OBC' ? 'selected' : ''}>OBC</option>
+              <option value="GEN" ${st.cast === 'GEN' ? 'selected' : ''}>GEN</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Class *</label>
+            <select class="s-class">${['Class - 1','Class - 2','Class - 3','Class - 4','Class - 5','Class - 6','Class - 7','Class - 8'].map(c => `<option value="${c}" ${st.cls === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Mobile No. (10 Digits) *</label>
+            <input type="text" class="s-mobile" maxlength="10" value="${st.mobile || ''}" placeholder="10 Digit Mobile">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">UDID No. *</label>
+            <input type="text" class="s-udid" value="${st.udid || ''}" placeholder="UDID No.">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Aadhar No. (12 Digits) *</label>
+            <input type="text" class="s-aadhar" maxlength="12" value="${st.aadhar || ''}" placeholder="12 Digit Aadhar">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">DOB (DD/MM/YYYY) *</label>
+            <input type="text" class="s-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Disability Type *</label>
+            <select class="s-dis">${this.disabilityTypes.map(d => `<option value="${d}" ${st.disability === d ? 'selected' : ''}>${d}</option>`).join('')}</select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Certificate *</label>
+            <select class="s-cert">
+              <option value="" ${!st.cert ? 'selected' : ''}>-- Select --</option>
+              <option value="Yes" ${st.cert === 'Yes' ? 'selected' : ''}>Yes</option>
+              <option value="No" ${st.cert === 'No' ? 'selected' : ''}>No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Disability % *</label>
+            <select class="s-percent">
+              <option value="" ${!st.percent ? 'selected' : ''}>-- Select % --</option>
+              <option value="0 - 39 percent" ${st.percent === '0 - 39 percent' ? 'selected' : ''}>0 - 39 percent</option>
+              <option value="40 - 49 percent" ${st.percent === '40 - 49 percent' ? 'selected' : ''}>40 - 49 percent</option>
+              <option value="50 - 59 percent" ${st.percent === '50 - 59 percent' ? 'selected' : ''}>50 - 59 percent</option>
+              <option value="60 - 69 percent" ${st.percent === '60 - 69 percent' ? 'selected' : ''}>60 - 69 percent</option>
+              <option value="70 - 79 percent" ${st.percent === '70 - 79 percent' ? 'selected' : ''}>70 - 79 percent</option>
+              <option value="80 - 89 percent" ${st.percent === '80 - 89 percent' ? 'selected' : ''}>80 - 89 percent</option>
+              <option value="90 - 100 percent" ${st.percent === '90 - 100 percent' ? 'selected' : ''}>90 - 100 percent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Equipment *</label>
+            <input type="text" class="s-equip" value="${st.equipment || ''}" placeholder="Equipment">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Address *</label>
+            <input type="text" class="s-address" value="${st.address || ''}" placeholder="Address">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Pin Code (6 Digits) *</label>
+            <input type="text" class="s-pin" maxlength="6" value="${st.pin || ''}" placeholder="6 Digit Pin">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Bank Name *</label>
+            <select class="s-bank">
+              <option value="" ${!st.bank ? 'selected' : ''}>-- Select Bank --</option>
+              ${this.bankList.map(b => `<option value="${b}" ${st.bank === b ? 'selected' : ''}>${b}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">IFSC Code *</label>
+            <input type="text" class="s-ifsc" value="${st.ifsc || ''}" placeholder="IFSC Code">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Account No. *</label>
+            <input type="text" class="s-acc" value="${st.accNo || ''}" placeholder="Account No.">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Teacher Name *</label>
+            <input type="text" class="s-teacher" value="${st.teacher || ''}" placeholder="Teacher Name">
+          </div>
+          <div class="form-group">
+            <label style="color:#dc2626; font-weight:bold;">Teacher Mobile (10 Digits) *</label>
+            <input type="text" class="s-teachermob" maxlength="10" value="${st.teacherMob || ''}" placeholder="Teacher Mob">
+          </div>
         </div>
         <div style="margin-top:12px; display:flex; justify-content:flex-end;">
           <button type="button" onclick="CwsnApp.saveSingleStudent(this)" style="background:#0284c7; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">💾 Save Student</button>
@@ -1218,28 +1298,60 @@
       cards.forEach(card => {
         let samagra = card.querySelector('.s-samagra').value.trim();
         let name = card.querySelector('.s-name').value.trim();
+        let father = card.querySelector('.s-father').value.trim();
+        let mother = card.querySelector('.s-mother').value.trim();
         let cast = card.querySelector('.s-cast').value;
-        let aadhar = card.querySelector('.s-aadhar').value.trim();
+        let cls = card.querySelector('.s-class').value;
         let mobile = card.querySelector('.s-mobile').value.trim();
+        let udid = card.querySelector('.s-udid').value.trim();
+        let aadhar = card.querySelector('.s-aadhar').value.trim();
         let dob = card.querySelector('.s-dob').value.trim();
+        let disability = card.querySelector('.s-dis').value;
+        let cert = card.querySelector('.s-cert').value;
+        let percent = card.querySelector('.s-percent').value;
+        let equipment = card.querySelector('.s-equip').value.trim();
+        let address = card.querySelector('.s-address').value.trim();
+        let pin = card.querySelector('.s-pin').value.trim();
+        let bank = card.querySelector('.s-bank').value;
+        let ifsc = card.querySelector('.s-ifsc').value.trim();
+        let accNo = card.querySelector('.s-acc').value.trim();
+        let teacher = card.querySelector('.s-teacher').value.trim();
         let teacherMob = card.querySelector('.s-teachermob').value.trim();
 
-        if (!name) { alert("Student Name is mandatory!"); hasError = true; return; }
+        if (!name || name.length < 3) { alert("Student Name must be at least 3 letters!"); hasError = true; return; }
+        if (!father) { alert("Father Name is mandatory!"); hasError = true; return; }
+        if (!mother) { alert("Mother Name is mandatory!"); hasError = true; return; }
         if (!cast) { alert("Please select student's CAST Category!"); hasError = true; return; }
+        if (!cls) { alert("Please select Class!"); hasError = true; return; }
+        if (!udid) { alert("UDID No. is mandatory!"); hasError = true; return; }
+        if (!dob) { alert("DOB is mandatory!"); hasError = true; return; }
+        if (!cert) { alert("Please select Certificate status (Yes/No)!"); hasError = true; return; }
+        if (!percent) { alert("Please select Disability Percentage category!"); hasError = true; return; }
+        if (!equipment) { alert("Equipment field is mandatory!"); hasError = true; return; }
+        if (!address) { alert("Address is mandatory!"); hasError = true; return; }
+        if (!bank) { alert("Please select Bank Name!"); hasError = true; return; }
+        if (!ifsc) { alert("IFSC Code is mandatory!"); hasError = true; return; }
+        if (!accNo) { alert("Account No. is mandatory!"); hasError = true; return; }
+        if (!teacher) { alert("Teacher Name is mandatory!"); hasError = true; return; }
+
         if (!(/^\d{9}$/.test(samagra))) { alert("Samagra ID must be exactly 9 digits!"); hasError = true; return; }
+        if (!(/^\d{10}$/.test(mobile))) { alert("Parent's Mobile No. must be exactly 10 digits!"); hasError = true; return; }
+        if (!(/^\d{12}$/.test(aadhar))) { alert("Aadhar Number must be exactly 12 digits!"); hasError = true; return; }
+        if (!(/^\d{6}$/.test(pin))) { alert("Pin Code must be exactly 6 digits!"); hasError = true; return; }
+        if (!(/^\d{10}$/.test(teacherMob))) { alert("Teacher Mobile No. must be exactly 10 digits!"); hasError = true; return; }
 
         students.push({
           samagra: samagra, name: name,
-          father: card.querySelector('.s-father').value, mother: card.querySelector('.s-mother').value,
+          father: father, mother: mother,
           gender: card.querySelector('.s-gender').value, cast: cast,
-          cls: card.querySelector('.s-class').value, mobile: mobile,
-          udid: card.querySelector('.s-udid').value, aadhar: aadhar,
-          dob: dob, disability: card.querySelector('.s-dis').value,
-          cert: card.querySelector('.s-cert').value, percent: card.querySelector('.s-percent').value,
-          equipment: card.querySelector('.s-equip').value, address: card.querySelector('.s-address').value,
-          pin: card.querySelector('.s-pin').value, bank: card.querySelector('.s-bank').value,
-          ifsc: card.querySelector('.s-ifsc').value, accNo: card.querySelector('.s-acc').value,
-          teacher: card.querySelector('.s-teacher').value, teacherMob: teacherMob
+          cls: cls, mobile: mobile,
+          udid: udid, aadhar: aadhar,
+          dob: dob, disability: disability,
+          cert: cert, percent: percent,
+          equipment: equipment, address: address,
+          pin: pin, bank: bank,
+          ifsc: ifsc, accNo: accNo,
+          teacher: teacher, teacherMob: teacherMob
         });
       });
 
@@ -1499,11 +1611,11 @@
               let cName = st.cls || "Class - 1";
               let gender = (st.gender || "").toLowerCase();
               
-              let pctStr = String(st.percent || "").replace(/[^0-9]/g, "");
-              let pct = parseInt(pctStr) || 0;
+              let percentStr = st.percent || "";
+              let isAbove40 = percentStr !== "0 - 39 percent" && percentStr !== "";
 
-              if (matrixMode === 'above40' && pct < 40) return;
-              if (matrixMode === 'below40' && pct >= 40) return;
+              if (matrixMode === 'above40' && !isAbove40) return;
+              if (matrixMode === 'below40' && isAbove40) return;
 
               if (matrixData[dType] && matrixData[dType][cName]) {
                 if (gender.includes('boy')) {
@@ -1594,11 +1706,11 @@
             if (disFilter !== "ALL" && st.disability !== disFilter) return;
             if (classFilter !== "ALL" && st.cls !== classFilter) return;
 
-            let pctStr = String(st.percent || "").replace(/[^0-9]/g, "");
-            let pct = parseInt(pctStr) || 0;
+            let percentStr = st.percent || "";
+            let isAbove40 = percentStr !== "0 - 39 percent" && percentStr !== "";
 
-            if (reportType === 'above40' && pct < 40) return;
-            if (reportType === 'below40' && pct >= 40) return;
+            if (reportType === 'above40' && !isAbove40) return;
+            if (reportType === 'below40' && isAbove40) return;
 
             matchedStudents.push({ s, st, udise, jsk });
           });
