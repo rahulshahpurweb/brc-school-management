@@ -310,6 +310,10 @@
       "Mental illness", "Autism Spectrum Disorder", "Hemophilia"
     ],
     bankList: ["SBI", "CBIN", "BOB", "PNB", "UCO", "AXIS", "HDFC", "ICICI", "OTHER"],
+    disabilityPercents: [
+      "0 - 39 percent", "40 - 49 percent", "50 - 59 percent", 
+      "60 - 69 percent", "70 - 79 percent", "80 - 89 percent", "90 - 100 percent"
+    ],
 
     showLoader(show) {
       let overlay = document.getElementById("loadingOverlay");
@@ -931,13 +935,7 @@
             <label style="color:#dc2626; font-weight:bold;">Disability % *</label>
             <select class="s-percent">
               <option value="" ${!st.percent ? 'selected' : ''}>-- Select % --</option>
-              <option value="0 - 39 percent" ${st.percent === '0 - 39 percent' ? 'selected' : ''}>0 - 39 percent</option>
-              <option value="40 - 49 percent" ${st.percent === '40 - 49 percent' ? 'selected' : ''}>40 - 49 percent</option>
-              <option value="50 - 59 percent" ${st.percent === '50 - 59 percent' ? 'selected' : ''}>50 - 59 percent</option>
-              <option value="60 - 69 percent" ${st.percent === '60 - 69 percent' ? 'selected' : ''}>60 - 69 percent</option>
-              <option value="70 - 79 percent" ${st.percent === '70 - 79 percent' ? 'selected' : ''}>70 - 79 percent</option>
-              <option value="80 - 89 percent" ${st.percent === '80 - 89 percent' ? 'selected' : ''}>80 - 89 percent</option>
-              <option value="90 - 100 percent" ${st.percent === '90 - 100 percent' ? 'selected' : ''}>90 - 100 percent</option>
+              ${this.disabilityPercents.map(p => `<option value="${p}" ${st.percent === p ? 'selected' : ''}>${p}</option>`).join('')}
             </select>
           </div>
           <div class="form-group">
