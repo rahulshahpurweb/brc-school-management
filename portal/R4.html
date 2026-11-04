@@ -303,7 +303,6 @@
     },
 
     downloadTemplate() {
-      // Properly wrapped CSV template where comma-containing fields are enclosed in double quotes (e.g. "Class 1, Class 2")
       let headers = [
         "School Name", "UDISE Code", "School Category", "JSK", 
         "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", 
@@ -1200,7 +1199,7 @@
   };
 
   window.addEventListener('click', function(e) {
-    .target.closest('.custom-dropdown')) {
+    if (!e.target.closest('.custom-dropdown')) {
       document.querySelectorAll('.dropdown-list-container').forEach(d => d.classList.remove('open'));
     }
   });
