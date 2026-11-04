@@ -368,7 +368,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: true
+              isFrozen: false
             });
           }
 
@@ -521,12 +521,13 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
+      let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
-      card.className = 'teacher-card ' + (st.isFrozen ? 'frozen' : '');
+      card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
 
       let selectedClasses = Array.isArray(st.classes) ? st.classes : [];
       let selectedSubjects = Array.isArray(st.subjects) ? st.subjects : [];
-      let disabledAttr = st.isFrozen ? 'disabled' : '';
+      let disabledAttr = isExplicitlyFrozen ? 'disabled' : '';
       
       let classesHtml = this.classesList.map(c => `<label><input type="checkbox" class="t-class-chk" value="${c}" ${selectedClasses.includes(c) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-class-chk', 'Select Classes')"> ${c}</label>`).join('');
       let subjectsHtml = this.subjectsList.map(sub => `<label><input type="checkbox" class="t-subj-chk" value="${sub}" ${selectedSubjects.includes(sub) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-subj-chk', 'Select Subjects')"> ${sub}</label>`).join('');
@@ -534,7 +535,7 @@
       
       card.innerHTML = `
         <div class="teacher-card-header">
-          <span>Staff Member [Status: ${st.isFrozen ? '🔒 Frozen / Saved' : '✍️ Editing'}]</span>
+          <span>Staff Member [Status: ${isExplicitlyFrozen ? '🔒 Frozen / Saved' : '✍️ Incomplete'}]</span>
           <div style="display:flex; gap:6px;">
             <button type="button" onclick="R4App.editCard(this)" style="background:#d97706; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">✏️ Edit</button>
             <button type="button" onclick="R4App.freezeCard(this)" style="background:#16a34a; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">🔒 Save & Freeze</button>
@@ -610,7 +611,7 @@
           <div class="form-group">
             <label>Classes Taught *</label>
             <div class="custom-dropdown">
-              <div class="dropdown-select-box" onclick="${st.isFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
+              <div class="dropdown-select-box" onclick="${isExplicitlyFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
                 <span class="selected-text">Select Classes</span>
                 <span>▼</span>
               </div>
@@ -623,7 +624,7 @@
           <div class="form-group">
             <label>Subjects Taught *</label>
             <div class="custom-dropdown">
-              <div class="dropdown-select-box" onclick="${st.isFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
+              <div class="dropdown-select-box" onclick="${isExplicitlyFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
                 <span class="selected-text">Select Subjects</span>
                 <span>▼</span>
               </div>
@@ -674,8 +675,9 @@
       let card = btn.closest('.teacher-card');
       card.classList.remove('frozen');
       card.querySelectorAll('input, select').forEach(el => el.disabled = false);
-      card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Editing]';
+      card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Incomplete]';
       card.querySelectorAll('.dropdown-select-box').forEach(box => box.setAttribute('onclick', 'R4App.toggleCustomDropdown(this)'));
+      this.saveData();
     },
 
     freezeCard(btn) {
@@ -691,7 +693,7 @@
       let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
       let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
       if (clsArr.length === 0 || subjArr.length === 0 || !isValid) {
-        alert("Validation Notice: Please complete all mandatory fields before freezing this staff record.");
+        alert("Validation Notice: Please complete all mandatory fields and select classes/subjects before freezing this staff record.");
         return;
       }
       card.classList.add('frozen');
@@ -750,19 +752,29 @@
 
       cards.forEach(card => {
         let isFrozen = card.classList.contains('frozen');
+        
+        let nameVal = card.querySelector('.t-name').value.trim();
+        let uniqueVal = card.querySelector('.t-unique').value.trim();
+        let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
+        let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
+
+        if (!isFrozen || !nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
+          isFrozen = false;
+        }
+
         staff.push({
           nature: card.querySelector('.t-nature').value,
-          name: card.querySelector('.t-name').value.trim(),
+          name: nameVal,
           father: card.querySelector('.t-father').value.trim(),
-          uniqueId: card.querySelector('.t-unique').value.trim(),
+          uniqueId: uniqueVal,
           cast: card.querySelector('.t-cast').value,
           gender: card.querySelector('.t-gender').value,
           dob: card.querySelector('.t-dob').value.trim(),
           mobile: card.querySelector('.t-mobile').value.trim(),
           aadhar: card.querySelector('.t-aadhar').value.trim(),
           email: card.querySelector('.t-email').value.trim(),
-          classes: Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value),
-          subjects: Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value),
+          classes: clsArr,
+          subjects: subjArr,
           bank: card.querySelector('.t-bank').value,
           branch: card.querySelector('.t-branch').value.trim(),
           accNo: card.querySelector('.t-acc').value.trim(),
@@ -808,7 +820,7 @@
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
         let hasStaff = saved && saved.staff && saved.staff.length > 0;
-        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen);
+        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
         if (!allFrozen) {
           jskMap[jsk].pendingSchools++;
@@ -819,19 +831,19 @@
 
         if (hasStaff) {
           saved.staff.forEach(st => {
-            // Count all saved staff (Draft or Frozen) for Male/Female & Total Staff so counts appear immediately
+            // Total Staff and Male/Female counts are shown for all saved entries
             jskMap[jsk].total++;
             if (st.gender === 'Male') jskMap[jsk].male++;
             else if (st.gender === 'Female') jskMap[jsk].female++;
 
-            if (st.isFrozen) {
+            // Complete Entry only counts if explicitly frozen
+            if (st.isFrozen === true) {
               schoolCompleteCount++;
             }
           });
         }
 
         jskMap[jsk].completeEntry += schoolCompleteCount;
-        // Teacher Pending = Total Staff minus Complete Entry (Save & Freeze)
         let schoolTeacherPending = schoolTotalCount - schoolCompleteCount;
         jskMap[jsk].teacherPending += schoolTeacherPending;
       });
@@ -918,7 +930,7 @@
               if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
               if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
 
-              if (st.isFrozen) {
+              if (st.isFrozen === true) {
                 if (st.nature === 'Regular') totalReg++; else totalGuest++;
               }
               let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
@@ -929,7 +941,7 @@
                 <td style="text-align:left;">${s.name}</td>
                 <td>${s.udise}</td>
                 <td>${jsk}</td>
-                <td><span style="color:${st.isFrozen ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen ? 'Complete' : 'Draft'}</span></td>
+                <td><span style="color:${st.isFrozen === true ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen === true ? 'Complete' : 'Incomplete'}</span></td>
                 <td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td>
                 <td style="text-align:left; font-weight:bold;">${st.name}</td>
                 <td>${st.father}</td>
@@ -972,7 +984,7 @@
           let maleCount = 0, femaleCount = 0;
           let schoolTotal = hasStaff ? saved.staff.length : 0;
           let schoolComplete = 0;
-          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen);
+          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
           if (hasStaff) {
             saved.staff.forEach(st => {
@@ -982,14 +994,14 @@
               if (st.gender === 'Male') maleCount++;
               else if (st.gender === 'Female') femaleCount++;
 
-              if (st.isFrozen) {
+              if (st.isFrozen === true) {
                 schoolComplete++;
               }
             });
           }
 
           let schoolTeacherPending = schoolTotal - schoolComplete;
-          let statusStr = allFrozen ? "Complete" : "Pending";
+          let statusStr = allFrozen ? "Complete" : "Incomplete";
           totalSchCount++;
 
           grandTotalStaff += schoolTotal;
