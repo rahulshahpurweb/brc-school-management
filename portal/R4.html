@@ -208,7 +208,7 @@
 
   window.R4App = {
     cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
-    banksList: ["SBI", "PNB", "CBI", "BOI", "BOB", "Canara Bank", "Union Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab & Sind Bank", "UCO Bank", "Indian Bank"],
+    banksList: ["SBI", "PNB", "Bank of India (BOI)", "Bank of Baroda (BOB)", "Canara Bank", "Union Bank of India", "Central Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab & Sind Bank", "UCO Bank", "Indian Bank"],
     subjectsList: ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"],
     classesList: ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
 
@@ -808,7 +808,9 @@
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
         let hasStaff = saved && saved.staff && saved.staff.length > 0;
-        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen);
+        
+        // Strict Validation: A school is only fully complete if it has staff AND every staff member is frozen (no errors/red fields)
+        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
         if (!allFrozen) {
           jskMap[jsk].pendingSchools++;
@@ -823,7 +825,8 @@
             if (st.gender === 'Male') jskMap[jsk].male++;
             else if (st.gender === 'Female') jskMap[jsk].female++;
 
-            if (st.isFrozen) {
+            // Only count towards complete entry if specifically frozen & valid
+            if (st.isFrozen === true) {
               schoolCompleteCount++;
             }
           });
@@ -916,7 +919,7 @@
               if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
               if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
 
-              if (st.isFrozen) {
+              if (st.isFrozen === true) {
                 if (st.nature === 'Regular') totalReg++; else totalGuest++;
               }
               let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
@@ -927,7 +930,7 @@
                 <td style="text-align:left;">${s.name}</td>
                 <td>${s.udise}</td>
                 <td>${jsk}</td>
-                <td><span style="color:${st.isFrozen ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen ? 'Complete' : 'Draft'}</span></td>
+                <td><span style="color:${st.isFrozen === true ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen === true ? 'Complete' : 'Draft'}</span></td>
                 <td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td>
                 <td style="text-align:left; font-weight:bold;">${st.name}</td>
                 <td>${st.father}</td>
@@ -970,7 +973,9 @@
           let maleCount = 0, femaleCount = 0;
           let schoolTotal = hasStaff ? saved.staff.length : 0;
           let schoolComplete = 0;
-          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen);
+          
+          // Strict School Complete check: Must have staff and ALL staff must be frozen (no red/error fields)
+          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
           if (hasStaff) {
             saved.staff.forEach(st => {
@@ -980,7 +985,7 @@
               if (st.gender === 'Male') maleCount++;
               else if (st.gender === 'Female') femaleCount++;
 
-              if (st.isFrozen) {
+              if (st.isFrozen === true) {
                 schoolComplete++;
               }
             });
@@ -1025,7 +1030,7 @@
         html = `<thead><tr>
           <th>S.No.</th><th>Sankul (JSK)</th><th>Total Schools</th>
           <th>Male Teachers</th><th>Female Teachers</th>
-          <th>Pending Teachers</th><th>Total Staff</th>
+          <th>Pending Schools</th><th>Total Staff</th>
         </tr></thead><tbody>`;
 
         let jskMap = {};
@@ -1040,7 +1045,7 @@
           jskMap[jsk].schools++;
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-          if (!saved || !saved.staff || saved.staff.length === 0 || !saved.staff.every(st => st.isFrozen)) {
+          if (!saved || !saved.staff || saved.staff.length === 0 || !saved.staff.every(st => st.isFrozen === true)) {
             jskMap[jsk].pending++;
           }
           if (saved && saved.staff) {
@@ -1048,7 +1053,7 @@
               if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
               if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
 
-              if (st.isFrozen) {
+              if (st.isFrozen === true) {
                 jskMap[jsk].total++;
                 if (st.gender === 'Male') jskMap[jsk].male++;
                 else if (st.gender === 'Female') jskMap[jsk].female++;
