@@ -154,8 +154,8 @@ body{
 }
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* LOGIN OVERLAY */
-#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
+/* LOGIN OVERLAY - Shuru mein hidden rakha hai taaki flash na ho */
+#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:none;align-items:center;justify-content:center;padding:15px}
 .auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
 .auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
@@ -230,7 +230,6 @@ body{
     <button class="drawer-link" onclick="loadModule('R3.html', this)">
       <span>♿</span> CWSN Module (R3)
     </button>
-    <!-- R4 Teacher & Staff Module Link Added Here -->
     <button class="drawer-link" onclick="loadModule('R4.html', this)">
       <span>👨‍🏫</span> Teacher & Staff Module (R4)
     </button>
@@ -265,7 +264,6 @@ body{
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
     <div class="brand-title">BRC Shahpur Portal</div>
   </div>
-  
 </header>
 
 <!-- Main Data Display Iframe -->
@@ -299,7 +297,7 @@ async function checkGlobalMaintenance() {
   
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
-    document.getElementById("authOverlay").style.display = "flex";
+    document.getElementById("authOverlay").style.display = "flex"; // Sirf tabhi dikhega jab login nahi hoga
     updateMaintUI(isMaintenance);
     return;
   }
