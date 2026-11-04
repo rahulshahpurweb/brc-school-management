@@ -66,7 +66,7 @@
 </div>
 
 <div class="module-header">
-  <div class="module-title" style="width: 100%; margin-bottom: 5px;">♿ CWSN Module (R3 - Cloud Synced)[span_0](start_span)[span_0](end_span)</div>
+  <div class="module-title" style="width: 100%; margin-bottom: 5px;">♿ CWSN Module (R3 - Cloud Synced)[span_1](start_span)[span_1](end_span)</div>
   <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 5px; flex-wrap: nowrap;">
     
     <!-- Session Dropdown -->
@@ -81,18 +81,18 @@
     </div>
 
     <!-- Excel Export Button -->
-    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background: #16a34a; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Excel[span_1](start_span)[span_1](end_span)</button>
+    <button onclick="CwsnApp.exportExcel()" class="sub-nav-btn" style="background: #16a34a; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Excel[span_2](start_span)[span_2](end_span)</button>
     
     <!-- Print / PDF Button -->
-    <button onclick="window.print()" class="sub-nav-btn" style="background: #d97706; padding: 6px 10px; font-size: 12px; white-space: nowrap;">🖨️ Print[span_2](start_span)[span_2](end_span)</button>
+    <button onclick="window.print()" class="sub-nav-btn" style="background: #d97706; padding: 6px 10px; font-size: 12px; white-space: nowrap;">🖨️ Print[span_3](start_span)[span_3](end_span)</button>
 
     <!-- ☰ Menu Dropdown -->
     <div class="menu-container" id="adminMenuContainer" style="position: relative; display: inline-block;">
-      <button onclick="CwsnApp.toggleMenu()" class="menu-btn" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">☰ Menu[span_3](start_span)[span_3](end_span)</button>
+      <button onclick="CwsnApp.toggleMenu()" class="menu-btn" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">☰ Menu[span_4](start_span)[span_4](end_span)</button>
       <div id="dropdownMenu" class="dropdown-content" style="right: 0; left: auto;">
-        <button onclick="CwsnApp.openTrashBin()">🗑️ Rollback Trash Bin[span_4](start_span)[span_4](end_span)</button>
-        <button onclick="CwsnApp.openAdminRemoveBin()" id="menuAdminRemoveBtn" style="display: none;">🗂️ Admin Remove Bin[span_5](start_span)[span_5](end_span)</button>
-        <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template[span_6](start_span)[span_6](end_span)</button>
+        <button onclick="CwsnApp.openTrashBin()">🗑️ Rollback Trash Bin[span_5](start_span)[span_5](end_span)</button>
+        <button onclick="CwsnApp.openAdminRemoveBin()" id="menuAdminRemoveBtn" style="display: none;">🗂️ Admin Remove Bin[span_6](start_span)[span_6](end_span)</button>
+        <button onclick="CwsnApp.downloadTemplate()">📥 Download Excel Template[span_7](start_span)[span_7](end_span)</button>
         <label style="cursor: pointer;">
           📤 Bulk Upload CWSN Excel <input type="file" id="bulkExcelFile" accept=".xlsx" style="display: none" onchange="CwsnApp.handleBulkUpload(event)">
         </label>
@@ -104,10 +104,10 @@
   
 
 <div class="sub-nav">
-  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard[span_7](start_span)[span_7](end_span)</button>
-  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin)[span_8](start_span)[span_8](end_span)</button>
-  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry[span_9](start_span)[span_9](end_span)</button>
-  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports[span_10](start_span)[span_10](end_span)</button>
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="CwsnApp.switchTab('dashboard')">📊 Dashboard[span_8](start_span)[span_8](end_span)</button>
+  <button class="sub-nav-btn" id="navSelectionBtn" onclick="CwsnApp.switchTab('selection')" style="display:none;">🏫 School Setup (Admin)[span_9](start_span)[span_9](end_span)</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="CwsnApp.switchTab('entry')">✍️ Data Entry[span_10](start_span)[span_10](end_span)</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="CwsnApp.switchTab('reports')">📑 Reports[span_11](start_span)[span_11](end_span)</button>
 </div>
 
 <main class="content-container">
@@ -131,7 +131,7 @@
       </div>
     </div>
     <div class="card">
-      <h3>📊 CWSN Sankul-wise Summary Overview[span_11](start_span)[span_11](end_span)</h3>
+      <h3>📊 CWSN Sankul-wise Summary Overview[span_12](start_span)[span_12](end_span)</h3>
       <div class="tablewrap">
         <table>
           <thead>
@@ -155,20 +155,20 @@
   <section id="cwsnSelection" class="cwsn-section" style="display:none;">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0;">🏫 School-wise CWSN Availability Setup (Admin Only)[span_12](start_span)[span_12](end_span)</h3>
-        <button onclick="CwsnApp.saveSchoolSetupChanges()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;" id="saveSetupBtn">💾 Save Setup Changes[span_13](start_span)[span_13](end_span)</button>
+        <h3 style="margin:0;">🏫 School-wise CWSN Availability Setup (Admin Only)[span_13](start_span)[span_13](end_span)</h3>
+        <button onclick="CwsnApp.saveSchoolSetupChanges()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;" id="saveSetupBtn">💾 Save Setup Changes[span_14](start_span)[span_14](end_span)</button>
       </div>
       <div class="filter-bar">
         <label><b>JSK Filter:</b></label>
         <select id="selJskFilter" onchange="CwsnApp.renderSchoolSelectionTable()" style="padding:6px; font-weight:bold; border-radius:4px;">
-          <option value="ALL">-- All Sankul --[span_14](start_span)[span_14](end_span)</option>
-          <option value="Bhoura">Bhoura[span_15](start_span)[span_15](end_span)</option>
-          <option value="Bijadehi">Bijadehi[span_16](start_span)[span_16](end_span)</option>
-          <option value="Dhodhramau">Dhodhramau[span_17](start_span)[span_17](end_span)</option>
-          <option value="Kesiya">Kesiya[span_18](start_span)[span_18](end_span)</option>
-          <option value="Kundi">Kundi[span_19](start_span)[span_19](end_span)</option>
-          <option value="Shahpur">Shahpur[span_20](start_span)[span_20](end_span)</option>
-          <option value="Tara">Tara[span_21](start_span)[span_21](end_span)</option>
+          <option value="ALL">-- All Sankul --[span_15](start_span)[span_15](end_span)</option>
+          <option value="Bhoura">Bhoura[span_16](start_span)[span_16](end_span)</option>
+          <option value="Bijadehi">Bijadehi[span_17](start_span)[span_17](end_span)</option>
+          <option value="Dhodhramau">Dhodhramau[span_18](start_span)[span_18](end_span)</option>
+          <option value="Kesiya">Kesiya[span_19](start_span)[span_19](end_span)</option>
+          <option value="Kundi">Kundi[span_20](start_span)[span_20](end_span)</option>
+          <option value="Shahpur">Shahpur[span_21](start_span)[span_21](end_span)</option>
+          <option value="Tara">Tara[span_22](start_span)[span_22](end_span)</option>
         </select>
         <input type="text" id="selSearchBox" placeholder="Search school name or UDISE..." onkeyup="CwsnApp.renderSchoolSelectionTable()" style="flex:1; min-width:200px; padding:6px; border:1px solid #ccc; border-radius:4px;">
       </div>
@@ -181,8 +181,8 @@
               <th>UDISE Code</th>
               <th>Category</th>
               <th>JSK</th>
-              <th>Has CWSN Students? (Yes / No)[span_22](start_span)[span_22](end_span)</th>
-              <th>Admin Freeze / Unfreeze Control[span_23](start_span)[span_23](end_span)</th>
+              <th>Has CWSN Students? (Yes / No)[span_23](start_span)[span_23](end_span)</th>
+              <th>Admin Freeze / Unfreeze Control[span_24](start_span)[span_24](end_span)</th>
             </tr>
           </thead>
           <tbody id="schoolSelectionTableBody"></tbody>
@@ -193,7 +193,7 @@
 
   <section id="cwsnEntry" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>✍️ School CWSN Data Entry Module[span_24](start_span)[span_24](end_span)</h3>
+      <h3>✍️ School CWSN Data Entry Module[span_25](start_span)[span_25](end_span)</h3>
       <div class="filter-bar">
         <label><b>Select School:</b></label>
         <select id="cwsnSchoolSelect" onchange="CwsnApp.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -208,87 +208,87 @@
           <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <div>
               <label style="font-weight:bold; color:#1d4ed8; font-size:11px;">Expected Boys:</label>
-              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys[span_25](start_span)[span_25](end_span)">
+              <input type="number" id="expectedBoys" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Boys[span_26](start_span)[span_26](end_span)">
             </div>
             <div>
               <label style="font-weight:bold; color:#db2777; font-size:11px;">Expected Girls:</label>
-              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls[span_26](start_span)[span_26](end_span)">
+              <input type="number" id="expectedGirls" min="0" max="50" style="width:60px; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:6px;" placeholder="Girls[span_27](start_span)[span_27](end_span)">
             </div>
           </div>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h4 style="color:#071b38; margin:0;">Student Details Entry & Promotion Workflow[span_27](start_span)[span_27](end_span)</h4>
-        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Student[span_28](start_span)[span_28](end_span)</button>
+        <h4 style="color:#071b38; margin:0;">Student Details Entry & Promotion Workflow[span_28](start_span)[span_28](end_span)</h4>
+        <button type="button" id="addStudentBtn" onclick="CwsnApp.addNewStudentCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">➕ Add New Student[span_29](start_span)[span_29](end_span)</button>
       </div>
 
       <div id="studentCardsContainer">
-        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_29](start_span)[span_29](end_span)</div>
+        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_30](start_span)[span_30](end_span)</div>
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save CWSN Data[span_30](start_span)[span_30](end_span)</button>
+        <button type="button" id="saveDataBtn" onclick="CwsnApp.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save CWSN Data[span_31](start_span)[span_31](end_span)</button>
       </div>
     </div>
   </section>
 
   <section id="cwsnReports" class="cwsn-section" style="display:none;">
     <div class="card">
-      <h3>📑 CWSN Compilation & Filter Reports[span_31](start_span)[span_31](end_span)</h3>
+      <h3>📑 CWSN Compilation & Filter Reports[span_32](start_span)[span_32](end_span)</h3>
       <div class="filter-bar" id="reportFiltersBar">
         <label><b>JSK Filter:</b></label>
         <select id="reportJskFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="ALL">-- All Sankul --[span_32](start_span)[span_32](end_span)</option>
-          <option value="Bhoura">Bhoura[span_33](start_span)[span_33](end_span)</option>
-          <option value="Bijadehi">Bijadehi[span_34](start_span)[span_34](end_span)</option>
-          <option value="Dhodhramau">Dhodhramau[span_35](start_span)[span_35](end_span)</option>
-          <option value="Kesiya">Kesiya[span_36](start_span)[span_36](end_span)</option>
-          <option value="Kundi">Kundi[span_37](start_span)[span_37](end_span)</option>
-          <option value="Shahpur">Shahpur[span_38](start_span)[span_38](end_span)</option>
-          <option value="Tara">Tara[span_39](start_span)[span_39](end_span)</option>
+          <option value="ALL">-- All Sankul --[span_33](start_span)[span_33](end_span)</option>
+          <option value="Bhoura">Bhoura[span_34](start_span)[span_34](end_span)</option>
+          <option value="Bijadehi">Bijadehi[span_35](start_span)[span_35](end_span)</option>
+          <option value="Dhodhramau">Dhodhramau[span_36](start_span)[span_36](end_span)</option>
+          <option value="Kesiya">Kesiya[span_37](start_span)[span_37](end_span)</option>
+          <option value="Kundi">Kundi[span_38](start_span)[span_38](end_span)</option>
+          <option value="Shahpur">Shahpur[span_39](start_span)[span_39](end_span)</option>
+          <option value="Tara">Tara[span_40](start_span)[span_40](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Disability Filter:</b></label>
         <select id="reportDisabilityFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="ALL">-- All Disabilities --[span_40](start_span)[span_40](end_span)</option>
-          <option value="Specific Learning Disabilities">Specific Learning Disabilities[span_41](start_span)[span_41](end_span)</option>
-          <option value="Intellectual Disability">Intellectual Disability[span_42](start_span)[span_42](end_span)</option>
-          <option value="Locomotor Disability">Locomotor Disability[span_43](start_span)[span_43](end_span)</option>
-          <option value="Blindness">Blindness[span_44](start_span)[span_44](end_span)</option>
-          <option value="Low Vision">Low Vision[span_45](start_span)[span_45](end_span)</option>
-          <option value="Speech and Language Disability">Speech and Language Disability[span_46](start_span)[span_46](end_span)</option>
-          <option value="Sickle Cell Disease">Sickle Cell Disease[span_47](start_span)[span_47](end_span)</option>
-          <option value="Hearing impairment">Hearing impairment[span_48](start_span)[span_48](end_span)</option>
-          <option value="Multiple Disabilities">Multiple Disabilities[span_49](start_span)[span_49](end_span)</option>
-          <option value="Cerebral Palsy">Cerebral Palsy[span_50](start_span)[span_50](end_span)</option>
-          <option value="Thalassemia">Thalassemia[span_51](start_span)[span_51](end_span)</option>
-          <option value="Mental illness">Mental illness[span_52](start_span)[span_52](end_span)</option>
-          <option value="Autism Spectrum Disorder">Autism Spectrum Disorder[span_53](start_span)[span_53](end_span)</option>
-          <option value="Hemophilia">Hemophilia[span_54](start_span)[span_54](end_span)</option>
+          <option value="ALL">-- All Disabilities --[span_41](start_span)[span_41](end_span)</option>
+          <option value="Specific Learning Disabilities">Specific Learning Disabilities[span_42](start_span)[span_42](end_span)</option>
+          <option value="Intellectual Disability">Intellectual Disability[span_43](start_span)[span_43](end_span)</option>
+          <option value="Locomotor Disability">Locomotor Disability[span_44](start_span)[span_44](end_span)</option>
+          <option value="Blindness">Blindness[span_45](start_span)[span_45](end_span)</option>
+          <option value="Low Vision">Low Vision[span_46](start_span)[span_46](end_span)</option>
+          <option value="Speech and Language Disability">Speech and Language Disability[span_47](start_span)[span_47](end_span)</option>
+          <option value="Sickle Cell Disease">Sickle Cell Disease[span_48](start_span)[span_48](end_span)</option>
+          <option value="Hearing impairment">Hearing impairment[span_49](start_span)[span_49](end_span)</option>
+          <option value="Multiple Disabilities">Multiple Disabilities[span_50](start_span)[span_50](end_span)</option>
+          <option value="Cerebral Palsy">Cerebral Palsy[span_51](start_span)[span_51](end_span)</option>
+          <option value="Thalassemia">Thalassemia[span_52](start_span)[span_52](end_span)</option>
+          <option value="Mental illness">Mental illness[span_53](start_span)[span_53](end_span)</option>
+          <option value="Autism Spectrum Disorder">Autism Spectrum Disorder[span_54](start_span)[span_54](end_span)</option>
+          <option value="Hemophilia">Hemophilia[span_55](start_span)[span_55](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Class Filter:</b></label>
         <select id="reportClassFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="ALL">-- All Classes --[span_55](start_span)[span_55](end_span)</option>
-          <option value="Class - 1">Class - 1[span_56](start_span)[span_56](end_span)</option><option value="Class - 2">Class - 2[span_57](start_span)[span_57](end_span)</option><option value="Class - 3">Class - 3[span_58](start_span)[span_58](end_span)</option><option value="Class - 4">Class - 4[span_59](start_span)[span_59](end_span)</option><option value="Class - 5">Class - 5[span_60](start_span)[span_60](end_span)</option>
-          <option value="Class - 6">Class - 6[span_61](start_span)[span_61](end_span)</option><option value="Class - 7">Class - 7[span_62](start_span)[span_62](end_span)</option><option value="Class - 8">Class - 8[span_63](start_span)[span_63](end_span)</option>
+          <option value="ALL">-- All Classes --[span_56](start_span)[span_56](end_span)</option>
+          <option value="Class - 1">Class - 1[span_57](start_span)[span_57](end_span)</option><option value="Class - 2">Class - 2[span_58](start_span)[span_58](end_span)</option><option value="Class - 3">Class - 3[span_59](start_span)[span_59](end_span)</option><option value="Class - 4">Class - 4[span_60](start_span)[span_60](end_span)</option><option value="Class - 5">Class - 5[span_61](start_span)[span_61](end_span)</option>
+          <option value="Class - 6">Class - 6[span_62](start_span)[span_62](end_span)</option><option value="Class - 7">Class - 7[span_63](start_span)[span_63](end_span)</option><option value="Class - 8">Class - 8[span_64](start_span)[span_64](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Report Format:</b></label>
         <select id="reportTypeFilter" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="overall">Overall Students (List)[span_64](start_span)[span_64](end_span)</option>
-          <option value="above40">Disability >= 40% (List)[span_65](start_span)[span_65](end_span)</option>
-          <option value="below40">Disability < 40% (Below / List)[span_66](start_span)[span_66](end_span)</option>
-          <option value="status_report">School Status Report (Pending / Completed)[span_67](start_span)[span_67](end_span)</option>
-          <option value="matrix_overall">Matrix Summary (Overall)[span_68](start_span)[span_68](end_span)</option>
-          <option value="matrix_above40">Matrix Summary (>= 40%)[span_69](start_span)[span_69](end_span)</option>
-          <option value="matrix_below40">Matrix Summary (< 40%)[span_70](start_span)[span_70](end_span)</option>
+          <option value="overall">Overall Students (List)[span_65](start_span)[span_65](end_span)</option>
+          <option value="above40">Disability >= 40% (List)[span_66](start_span)[span_66](end_span)</option>
+          <option value="below40">Disability < 40% (Below / List)[span_67](start_span)[span_67](end_span)</option>
+          <option value="status_report">School Status Report (Pending / Completed)[span_68](start_span)[span_68](end_span)</option>
+          <option value="matrix_overall">Matrix Summary (Overall)[span_69](start_span)[span_69](end_span)</option>
+          <option value="matrix_above40">Matrix Summary (>= 40%)[span_70](start_span)[span_70](end_span)</option>
+          <option value="matrix_below40">Matrix Summary (< 40%)[span_71](start_span)[span_71](end_span)</option>
         </select>
         <label style="margin-left:10px;"><b>Rows:</b></label>
         <select id="reportPageSize" onchange="CwsnApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
-          <option value="50" selected>50 Rows[span_71](start_span)[span_71](end_span)</option>
-          <option value="100">100 Rows[span_72](start_span)[span_72](end_span)</option>
-          <option value="200">200 Rows[span_73](start_span)[span_73](end_span)</option>
-          <option value="300">300 Rows[span_74](start_span)[span_74](end_span)</option>
-          <option value="ALL">All Rows[span_75](start_span)[span_75](end_span)</option>
+          <option value="50" selected>50 Rows[span_72](start_span)[span_72](end_span)</option>
+          <option value="100">100 Rows[span_73](start_span)[span_73](end_span)</option>
+          <option value="200">200 Rows[span_74](start_span)[span_74](end_span)</option>
+          <option value="300">300 Rows[span_75](start_span)[span_75](end_span)</option>
+          <option value="ALL">All Rows[span_76](start_span)[span_76](end_span)</option>
         </select>
       </div>
       <div class="tablewrap">
@@ -838,7 +838,7 @@
         expGirls.value = ""; expGirls.disabled = true;
         addBtn.disabled = true; addBtn.style.background = "#94a3b8"; addBtn.style.cursor = "not-allowed";
         saveBtn.disabled = true; saveBtn.style.background = "#94a3b8"; saveBtn.style.cursor = "not-allowed";
-        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_76](start_span)[span_76](end_span)</div>`;
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.[span_77](start_span)[span_77](end_span)</div>`;
         return;
       }
 
