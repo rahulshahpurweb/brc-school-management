@@ -108,10 +108,11 @@
               <th>School Name / Sankul (JSK)</th>
               <th>Total Schools</th>
               <th>Pending Schools</th>
-              <th>Permanently Locked</th>
               <th>Male Teachers</th>
               <th>Female Teachers</th>
               <th>Total Staff</th>
+              <th>Complete Entry</th>
+              <th>Teacher Pending</th>
             </tr>
           </thead>
           <tbody id="dashSummaryTable"></tbody>
@@ -154,7 +155,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" id="permanentLockedBtn" onclick="R4App.saveAndPermanentLock()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Permanent Locked</button>
+        <button type="button" id="saveAndPermanentLockBtn" onclick="R4App.saveAndPermanentLock()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Permanent Locked</button>
       </div>
     </div>
   </section>
@@ -441,7 +442,7 @@
         document.getElementById('lblUdise').textContent = "-";
         document.getElementById('lblJsk').textContent = "-";
         document.getElementById('lblCategory').textContent = "-";
-        badge.textContent = "Status: Unlocked 🔓"; badge.style.background = "#f0fdf4"; badge.style.color = "#16a34a";
+        if (badge) { badge.textContent = "Status: Unlocked 🔓"; badge.style.background = "#f0fdf4"; badge.style.color = "#16a34a"; }
         container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school to begin data entry.</div>`;
         return;
       }
@@ -457,20 +458,22 @@
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
       let isPermanentlyLocked = saved && saved.isPermanentlyLocked === true;
 
-      badge.textContent = isPermanentlyLocked ? "Status: Permanently Locked 🔒" : "Status: Unlocked 🔓";
-      badge.style.background = isPermanentlyLocked ? "#fee2e2" : "#f0fdf4";
-      badge.style.color = isPermanentlyLocked ? "#dc2626" : "#16a34a";
+      if (badge) {
+        badge.textContent = isPermanentlyLocked ? "Status: Permanently Locked 🔒" : "Status: Unlocked 🔓";
+        badge.style.background = isPermanentlyLocked ? "#fee2e2" : "#f0fdf4";
+        badge.style.color = isPermanentlyLocked ? "#dc2626" : "#16a34a";
+      }
 
       if (adminUnblock) {
         adminUnblock.style.display = (info.isAdmin && isPermanentlyLocked) ? 'block' : 'none';
       }
 
       if (isPermanentlyLocked) {
-        addBtn.style.display = 'none';
-        permanentBtn.style.display = 'none';
+        if (addBtn) addBtn.style.display = 'none';
+        if (permanentBtn) permanentBtn.style.display = 'none';
       } else {
-        addBtn.style.display = 'inline-block';
-        permanentBtn.style.display = 'inline-block';
+        if (addBtn) addBtn.style.display = 'inline-block';
+        if (permanentBtn) permanentBtn.style.display = 'inline-block';
       }
 
       this.renderStaffCards(saved ? saved.staff : [], isPermanentlyLocked);
@@ -939,7 +942,9 @@
               if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
               if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
 
-              if (st.nature === 'Regular') totalReg++; else totalGuest++;
+              if (st.isFrozen === true || isLocked) {
+                if (st.nature === 'Regular') totalReg++; else totalGuest++;
+              }
               let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
               let subjStr = Array.isArray(st.subjects) ? st.subjects.join(", ") : "";
 
