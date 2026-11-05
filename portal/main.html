@@ -154,7 +154,7 @@ body{
 }
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* LOGIN OVERLAY - Shuru mein hidden rakha hai taaki flash na ho */
+/* LOGIN OVERLAY */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:none;align-items:center;justify-content:center;padding:15px}
 .auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
@@ -205,9 +205,42 @@ body{
     <div id="authErr" class="auth-err">Please enter a valid User ID and Password!</div>
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
+    
+    <!-- Forgot Password Link -->
+    <div style="text-align:right; margin-bottom:12px;">
+      <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:12px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
+    </div>
+
     <button class="auth-btn" onclick="checkAuth()">Login</button>
     <div style="text-align:center; margin-top:10px;">
       <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">🔍 SNA Account Check</a>
+    </div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal Popup -->
+<div id="forgotModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;">
+  <div style="background:#fff; border-radius:14px; max-width:360px; width:100%; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-align:left;">
+    <h3 style="margin-top:0; color:#071b38; text-align:center;">🔑 Reset Password</h3>
+    <p style="font-size:12px; color:#64748b; margin-bottom:14px; text-align:center;">Enter your School UDISE Code and Teacher National Code to verify and reset your password.</p>
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">School UDISE Code</label>
+    <input type="text" id="forgotUdise" class="auth-input" placeholder="Enter UDISE Code">
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">Teacher National Code</label>
+    <input type="text" id="forgotNatCode" class="auth-input" placeholder="Enter National Code">
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">New Password</label>
+    <input type="password" id="forgotNewPass" class="auth-input" placeholder="New Password">
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">Confirm New Password</label>
+    <input type="password" id="forgotConfirmPass" class="auth-input" placeholder="Confirm Password">
+    
+    <div id="forgotErr" class="auth-err" style="display:none;"></div>
+    
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button onclick="closeForgotPasswordModal()" style="flex:1; height:40px; background:#64748b; color:#fff; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">Cancel</button>
+      <button onclick="submitForgotPassword()" style="flex:1; height:40px; background:#16a34a; color:#fff; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">Update</button>
     </div>
   </div>
 </div>
@@ -237,7 +270,7 @@ body{
       <span>🔍</span> SNA Account Check
     </a>
 
-    <!-- Admin & Controls Section (Visible ONLY to Admin) -->
+    <!-- Admin Controls Section -->
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
 
@@ -271,7 +304,6 @@ body{
   <iframe id="moduleFrame" src="R2.html"></iframe>
 </div>
 
-<!-- 🔗 CoreApp script linked first so everything is globally accessible -->
 <script src="core.js"></script>
 
 <script>
@@ -297,7 +329,7 @@ async function checkGlobalMaintenance() {
   
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
-    document.getElementById("authOverlay").style.display = "flex"; // Sirf tabhi dikhega jab login nahi hoga
+    document.getElementById("authOverlay").style.display = "flex";
     updateMaintUI(isMaintenance);
     return;
   }
@@ -382,6 +414,60 @@ async function toggleMaintenance() {
 
   updateMaintUI(newMaintState);
   location.reload();
+}
+
+// Forgot Password Modal Functions
+function openForgotPasswordModal() {
+  document.getElementById("forgotModal").style.display = "flex";
+}
+function closeForgotPasswordModal() {
+  document.getElementById("forgotModal").style.display = "none";
+}
+
+async function submitForgotPassword() {
+  let udise = document.getElementById("forgotUdise").value.trim();
+  let natCode = document.getElementById("forgotNatCode").value.trim();
+  let newPass = document.getElementById("forgotNewPass").value.trim();
+  let confirmPass = document.getElementById("forgotConfirmPass").value.trim();
+  let errDiv = document.getElementById("forgotErr");
+
+  if (!udise || !natCode || !newPass || !confirmPass) {
+    errDiv.innerText = "Please fill all fields!";
+    errDiv.style.display = "block";
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    errDiv.innerText = "New Password and Confirm Password do not match!";
+    errDiv.style.display = "block";
+    return;
+  }
+
+  errDiv.innerText = "Verifying National Code and updating...";
+  errDiv.style.display = "block";
+
+  try {
+    let res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "forgotPassword",
+        udise: udise,
+        nationalCode: natCode,
+        newPassword: newPass
+      })
+    });
+    let result = await res.json();
+    if (result.status === "success") {
+      alert("Password updated successfully! Please login with your new password.");
+      closeForgotPasswordModal();
+    } else {
+      errDiv.innerText = result.message || "Verification failed!";
+      errDiv.style.display = "block";
+    }
+  } catch (e) {
+    errDiv.innerText = "Network error. Please try again.";
+    errDiv.style.display = "block";
+  }
 }
 
 async function checkAuth(){
