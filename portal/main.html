@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>BRC Shahpur - Master Portal</title>
+
+<!-- Page load hote hi turant check karega taaki 1 second wala interface flash bilkul na ho -->
+<script>
+  if (sessionStorage.getItem("brc_logged_in") !== "true") {
+    document.write('<style>#authOverlay{display:flex !important;}</style>');
+  } else {
+    document.write('<style>#authOverlay{display:none !important;}</style>');
+  }
+</script>
+
 <style>
 *{box-sizing:border-box}
 body{
@@ -150,8 +160,7 @@ body{
 }
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* AUTH OVERLAY - Default display flex rakha hai taaki flash na ho */
-#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px}
+#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:none;align-items:center;justify-content:center;padding:15px}
 .auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
 .auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
@@ -318,7 +327,7 @@ async function checkGlobalMaintenance() {
   
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
-    document.getElementById("authOverlay").style.display = "flex"; // Login overlay dikhega
+    document.getElementById("authOverlay").style.display = "flex";
     updateMaintUI(isMaintenance);
     return;
   }
@@ -480,7 +489,7 @@ async function checkAuth(){
   err.innerText = "Verifying credentials from cloud...";
   err.style.display = "block";
 
-  // STRICT CLOUD AUTHENTICATION (No Insecure Local Fallbacks)
+  // STRICT CLOUD AUTHENTICATION (No insecure local fallbacks)
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
@@ -521,7 +530,7 @@ async function checkAuth(){
     console.log("Cloud check error:", e);
   }
 
-  // Strict hardcoded check only for official Admin / JSK (No random UDISE fallback)
+  // Strict hardcoded check only for official Admin / JSK
   if (inputVal === "admin" && passVal === ADMIN_PASS) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
@@ -538,7 +547,6 @@ async function checkAuth(){
     return;
   }
 
-  // Agar cloud mein ya official credentials mein match nahi mila, toh login strict mana hoga
   err.innerText = "Invalid User ID or Password! Please check your credentials.";
   err.style.display = "block";
 }
