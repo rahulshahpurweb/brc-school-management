@@ -112,7 +112,6 @@
               <th>Total Staff</th>
               <th>Complete Entry</th>
               <th>Teacher Pending</th>
-              <th id="adminActionHeader" style="display:none;">Admin Action</th>
             </tr>
           </thead>
           <tbody id="dashSummaryTable"></tbody>
@@ -453,21 +452,33 @@
       
       if (!btn) return;
 
+      let info = this.getUserRoleInfo();
+
       if (isFinalized) {
         btn.textContent = "Finalized";
         btn.style.background = "#16a34a"; // Green
-        btn.disabled = false; // School can click to unfreeze only if admin enabled, or keep locked for school
         if(btnAdd) btnAdd.style.display = 'none';
         if(btnSave) btnSave.style.display = 'none';
         
-        // Disable all card inputs and buttons
+        // If school is finalized, disable all inputs and action buttons inside cards
         document.querySelectorAll('.teacher-card').forEach(card => {
           card.querySelectorAll('input, select').forEach(el => el.disabled = true);
           card.querySelectorAll('button').forEach(b => b.style.display = 'none');
         });
+
+        // Non-admin cannot un-finalize
+        if (!info.isAdmin) {
+          btn.disabled = true;
+          btn.style.cursor = "not-allowed";
+        } else {
+          btn.disabled = false;
+          btn.style.cursor = "pointer";
+        }
       } else {
         btn.textContent = "Finalize";
         btn.style.background = "#dc2626"; // Red
+        btn.disabled = false;
+        btn.style.cursor = "pointer";
         if(btnAdd) btnAdd.style.display = 'inline-block';
         if(btnSave) btnSave.style.display = 'inline-block';
       }
@@ -487,6 +498,20 @@
       if (isCurrentlyFinalized && !info.isAdmin) {
         alert("School data is finalized. Only Admin can enable/unlock it.");
         return;
+      }
+
+      // Check if all staff are saved and frozen before finalizing
+      if (!isCurrentlyFinalized) {
+        let staffList = saved.staff || [];
+        if (staffList.length === 0) {
+          alert("Please add and save at least one staff member before finalizing.");
+          return;
+        }
+        let allFrozen = staffList.every(st => st.isFrozen === true);
+        if (!allFrozen) {
+          alert("Please click 'Save & Freeze' for all staff records before finalizing the school data.");
+          return;
+        }
       }
 
       let confirmMsg = isCurrentlyFinalized ? "Do you want to enable/unlock this school for editing?" : "Are you sure you want to Finalize? Once finalized, data entry will be locked.";
@@ -892,9 +917,6 @@
         }
       }
 
-      let adminActionHeader = document.getElementById('adminActionHeader');
-      if (adminActionHeader) adminActionHeader.style.display = info.isAdmin ? 'table-cell' : 'none';
-
       let jskMap = {};
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
         jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
@@ -937,18 +959,6 @@
         jskMap[jsk].teacherPending += schoolTeacherPending;
       });
 
-      // Render school summary rows if viewing single school or JSK list
-      schoolsToProcess.forEach(s => {
-        let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-        let isFinalized = saved && saved.isFinalized === true;
-        let staffCount = saved && saved.staff ? saved.staff.length : 0;
-
-        let adminColHtml = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#dc2626' : '#16a34a'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Enable' : 'Finalized'}</button></td>` : '';
-
-        // We can list schools or render Sankul wise rows in summary table
-      });
-
-      // Render Sankul-wise summary rows
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
         if (d.schools === 0) continue;
@@ -961,8 +971,6 @@
         tComplete += d.completeEntry;
         tTeacherPend += d.teacherPending;
 
-        let adminCell = info.isAdmin ? `<td>-</td>` : '';
-
         tbody.innerHTML += `<tr>
           <td>${i++}</td>
           <td style="text-align:left; font-weight:bold;">${jsk}</td>
@@ -973,10 +981,8 @@
           <td style="font-weight:bold;">${d.total}</td>
           <td style="color:#16a34a; font-weight:bold;">${d.completeEntry}</td>
           <td style="color:#dc2626; font-weight:bold;">${d.teacherPending}</td>
-          ${adminCell}
         </tr>`;
       }
-      let adminTotalCell = info.isAdmin ? `<td>-</td>` : '';
       tbody.innerHTML += `<tr style="background:#f1f5f9; font-weight:bold;">
         <td colspan="2">Grand Total</td>
         <td>${tSch}</td>
@@ -986,26 +992,7 @@
         <td style="color:#1d4ed8;">${tTot}</td>
         <td style="color:#16a34a;">${tComplete}</td>
         <td style="color:#dc2626;">${tTeacherPend}</td>
-        ${adminTotalCell}
       </tr>`;
-    },
-
-    async adminEnableSchool(udise) {
-      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[]}');
-      saved.isFinalized = !saved.isFinalized;
-      localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
-
-      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-      try {
-        await fetch(this.cloudApiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
-        });
-      } catch(e) {}
-
-      this.renderDashboard();
-      alert("School status updated successfully.");
     },
 
     renderReports() {
@@ -1088,9 +1075,10 @@
         countText = `Total Records: ${idx - 1} | Regular: ${totalReg}, Guest: ${totalGuest}`;
 
       } else if (format === "F_2") {
+        let adminHeaderTh = info.isAdmin ? `<th>Admin Action</th>` : '';
         html = `<thead><tr>
           <th>Sr. No.</th><th>School Name</th><th>UDISE Code</th><th>Sankul (JSK)</th>
-          <th>Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th><th>Complete Entry</th><th>Teacher Pending</th>
+          <th>Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th><th>Complete Entry</th><th>Teacher Pending</th>${adminHeaderTh}
         </tr></thead><tbody>`;
 
         let idx = 1;
@@ -1102,10 +1090,10 @@
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
+          let isFinalized = saved && saved.isFinalized === true;
           let maleCount = 0, femaleCount = 0;
           let schoolTotal = hasStaff ? saved.staff.length : 0;
           let schoolComplete = 0;
-          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
           if (hasStaff) {
             saved.staff.forEach(st => {
@@ -1122,7 +1110,7 @@
           }
 
           let schoolTeacherPending = schoolTotal - schoolComplete;
-          let statusStr = allFrozen ? "Complete" : "Incomplete";
+          let statusStr = isFinalized ? "Finalized" : "Incomplete";
           totalSchCount++;
 
           grandTotalStaff += schoolTotal;
@@ -1131,20 +1119,24 @@
           gComplete += schoolComplete;
           gTeacherPending += schoolTeacherPending;
 
+          let adminActionTd = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#dc2626' : '#16a34a'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Enable' : 'Finalized'}</button></td>` : '';
+
           html += `<tr>
             <td>${idx++}</td>
             <td style="text-align:left; font-weight:bold;">${s.name}</td>
             <td>${s.udise}</td>
             <td>${jsk}</td>
-            <td><span style="color:${allFrozen ? '#16a34a' : '#dc2626'}; font-weight:bold;">${statusStr}</span></td>
+            <td><span style="color:${isFinalized ? '#16a34a' : '#dc2626'}; font-weight:bold;">${statusStr}</span></td>
             <td style="color:#1d4ed8; font-weight:bold;">${maleCount}</td>
             <td style="color:#d97706; font-weight:bold;">${femaleCount}</td>
             <td style="font-weight:bold;">${schoolTotal}</td>
             <td style="color:#16a34a; font-weight:bold;">${schoolComplete}</td>
             <td style="color:#dc2626; font-weight:bold;">${schoolTeacherPending}</td>
+            ${adminActionTd}
           </tr>`;
         });
 
+        let adminTotalTd = info.isAdmin ? `<td>-</td>` : '';
         html += `<tr style="background:#f1f5f9; font-weight:bold;">
           <td colspan="5">Grand Total</td>
           <td style="color:#1d4ed8;">${gMale}</td>
@@ -1152,6 +1144,7 @@
           <td style="color:#1d4ed8;">${grandTotalStaff}</td>
           <td style="color:#16a34a;">${gComplete}</td>
           <td style="color:#dc2626;">${gTeacherPending}</td>
+          ${adminTotalTd}
         </tr>`;
         html += `</tbody>`;
         countText = `Total Schools: ${totalSchCount} | Total Staff: ${grandTotalStaff}, Complete Entry: ${gComplete}, Teacher Pending: ${gTeacherPending}`;
@@ -1159,6 +1152,24 @@
 
       table.innerHTML = html;
       document.getElementById('reportSummaryCount').textContent = countText;
+    },
+
+    async adminEnableSchool(udise) {
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[]}');
+      saved.isFinalized = !saved.isFinalized;
+      localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
+
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      try {
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
+        });
+      } catch(e) {}
+
+      this.renderReports();
+      alert("School status updated successfully.");
     },
 
     async openTrashBin() {
