@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>BRC Shahpur - Master Portal</title>
 
-<!-- Page load hote hi turant check karega taaki 1 second wala interface flash bilkul na ho -->
+<!-- Flash Prevention Script -->
 <script>
   if (sessionStorage.getItem("brc_logged_in") !== "true") {
     document.write('<style>#authOverlay{display:flex !important;}</style>');
@@ -325,6 +325,16 @@ async function checkGlobalMaintenance() {
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true"; 
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
+  // Admin controls visibility check
+  let adminSec = document.getElementById("adminControlsSection");
+  if (adminSec) {
+    if (user.role === 'admin' || user.name === 'BRC Admin' || String(user.role).toLowerCase() === 'admin') {
+      adminSec.style.display = "block";
+    } else {
+      adminSec.style.display = "none";
+    }
+  }
+
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
     document.getElementById("authOverlay").style.display = "flex";
@@ -350,12 +360,6 @@ async function checkGlobalMaintenance() {
 
 window.addEventListener('DOMContentLoaded', async () => {
   await checkGlobalMaintenance();
-  
-  let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
-  if (user.role === 'admin' || user.name === 'BRC Admin') {
-    let adminSec = document.getElementById("adminControlsSection");
-    if(adminSec) adminSec.style.display = "block";
-  }
 });
 
 function toggleDrawer() {
@@ -489,7 +493,6 @@ async function checkAuth(){
   err.innerText = "Verifying credentials from cloud...";
   err.style.display = "block";
 
-  // STRICT CLOUD AUTHENTICATION (No insecure local fallbacks)
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
@@ -530,7 +533,6 @@ async function checkAuth(){
     console.log("Cloud check error:", e);
   }
 
-  // Strict hardcoded check only for official Admin / JSK
   if (inputVal === "admin" && passVal === ADMIN_PASS) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
@@ -554,7 +556,14 @@ async function checkAuth(){
 function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
-  document.getElementById("authOverlay").style.display = "flex";
+  localStorage.removeItem("brc_current_user");
+  
+  let authOverlay = document.getElementById("authOverlay");
+  let maintOverlay = document.getElementById("maintenanceOverlay");
+  if(authOverlay) authOverlay.style.display = "flex";
+  if(maintOverlay) maintOverlay.style.display = "none";
+  
+  location.reload();
 }
 
 function loadModule(fileName, btnElement){
