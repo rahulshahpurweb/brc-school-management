@@ -1211,30 +1211,42 @@
 
       let modalHtml = `
         <div id="trashModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px;">
-          <div style="background:#fff; border-radius:12px; max-width:900px; width:100%; max-height:85vh; overflow-y:auto; padding:20px;">
+          <div style="background:#fff; border-radius:12px; max-width:950px; width:100%; max-height:85vh; overflow-y:auto; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
               <h3 style="margin:0; color:#071b38;">Teacher Rollback & Transfer Bin</h3>
               <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Close</button>
             </div>
             <table>
-              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>Original Index</th><th>Deleted At</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>National Code</th><th>Deleted At</th><th>Actions</th></tr></thead>
               <tbody>
       `;
       trashList.forEach(item => {
         let st = item.data;
         modalHtml += `<tr>
-          <td>${st.name || '-'}</td>
+          <td><b>${st.name || '-'}</b></td>
           <td>${st.uniqueId || '-'}</td>
-          <td>${st.originalIndex !== undefined ? st.originalIndex + 1 : 'End'}</td>
+          <td>${st.nationalCode || '-'}</td>
           <td>${st.deletedAt || '-'}</td>
           <td>
-            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st)}, "same")' style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
-            <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other School</button>
+            <button onclick='R4App.promptRollback(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
+            <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other</button>
           </td>
         </tr>`;
       });
       modalHtml += `</tbody></table></div></div>`;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    promptRollback(rowIdx, st) {
+      let targetUdise = prompt("Enter School UDISE Code where you want to restore this teacher:");
+      if (!targetUdise) return;
+      targetUdise = targetUdise.trim();
+      let targetSch = this.allSchools.find(s => String(s.udise).trim() === targetUdise);
+      if (!targetSch) {
+        alert("Error: Invalid UDISE code or school not found!");
+        return;
+      }
+      this.executeRestore(rowIdx, st, 'same', targetSch.udise);
     },
 
     promptTransfer(rowIdx, st) {
@@ -1268,21 +1280,20 @@
       document.body.insertAdjacentHTML('beforeend', verifyHtml);
     },
 
-    async executeRestore(rowIdx, st, type, otherUdise = "") {
-      let targetUdise = type === "other" ? otherUdise : document.getElementById('r4SchoolSelect').value;
+    async executeRestore(rowIdx, st, type, targetUdise) {
       if (!targetUdise) {
-        alert("Please select a school in Data Entry tab first to rollback.");
+        alert("Target UDISE code is missing.");
         return;
       }
 
-      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[]}');
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[], "isFinalized":false}');
       
+      // Duplicate check based on uniqueId or nationalCode
       let exists = saved.staff.some(existing => (st.uniqueId && existing.uniqueId === st.uniqueId) || (st.nationalCode && existing.nationalCode === st.nationalCode));
       if (exists) {
         alert("Duplicate Notice: This teacher record already exists in the school list. Skipping duplicate restore.");
       } else {
-        let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
-        saved.staff.splice(insertIdx, 0, st);
+        saved.staff.push(st); // Pushed safely with all complete fields
         localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
 
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -1301,7 +1312,7 @@
       });
 
       if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
-      alert("Successfully restored / transferred teacher record!");
+      alert("Successfully restored / transferred teacher record with complete details!");
       this.openTrashBin();
     },
 
