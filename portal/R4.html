@@ -830,7 +830,11 @@
         let card = btn.closest('.teacher-card');
         let cardIndex = Array.from(card.parentNode.children).indexOf(card);
 
+        // Capture current school UDISE so rollback knows exactly where to return this teacher
+        let currentUdise = document.getElementById('r4SchoolSelect').value;
+
         let staffData = {
+          udise: currentUdise,
           nature: card.querySelector('.t-nature').value,
           name: card.querySelector('.t-name').value,
           father: card.querySelector('.t-father').value,
@@ -1217,7 +1221,7 @@
               <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Close</button>
             </div>
             <table>
-              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>National Code</th><th>Deleted At</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>National Code</th><th>Original UDISE</th><th>Actions</th></tr></thead>
               <tbody>
       `;
       trashList.forEach(item => {
@@ -1226,27 +1230,15 @@
           <td><b>${st.name || '-'}</b></td>
           <td>${st.uniqueId || '-'}</td>
           <td>${st.nationalCode || '-'}</td>
-          <td>${st.deletedAt || '-'}</td>
+          <td>${st.udise || 'Unknown'}</td>
           <td>
-            <button onclick='R4App.promptRollback(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
+            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st)}, "same")' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
             <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other</button>
           </td>
         </tr>`;
       });
       modalHtml += `</tbody></table></div></div>`;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
-    },
-
-    promptRollback(rowIdx, st) {
-      let targetUdise = prompt("Enter School UDISE Code where you want to restore this teacher:");
-      if (!targetUdise) return;
-      targetUdise = targetUdise.trim();
-      let targetSch = this.allSchools.find(s => String(s.udise).trim() === targetUdise);
-      if (!targetSch) {
-        alert("Error: Invalid UDISE code or school not found!");
-        return;
-      }
-      this.executeRestore(rowIdx, st, 'same', targetSch.udise);
     },
 
     promptTransfer(rowIdx, st) {
@@ -1258,42 +1250,28 @@
         alert("Error: Invalid UDISE code or school not found!");
         return;
       }
-
-      let verifyHtml = `
-        <div id="verifyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;">
-          <div style="background:#fff; border-radius:12px; max-width:450px; width:100%; padding:20px; text-align:center;">
-            <h3 style="color:#071b38; margin-top:0;">🏫 Verify Target School</h3>
-            <p style="font-size:14px; color:#475569;">You are transferring teacher <b>${st.name}</b> to:</p>
-            <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin:15px 0; font-weight:bold; color:#1d4ed8;">
-              ${targetSch.name} (UDISE: ${targetSch.udise})
-            </div>
-            <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:20px;">
-              <input type="checkbox" id="confirmSchoolChk" style="width:16px; height:16px;"> I confirm this is the correct school.
-            </label>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-              <button onclick="document.getElementById('verifyModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Cancel</button>
-              <button onclick="if(document.getElementById('confirmSchoolChk').checked){ document.getElementById('verifyModal').remove(); R4App.executeRestore(${rowIdx}, ${JSON.stringify(st)}, 'other', '${targetSch.udise}'); } else { alert('Please check the confirmation box.'); }" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.insertAdjacentHTML('beforeend', verifyHtml);
+      this.executeRestore(rowIdx, st, 'other', targetSch.udise);
     },
 
-    async executeRestore(rowIdx, st, type, targetUdise) {
+    async executeRestore(rowIdx, st, type, otherUdise = "") {
+      let targetUdise = (type === 'same') ? String(st.udise || "").trim() : otherUdise;
+
       if (!targetUdise) {
-        alert("Target UDISE code is missing.");
+        alert("Error: Original UDISE code not found in record.");
         return;
       }
 
+      let targetSch = this.allSchools.find(s => String(s.udise).trim() === targetUdise);
+      let schoolNameTxt = targetSch ? targetSch.name : targetUdise;
+
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[], "isFinalized":false}');
       
-      // Duplicate check based on uniqueId or nationalCode
       let exists = saved.staff.some(existing => (st.uniqueId && existing.uniqueId === st.uniqueId) || (st.nationalCode && existing.nationalCode === st.nationalCode));
       if (exists) {
-        alert("Duplicate Notice: This teacher record already exists in the school list. Skipping duplicate restore.");
+        alert("Duplicate Notice: This teacher record already exists in school " + schoolNameTxt + ". Skipping duplicate restore.");
       } else {
-        saved.staff.push(st); // Pushed safely with all complete fields
+        let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
+        saved.staff.splice(insertIdx, 0, st);
         localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
 
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -1312,7 +1290,7 @@
       });
 
       if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
-      alert("Successfully restored / transferred teacher record with complete details!");
+      alert("Successfully restored teacher record to school: " + schoolNameTxt);
       this.openTrashBin();
     },
 
