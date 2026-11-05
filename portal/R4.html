@@ -147,6 +147,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -832,7 +833,22 @@
         let staffData = {
           nature: card.querySelector('.t-nature').value,
           name: card.querySelector('.t-name').value,
+          father: card.querySelector('.t-father').value,
           uniqueId: card.querySelector('.t-unique').value,
+          cast: card.querySelector('.t-cast').value,
+          gender: card.querySelector('.t-gender').value,
+          dob: card.querySelector('.t-dob').value,
+          mobile: card.querySelector('.t-mobile').value,
+          aadhar: card.querySelector('.t-aadhar').value,
+          email: card.querySelector('.t-email').value,
+          classes: Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value),
+          subjects: Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value),
+          bank: card.querySelector('.t-bank').value,
+          branch: card.querySelector('.t-branch').value,
+          accNo: card.querySelector('.t-acc').value,
+          ifsc: card.querySelector('.t-ifsc').value,
+          nationalCode: card.querySelector('.t-national').value,
+          isFrozen: card.classList.contains('frozen'),
           originalIndex: cardIndex,
           deletedAt: new Date().toLocaleString()
         };
@@ -1277,6 +1293,7 @@
         });
       }
 
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
       await fetch(this.cloudApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -1284,8 +1301,8 @@
       });
 
       if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
-      alert("Success: Record processed successfully for UDISE " + targetUdise);
-      this.loadSchoolForm();
+      alert("Successfully restored / transferred teacher record!");
+      this.openTrashBin();
     },
 
     exportExcel() {
