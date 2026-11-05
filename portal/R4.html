@@ -112,6 +112,7 @@
               <th>Total Staff</th>
               <th>Complete Entry</th>
               <th>Teacher Pending</th>
+              <th id="adminActionHeader" style="display:none;">Admin Action</th>
             </tr>
           </thead>
           <tbody id="dashSummaryTable"></tbody>
@@ -139,7 +140,7 @@
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h4 style="color:#071b38; margin:0;">Staff Details Entry Form</h4>
-        <button type="button" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">Add New Staff</button>
+        <button type="button" id="btnAddStaff" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">Add New Staff</button>
       </div>
 
       <div id="staffCardsContainer">
@@ -147,7 +148,8 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
+        <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
   </section>
@@ -374,7 +376,7 @@
 
           let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
           for (let udise in schoolMap) {
-            let payload = { udise: udise, staff: schoolMap[udise].staff };
+            let payload = { udise: udise, staff: schoolMap[udise].staff, isFinalized: false };
             localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
             await fetch(this.cloudApiUrl, {
               method: "POST",
@@ -441,6 +443,69 @@
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
       this.renderStaffCards(saved ? saved.staff : []);
+      this.updateFinalizeUI(saved ? saved.isFinalized : false);
+    },
+
+    updateFinalizeUI(isFinalized) {
+      let btn = document.getElementById('btnFinalizeSchool');
+      let btnAdd = document.getElementById('btnAddStaff');
+      let btnSave = document.getElementById('btnSaveData');
+      
+      if (!btn) return;
+
+      if (isFinalized) {
+        btn.textContent = "Finalized";
+        btn.style.background = "#16a34a"; // Green
+        btn.disabled = false; // School can click to unfreeze only if admin enabled, or keep locked for school
+        if(btnAdd) btnAdd.style.display = 'none';
+        if(btnSave) btnSave.style.display = 'none';
+        
+        // Disable all card inputs and buttons
+        document.querySelectorAll('.teacher-card').forEach(card => {
+          card.querySelectorAll('input, select').forEach(el => el.disabled = true);
+          card.querySelectorAll('button').forEach(b => b.style.display = 'none');
+        });
+      } else {
+        btn.textContent = "Finalize";
+        btn.style.background = "#dc2626"; // Red
+        if(btnAdd) btnAdd.style.display = 'inline-block';
+        if(btnSave) btnSave.style.display = 'inline-block';
+      }
+    },
+
+    async toggleFinalizeSchool() {
+      let udise = document.getElementById('r4SchoolSelect').value;
+      if (!udise) {
+        alert("Please select a school first.");
+        return;
+      }
+
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[]}');
+      let isCurrentlyFinalized = saved.isFinalized === true;
+
+      let info = this.getUserRoleInfo();
+      if (isCurrentlyFinalized && !info.isAdmin) {
+        alert("School data is finalized. Only Admin can enable/unlock it.");
+        return;
+      }
+
+      let confirmMsg = isCurrentlyFinalized ? "Do you want to enable/unlock this school for editing?" : "Are you sure you want to Finalize? Once finalized, data entry will be locked.";
+      if (!window.confirm(confirmMsg)) return;
+
+      saved.isFinalized = !isCurrentlyFinalized;
+      localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
+
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      try {
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
+        });
+      } catch(e) {}
+
+      this.loadSchoolForm();
+      alert(saved.isFinalized ? "School data finalized successfully." : "School data enabled for editing.");
     },
 
     toggleCustomDropdown(btn) {
@@ -668,8 +733,8 @@
             <div class="error-msg">Invalid IFSC format.</div>
           </div>
           <div class="form-group">
-            <label>Teacher National Code * (Non-Editable / ID)</label>
-            <input type="text" class="t-national" value="${st.nationalCode || ''}" placeholder="National Code / ID" ${isExplicitlyFrozen ? 'disabled' : ''} oninput="R4App.validateFieldLive(this, 'text')">
+            <label>Teacher National Code * (Disabled)</label>
+            <input type="text" class="t-national" value="${st.nationalCode || ''}" placeholder="National Code / ID" disabled oninput="R4App.validateFieldLive(this, 'text')">
             <div class="error-msg">Required field.</div>
           </div>
         </div>
@@ -689,7 +754,9 @@
     editCard(btn) {
       let card = btn.closest('.teacher-card');
       card.classList.remove('frozen');
-      card.querySelectorAll('input, select').forEach(el => el.disabled = false);
+      card.querySelectorAll('input, select').forEach(el => {
+        if (!el.classList.contains('t-national')) el.disabled = false;
+      });
       card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Incomplete]';
       card.querySelectorAll('.dropdown-select-box').forEach(box => box.setAttribute('onclick', 'R4App.toggleCustomDropdown(this)'));
       this.saveData();
@@ -799,7 +866,8 @@
         });
       });
 
-      let payload = { udise: udise, staff: staff };
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"isFinalized":false}');
+      let payload = { udise: udise, staff: staff, isFinalized: saved.isFinalized || false };
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
 
       try {
@@ -824,10 +892,17 @@
         }
       }
 
+      let adminActionHeader = document.getElementById('adminActionHeader');
+      if (adminActionHeader) adminActionHeader.style.display = info.isAdmin ? 'table-cell' : 'none';
+
       let jskMap = {};
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
         jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
       });
+
+      let tbody = document.getElementById('dashSummaryTable');
+      tbody.innerHTML = '';
+      let i = 1, tSch = 0, tPend = 0, tM = 0, tF = 0, tTot = 0, tComplete = 0, tTeacherPend = 0;
 
       schoolsToProcess.forEach(s => {
         let jsk = s.jsk || "Bhoura";
@@ -836,9 +911,9 @@
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
         let hasStaff = saved && saved.staff && saved.staff.length > 0;
-        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
+        let isFinalized = saved && saved.isFinalized === true;
 
-        if (!allFrozen) {
+        if (!isFinalized) {
           jskMap[jsk].pendingSchools++;
         }
 
@@ -862,10 +937,18 @@
         jskMap[jsk].teacherPending += schoolTeacherPending;
       });
 
-      let tbody = document.getElementById('dashSummaryTable');
-      tbody.innerHTML = '';
-      let i = 1, tSch = 0, tPend = 0, tM = 0, tF = 0, tTot = 0, tComplete = 0, tTeacherPend = 0;
+      // Render school summary rows if viewing single school or JSK list
+      schoolsToProcess.forEach(s => {
+        let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
+        let isFinalized = saved && saved.isFinalized === true;
+        let staffCount = saved && saved.staff ? saved.staff.length : 0;
 
+        let adminColHtml = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#dc2626' : '#16a34a'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Enable' : 'Finalized'}</button></td>` : '';
+
+        // We can list schools or render Sankul wise rows in summary table
+      });
+
+      // Render Sankul-wise summary rows
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
         if (d.schools === 0) continue;
@@ -878,6 +961,8 @@
         tComplete += d.completeEntry;
         tTeacherPend += d.teacherPending;
 
+        let adminCell = info.isAdmin ? `<td>-</td>` : '';
+
         tbody.innerHTML += `<tr>
           <td>${i++}</td>
           <td style="text-align:left; font-weight:bold;">${jsk}</td>
@@ -888,8 +973,10 @@
           <td style="font-weight:bold;">${d.total}</td>
           <td style="color:#16a34a; font-weight:bold;">${d.completeEntry}</td>
           <td style="color:#dc2626; font-weight:bold;">${d.teacherPending}</td>
+          ${adminCell}
         </tr>`;
       }
+      let adminTotalCell = info.isAdmin ? `<td>-</td>` : '';
       tbody.innerHTML += `<tr style="background:#f1f5f9; font-weight:bold;">
         <td colspan="2">Grand Total</td>
         <td>${tSch}</td>
@@ -899,7 +986,26 @@
         <td style="color:#1d4ed8;">${tTot}</td>
         <td style="color:#16a34a;">${tComplete}</td>
         <td style="color:#dc2626;">${tTeacherPend}</td>
+        ${adminTotalCell}
       </tr>`;
+    },
+
+    async adminEnableSchool(udise) {
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[]}');
+      saved.isFinalized = !saved.isFinalized;
+      localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
+
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      try {
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
+        });
+      } catch(e) {}
+
+      this.renderDashboard();
+      alert("School status updated successfully.");
     },
 
     renderReports() {
