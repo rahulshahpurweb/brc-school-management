@@ -128,7 +128,7 @@
           <button type="button" onclick="R4App.adminUnblockSchool()" style="background:#dc2626; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🔓 Admin Unblock / Unlock School</button>
         </div>
       </div>
-      
+
       <div class="filter-bar">
         <label><b>Select School:</b></label>
         <select id="r4SchoolSelect" onchange="R4App.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -154,7 +154,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" id="saveAndFreezeBtn" onclick="R4App.saveAndFreezeData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Save & Permanent Lock</button>
+        <button type="button" id="permanentLockedBtn" onclick="R4App.saveAndPermanentLock()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Permanent Locked</button>
       </div>
     </div>
   </section>
@@ -431,7 +431,7 @@
       let udise = document.getElementById('r4SchoolSelect').value;
       let container = document.getElementById('staffCardsContainer');
       let addBtn = document.getElementById('addStaffBtn');
-      let saveBtn = document.getElementById('saveAndFreezeBtn');
+      let permanentBtn = document.getElementById('permanentLockedBtn');
       let badge = document.getElementById('lockStatusBadge');
       let adminUnblock = document.getElementById('adminUnblockContainer');
       let info = this.getUserRoleInfo();
@@ -467,10 +467,10 @@
 
       if (isPermanentlyLocked) {
         addBtn.style.display = 'none';
-        saveBtn.style.display = 'none';
+        permanentBtn.style.display = 'none';
       } else {
         addBtn.style.display = 'inline-block';
-        saveBtn.style.display = 'inline-block';
+        permanentBtn.style.display = 'inline-block';
       }
 
       this.renderStaffCards(saved ? saved.staff : [], isPermanentlyLocked);
@@ -494,6 +494,7 @@
         }
         alert("School has been unlocked by Admin successfully.");
         this.loadSchoolForm();
+        this.populateDropdown();
       }
     },
 
@@ -743,7 +744,7 @@
       }
     },
 
-    async saveAndFreezeData() {
+    async saveAndPermanentLock() {
       let udise = document.getElementById('r4SchoolSelect').value;
       if (!udise) { alert("Please select a school first!"); return; }
 
@@ -823,6 +824,10 @@
 
       if (info.isSchool) {
         schoolsToProcess = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+        let headerTitle = document.getElementById('dashHeaderTitle');
+        if (headerTitle && schoolsToProcess.length > 0) {
+          headerTitle.textContent = `📊 School Teacher Summary - ${schoolsToProcess[0].name} (${schoolsToProcess[0].udise})`;
+        }
       }
 
       let jskMap = {};
@@ -907,7 +912,7 @@
 
       if (format === "F_1") {
         html = `<thead><tr>
-          <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Permanent Lock Status</th><th>Appointment</th>
+          <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Permanent School Lock Status</th><th>Appointment</th>
           <th>Teacher Name</th><th>Parent/Guardian</th><th>Unique ID</th><th>Cast</th><th>Gender</th>
           <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes Taught</th><th>Subjects Taught</th>
           <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th>
@@ -922,7 +927,7 @@
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
           let isLocked = saved && saved.isPermanentlyLocked === true;
-          let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Permanently Locked 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Unlocked 🔓</span>';
+          let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Complete (Locked) 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Pending (Unlocked) 🔓</span>';
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
 
           if (!hasStaff) {
@@ -971,7 +976,7 @@
       } else if (format === "F_2" || format === "F_3") {
         html = `<thead><tr>
           <th>Sr. No.</th><th>School Name</th><th>UDISE Code</th><th>Sankul (JSK)</th>
-          <th>Permanent Lock Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th>
+          <th>Permanent School Lock Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th>
         </tr></thead><tbody>`;
 
         let idx = 1;
@@ -984,7 +989,7 @@
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
           let isLocked = saved && saved.isPermanentlyLocked === true;
           if (isLocked) lockedCount++;
-          let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Permanently Locked 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Unlocked 🔓</span>';
+          let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Complete (Locked) 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Pending (Unlocked) 🔓</span>';
 
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
           let maleCount = 0, femaleCount = 0;
