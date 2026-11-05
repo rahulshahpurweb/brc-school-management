@@ -25,8 +25,14 @@
   
   .content-container { max-width: 1400px; margin: 20px auto; padding: 0 15px 140px 15px; }
   .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
-  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; position: relative; }
   
+  .searchable-select-container { position: relative; flex: 2; min-width: 300px; }
+  .school-search-input { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: bold; box-sizing: border-box; background: #fff; }
+  .school-suggestions-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); max-height: 220px; overflow-y: auto; z-index: 9999; display: none; }
+  .school-suggestion-item { padding: 9px 12px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-weight: 500; color: #071b38; }
+  .school-suggestion-item:hover { background: #f1f5f9; color: #1d4ed8; font-weight: bold; }
+
   .teacher-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: relative; }
   .teacher-card.frozen { border: 2px solid #16a34a; background: #f0fdf4; }
   .teacher-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
@@ -123,9 +129,15 @@
   <section id="r4Entry" class="r4-section" style="display:none;">
     <div class="card">
       <h3>School Teacher & Staff Data Entry</h3>
+      
       <div class="filter-bar">
-        <label><b>Select School:</b></label>
-        <select id="r4SchoolSelect" onchange="R4App.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
+        <label><b>Search & Select School:</b></label>
+        <div class="searchable-select-container">
+          <input type="text" id="schoolSearchInput" class="school-search-input" placeholder="Type School Name or UDISE Code to search..." oninput="R4App.filterSchools(this.value)" onclick="R4App.showAllSchools()" autocomplete="off">
+          <input type="hidden" id="r4SchoolSelect" value="">
+          <div id="schoolSuggestionsList" class="school-suggestions-list"></div>
+        </div>
+        <button type="button" onclick="R4App.clearSchoolSelection()" style="background:#64748b; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">Clear</button>
       </div>
 
       <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
@@ -143,10 +155,11 @@
       </div>
 
       <div id="staffCardsContainer">
-        <div style="padding:20px; color:#64748b; text-align:center;">Please select a school from the dropdown above to begin data entry.</div>
+        <div style="padding:20px; color:#64748b; text-align:center;">Please search and select a school from above to begin data entry.</div>
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -293,12 +306,94 @@
       } else if (tab === 'entry') {
         document.getElementById('r4Entry').style.display = 'block';
         document.getElementById('navEntryBtn').classList.add('active');
-        this.populateDropdown();
+        this.setupSchoolSearch();
       } else if (tab === 'reports') {
         document.getElementById('r4Reports').style.display = 'block';
         document.getElementById('navReportsBtn').classList.add('active');
         this.renderReports();
       }
+    },
+
+    setupSchoolSearch() {
+      let info = this.getUserRoleInfo();
+      let eligibleSchools = this.allSchools;
+      if (info.isSchool) eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+
+      if (info.isSchool && eligibleSchools.length === 1) {
+        let s = eligibleSchools[0];
+        document.getElementById('schoolSearchInput').value = `${s.name} (${s.udise})`;
+        document.getElementById('schoolSearchInput').disabled = true;
+        document.getElementById('r4SchoolSelect').value = s.udise;
+        this.loadSchoolForm();
+      }
+    },
+
+    filterSchools(query) {
+      let listContainer = document.getElementById('schoolSuggestionsList');
+      if (!listContainer) return;
+
+      let info = this.getUserRoleInfo();
+      let eligibleSchools = this.allSchools;
+      if (info.isSchool) eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+
+      let q = query.toLowerCase().trim();
+      let filtered = eligibleSchools.filter(s => {
+        let name = String(s.name || "").toLowerCase();
+        let udise = String(s.udise || "").toLowerCase();
+        let jsk = String(s.jsk || "").toLowerCase();
+        return name.includes(q) || udise.includes(q) || jsk.includes(q);
+      });
+
+      if (filtered.length === 0) {
+        listContainer.style.display = 'none';
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(s => {
+        html += `<div class="school-suggestion-item" onclick="R4App.selectSchool('${s.udise}', '${s.name.replace(/'/g, "\\'")}', '${s.jsk || 'Bhoura'}', '${s.category || 'Primary/Middle'}')">
+          <b>${s.name}</b> (UDISE: ${s.udise}) - JSK: ${s.jsk || 'Bhoura'}
+        </div>`;
+      });
+
+      listContainer.innerHTML = html;
+      listContainer.style.display = 'block';
+    },
+
+    showAllSchools() {
+      let info = this.getUserRoleInfo();
+      let eligibleSchools = this.allSchools;
+      if (info.isSchool) eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
+
+      let listContainer = document.getElementById('schoolSuggestionsList');
+      if (!listContainer) return;
+
+      let html = '';
+      eligibleSchools.forEach(s => {
+        html += `<div class="school-suggestion-item" onclick="R4App.selectSchool('${s.udise}', '${s.name.replace(/'/g, "\\'")}', '${s.jsk || 'Bhoura'}', '${s.category || 'Primary/Middle'}')">
+          <b>${s.name}</b> (UDISE: ${s.udise}) - JSK: ${s.jsk || 'Bhoura'}
+        </div>`;
+      });
+
+      listContainer.innerHTML = html;
+      listContainer.style.display = 'block';
+    },
+
+    selectSchool(udise, name, jsk, category) {
+      document.getElementById('schoolSearchInput').value = `${name} (${udise})`;
+      document.getElementById('r4SchoolSelect').value = udise;
+      let listContainer = document.getElementById('schoolSuggestionsList');
+      if (listContainer) listContainer.style.display = 'none';
+
+      this.loadSchoolForm();
+    },
+
+    clearSchoolSelection() {
+      document.getElementById('schoolSearchInput').value = '';
+      document.getElementById('r4SchoolSelect').value = '';
+      let listContainer = document.getElementById('schoolSuggestionsList');
+      if (listContainer) listContainer.style.display = 'none';
+      this.loadSchoolForm();
     },
 
     downloadTemplate() {
@@ -400,30 +495,6 @@
       reader.readAsArrayBuffer(file);
     },
 
-    populateDropdown() {
-      let select = document.getElementById('r4SchoolSelect');
-      if (!select) return;
-      select.innerHTML = '<option value="">-- Select School --</option>';
-
-      let info = this.getUserRoleInfo();
-      let eligibleSchools = this.allSchools;
-      if (info.isSchool) eligibleSchools = this.allSchools.filter(s => String(s.udise || "").trim() === info.userId);
-
-      eligibleSchools.forEach(s => {
-        let realUdise = String(s.udise).trim();
-        let el = document.createElement('option');
-        el.value = realUdise;
-        el.textContent = `${s.name} (${realUdise}) - JSK: ${s.jsk || 'Bhoura'}`;
-        select.appendChild(el);
-      });
-
-      if (info.isSchool && eligibleSchools.length === 1) {
-        select.value = eligibleSchools[0].udise;
-        select.disabled = true;
-        this.loadSchoolForm();
-      }
-    },
-
     loadSchoolForm() {
       let udise = document.getElementById('r4SchoolSelect').value;
       let container = document.getElementById('staffCardsContainer');
@@ -433,7 +504,7 @@
         document.getElementById('lblUdise').textContent = "-";
         document.getElementById('lblJsk').textContent = "-";
         document.getElementById('lblCategory').textContent = "-";
-        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school to begin data entry.</div>`;
+        container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please search and select a school from above to begin data entry.</div>`;
         return;
       }
 
@@ -828,8 +899,6 @@
       if (confirmDelete) {
         let card = btn.closest('.teacher-card');
         let cardIndex = Array.from(card.parentNode.children).indexOf(card);
-
-        // Capture current school UDISE so rollback knows exactly where to return this teacher
         let currentUdise = document.getElementById('r4SchoolSelect').value;
 
         let staffData = {
@@ -1231,7 +1300,7 @@
           <td>${st.nationalCode || '-'}</td>
           <td>${st.udise || 'Unknown'}</td>
           <td>
-            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st)}, "same")' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
+            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st)}, "${st.udise || ''}")' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
             <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other</button>
           </td>
         </tr>`;
@@ -1249,18 +1318,36 @@
         alert("Error: Invalid UDISE code or school not found!");
         return;
       }
-      this.executeRestore(rowIdx, st, 'other', targetSch.udise);
+
+      // Show secure verification modal popup with checkbox
+      let verifyHtml = `
+        <div id="verifyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#fff; border-radius:12px; max-width:450px; width:100%; padding:20px; text-align:center;">
+            <h3 style="color:#071b38; margin-top:0;">🏫 Verify Target School</h3>
+            <p style="font-size:14px; color:#475569;">You are transferring teacher <b>${st.name}</b> to:</p>
+            <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin:15px 0; font-weight:bold; color:#1d4ed8;">
+              ${targetSch.name} (UDISE: ${targetSch.udise})
+            </div>
+            <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:20px;">
+              <input type="checkbox" id="confirmSchoolChk" style="width:16px; height:16px;"> I confirm this is the correct school.
+            </label>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <button onclick="document.getElementById('verifyModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Cancel</button>
+              <button onclick="if(document.getElementById('confirmSchoolChk').checked){ document.getElementById('verifyModal').remove(); R4App.executeRestore(${rowIdx}, ${JSON.stringify(st)}, '${targetSch.udise}'); } else { alert('Please check the confirmation box.'); }" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', verifyHtml);
     },
 
-    async executeRestore(rowIdx, st, type, otherUdise = "") {
-      let targetUdise = (type === 'same') ? String(st.udise || "").trim() : otherUdise;
-
+    async executeRestore(rowIdx, st, targetUdise) {
       if (!targetUdise) {
-        alert("Error: Original UDISE code not found in record.");
+        alert("Error: Target UDISE code is missing.");
         return;
       }
 
-      let targetSch = this.allSchools.find(s => String(s.udise).trim() === targetUdise);
+      let targetSch = this.allSchools.find(s => String(s.udise).trim() === String(targetUdise).trim());
       let schoolNameTxt = targetSch ? targetSch.name : targetUdise;
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[], "isFinalized":false}');
@@ -1269,8 +1356,7 @@
       if (exists) {
         alert("Duplicate Notice: This teacher record already exists in school " + schoolNameTxt + ". Skipping duplicate restore.");
       } else {
-        let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
-        saved.staff.splice(insertIdx, 0, st);
+        saved.staff.push(st);
         localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
 
         let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -1289,7 +1375,7 @@
       });
 
       if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
-      alert("Successfully restored teacher record to school: " + schoolNameTxt);
+      alert("Successfully restored / transferred teacher record to: " + schoolNameTxt);
       this.openTrashBin();
     },
 
@@ -1300,8 +1386,10 @@
   };
 
   window.addEventListener('click', function(e) {
-    if (!e.target.closest('.custom-dropdown')) {
+    if (!e.target.closest('.custom-dropdown') && !e.target.closest('.searchable-select-container')) {
       document.querySelectorAll('.dropdown-list-container').forEach(d => d.classList.remove('open'));
+      let suggestions = document.getElementById('schoolSuggestionsList');
+      if (suggestions) suggestions.style.display = 'none';
     }
   });
 
