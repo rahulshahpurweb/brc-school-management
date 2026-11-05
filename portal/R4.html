@@ -222,6 +222,7 @@
     banksList: ["SBI", "PNB", "BOI", "BOM", "CBI", "Bank of Baroda", "Canara Bank", "Union Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab & Sind Bank", "UCO Bank", "Indian Bank"],
     subjectsList: ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"],
     classesList: ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
+    pendingTransfer: null,
 
     showLoader(show) {
       let overlay = document.getElementById("loadingOverlay");
@@ -1299,8 +1300,8 @@
           <td>${st.nationalCode || '-'}</td>
           <td>${st.udise || 'Unknown'}</td>
           <td>
-            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st)}, "${st.udise || ''}")' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
-            <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other</button>
+            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st).replace(/'/g, "&#39;")}, "${st.udise || ''}")' style="background:#16a34a; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
+            <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st).replace(/'/g, "&#39;")})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other</button>
           </td>
         </tr>`;
       });
@@ -1318,7 +1319,8 @@
         return;
       }
 
-      // Show secure verification modal popup with checkbox
+      this.pendingTransfer = { rowIdx: rowIdx, st: st, targetUdise: targetSch.udise };
+
       let verifyHtml = `
         <div id="verifyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;">
           <div style="background:#fff; border-radius:12px; max-width:450px; width:100%; padding:20px; text-align:center;">
@@ -1332,12 +1334,28 @@
             </label>
             <div style="display:flex; justify-content:flex-end; gap:10px;">
               <button onclick="document.getElementById('verifyModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Cancel</button>
-              <button onclick="if(document.getElementById('confirmSchoolChk').checked){ document.getElementById('verifyModal').remove(); R4App.executeRestore(${rowIdx}, ${JSON.stringify(st)}, '${targetSch.udise}'); } else { alert('Please check the confirmation box.'); }" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
+              <button onclick="R4App.finalizeTransfer()" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
             </div>
           </div>
         </div>
       `;
       document.body.insertAdjacentHTML('beforeend', verifyHtml);
+    },
+
+    finalizeTransfer() {
+      let chk = document.getElementById('confirmSchoolChk');
+      if (!chk || !chk.checked) {
+        alert('Please check the confirmation box.');
+        return;
+      }
+      let pt = this.pendingTransfer;
+      if (!pt) {
+        alert('Transfer session expired. Please try again.');
+        if(document.getElementById('verifyModal')) document.getElementById('verifyModal').remove();
+        return;
+      }
+      if(document.getElementById('verifyModal')) document.getElementById('verifyModal').remove();
+      this.executeRestore(pt.rowIdx, pt.st, pt.targetUdise);
     },
 
     async executeRestore(rowIdx, st, targetUdise) {
