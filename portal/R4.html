@@ -147,6 +147,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -350,26 +351,32 @@
               schoolMap[udise] = { schoolName: r[0] || "", jsk: r[3] || "Bhoura", staff: [] };
             }
 
-            schoolMap[udise].staff.push({
-              nature: r[4] || "Regular",
-              name: r[5] || "",
-              father: r[6] || "",
-              uniqueId: r[7] || "",
-              cast: r[8] || "GEN",
-              gender: r[9] || "Male",
-              dob: r[10] || "",
-              mobile: r[11] || "",
-              aadhar: r[12] || "",
-              email: r[13] || "",
-              classes: Array.isArray(r[14]) ? r[14] : String(r[14] || "").split(",").map(x => x.trim()).filter(Boolean),
-              subjects: Array.isArray(r[15]) ? r[15] : String(r[15] || "").split(",").map(x => x.trim()).filter(Boolean),
-              bank: r[16] || "SBI",
-              branch: r[17] || "",
-              accNo: r[18] || "",
-              ifsc: r[19] || "",
-              nationalCode: r[20] || "",
-              isFrozen: false
-            });
+            let uId = String(r[7] || "").trim();
+            let nCode = String(r[20] || "").trim();
+            let exists = schoolMap[udise].staff.some(st => (uId && st.uniqueId === uId) || (nCode && st.nationalCode === nCode));
+
+            if (!exists) {
+              schoolMap[udise].staff.push({
+                nature: r[4] || "Regular",
+                name: r[5] || "",
+                father: r[6] || "",
+                uniqueId: uId,
+                cast: r[8] || "GEN",
+                gender: r[9] || "Male",
+                dob: r[10] || "",
+                mobile: r[11] || "",
+                aadhar: r[12] || "",
+                email: r[13] || "",
+                classes: Array.isArray(r[14]) ? r[14] : String(r[14] || "").split(",").map(x => x.trim()).filter(Boolean),
+                subjects: Array.isArray(r[15]) ? r[15] : String(r[15] || "").split(",").map(x => x.trim()).filter(Boolean),
+                bank: r[16] || "SBI",
+                branch: r[17] || "",
+                accNo: r[18] || "",
+                ifsc: r[19] || "",
+                nationalCode: nCode,
+                isFrozen: false
+              });
+            }
           }
 
           let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -459,13 +466,11 @@
         if(btnAdd) btnAdd.style.display = 'none';
         if(btnSave) btnSave.style.display = 'none';
         
-        // If school is finalized, disable all inputs and action buttons inside cards
         document.querySelectorAll('.teacher-card').forEach(card => {
           card.querySelectorAll('input, select').forEach(el => el.disabled = true);
           card.querySelectorAll('button').forEach(b => b.style.display = 'none');
         });
 
-        // Non-admin cannot un-finalize
         if (!info.isAdmin) {
           btn.disabled = true;
           btn.style.cursor = "not-allowed";
@@ -499,7 +504,6 @@
         return;
       }
 
-      // Check if all staff are saved and frozen before finalizing
       if (!isCurrentlyFinalized) {
         let staffList = saved.staff || [];
         if (staffList.length === 0) {
@@ -861,6 +865,7 @@
         
         let nameVal = card.querySelector('.t-name').value.trim();
         let uniqueVal = card.querySelector('.t-unique').value.trim();
+        let natVal = card.querySelector('.t-national').value.trim();
         let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
         let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
 
@@ -868,26 +873,29 @@
           isFrozen = false;
         }
 
-        staff.push({
-          nature: card.querySelector('.t-nature').value,
-          name: nameVal,
-          father: card.querySelector('.t-father').value.trim(),
-          uniqueId: uniqueVal,
-          cast: card.querySelector('.t-cast').value,
-          gender: card.querySelector('.t-gender').value,
-          dob: card.querySelector('.t-dob').value.trim(),
-          mobile: card.querySelector('.t-mobile').value.trim(),
-          aadhar: card.querySelector('.t-aadhar').value.trim(),
-          email: card.querySelector('.t-email').value.trim(),
-          classes: clsArr,
-          subjects: subjArr,
-          bank: card.querySelector('.t-bank').value,
-          branch: card.querySelector('.t-branch').value.trim(),
-          accNo: card.querySelector('.t-acc').value.trim(),
-          ifsc: card.querySelector('.t-ifsc').value.trim().toUpperCase(),
-          nationalCode: card.querySelector('.t-national').value.trim(),
-          isFrozen: isFrozen
-        });
+        let exists = staff.some(st => (uniqueVal && st.uniqueId === uniqueVal) || (natVal && st.nationalCode === natVal));
+        if (!exists && nameVal) {
+          staff.push({
+            nature: card.querySelector('.t-nature').value,
+            name: nameVal,
+            father: card.querySelector('.t-father').value.trim(),
+            uniqueId: uniqueVal,
+            cast: card.querySelector('.t-cast').value,
+            gender: card.querySelector('.t-gender').value,
+            dob: card.querySelector('.t-dob').value.trim(),
+            mobile: card.querySelector('.t-mobile').value.trim(),
+            aadhar: card.querySelector('.t-aadhar').value.trim(),
+            email: card.querySelector('.t-email').value.trim(),
+            classes: clsArr,
+            subjects: subjArr,
+            bank: card.querySelector('.t-bank').value,
+            branch: card.querySelector('.t-branch').value.trim(),
+            accNo: card.querySelector('.t-acc').value.trim(),
+            ifsc: card.querySelector('.t-ifsc').value.trim().toUpperCase(),
+            nationalCode: natVal,
+            isFrozen: isFrozen
+          });
+        }
       });
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"isFinalized":false}');
@@ -1253,16 +1261,22 @@
       }
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[]}');
-      let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
-      saved.staff.splice(insertIdx, 0, st);
-      localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
+      
+      let exists = saved.staff.some(existing => (st.uniqueId && existing.uniqueId === st.uniqueId) || (st.nationalCode && existing.nationalCode === st.nationalCode));
+      if (exists) {
+        alert("Duplicate Notice: This teacher record already exists in the school list. Skipping duplicate restore.");
+      } else {
+        let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
+        saved.staff.splice(insertIdx, 0, st);
+        localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
 
-      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-      await fetch(this.cloudApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: targetUdise, payload: JSON.stringify(saved) })
-      });
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: targetUdise, payload: JSON.stringify(saved) })
+        });
+      }
 
       await fetch(this.cloudApiUrl, {
         method: "POST",
@@ -1271,7 +1285,7 @@
       });
 
       if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
-      alert("Success: Record successfully " + (type === 'other' ? 'transferred' : 'restored') + " to UDISE " + targetUdise);
+      alert("Success: Record processed successfully for UDISE " + targetUdise);
       this.loadSchoolForm();
     },
 
