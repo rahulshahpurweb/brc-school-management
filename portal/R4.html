@@ -123,13 +123,7 @@
 
   <section id="r4Entry" class="r4-section" style="display:none;">
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-        <h3 style="margin:0;">School Teacher & Staff Data Entry</h3>
-        <div id="adminUnblockContainer" style="display:none;">
-          <button type="button" onclick="R4App.adminUnblockSchool()" style="background:#dc2626; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">🔓 Admin Unblock / Unlock School</button>
-        </div>
-      </div>
-
+      <h3>School Teacher & Staff Data Entry</h3>
       <div class="filter-bar">
         <label><b>Select School:</b></label>
         <select id="r4SchoolSelect" onchange="R4App.loadSchoolForm()" style="flex:2; min-width:300px; padding:8px; font-weight:bold; border-radius:6px;"></select>
@@ -141,13 +135,12 @@
           <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
           <span><b>JSK:</b> <span id="lblJsk">-</span></span>
           <span><b>Category:</b> <span id="lblCategory">-</span></span>
-          <span id="lockStatusBadge" style="margin-left:auto; padding:4px 10px; border-radius:4px; font-weight:bold; font-size:12px;">Status: Unlocked 🔓</span>
         </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h4 style="color:#071b38; margin:0;">Staff Details Entry Form</h4>
-        <button type="button" id="addStaffBtn" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">Add New Staff</button>
+        <button type="button" onclick="R4App.addNewStaffCard()" style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; cursor:pointer;">Add New Staff</button>
       </div>
 
       <div id="staffCardsContainer">
@@ -155,7 +148,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" id="permanentLockedBtn" onclick="R4App.saveAndPermanentLock()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Permanent Locked</button>
+        <button type="button" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
       </div>
     </div>
   </section>
@@ -251,12 +244,40 @@
           if (Array.isArray(cloudTeachers)) {
             cloudTeachers.forEach(item => {
               if (item.udise && item.payload) {
+                // GLOBAL UNFREEZE: Saare purane records ko ek baar unfreeze kar diya taaki manual Save & Freeze karna pade
+                if (item.payload.staff) {
+                  item.payload.staff.forEach(st => {
+                    st.isFrozen = false;
+                  });
+                }
                 localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
               }
             });
           }
         }
       } catch(e) {}
+
+      // Local storage cleaning loop to force manual freeze for existing records
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && key.startsWith("brc_teacher_")) {
+          try {
+            let data = JSON.parse(localStorage.getItem(key));
+            if (data && data.staff) {
+              let modified = false;
+              data.staff.forEach(st => {
+                if (st.isFrozen === true) {
+                  st.isFrozen = false; // Reset to require manual freeze
+                  modified = true;
+                }
+              });
+              if (modified) {
+                localStorage.setItem(key, JSON.stringify(data));
+              }
+            }
+          } catch(err) {}
+        }
+      }
 
       if (!this.allSchools || this.allSchools.length === 0) {
         let sessionData = SessionManager.getData();
@@ -375,13 +396,13 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: true
+              isFrozen: false
             });
           }
 
           let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
           for (let udise in schoolMap) {
-            let payload = { udise: udise, staff: schoolMap[udise].staff, isPermanentlyLocked: true };
+            let payload = { udise: udise, staff: schoolMap[udise].staff };
             localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
             await fetch(this.cloudApiUrl, {
               method: "POST",
@@ -412,13 +433,9 @@
 
       eligibleSchools.forEach(s => {
         let realUdise = String(s.udise).trim();
-        let saved = JSON.parse(localStorage.getItem("brc_teacher_" + realUdise) || "null");
-        let isLocked = saved && saved.isPermanentlyLocked === true;
-        let lockTag = isLocked ? " 🔒 [Locked]" : "";
-
         let el = document.createElement('option');
         el.value = realUdise;
-        el.textContent = `${s.name} (${realUdise}) - JSK: ${s.jsk || 'Bhoura'}${lockTag}`;
+        el.textContent = `${s.name} (${realUdise}) - JSK: ${s.jsk || 'Bhoura'}`;
         select.appendChild(el);
       });
 
@@ -432,18 +449,12 @@
     loadSchoolForm() {
       let udise = document.getElementById('r4SchoolSelect').value;
       let container = document.getElementById('staffCardsContainer');
-      let addBtn = document.getElementById('addStaffBtn');
-      let permanentBtn = document.getElementById('permanentLockedBtn');
-      let badge = document.getElementById('lockStatusBadge');
-      let adminUnblock = document.getElementById('adminUnblockContainer');
-      let info = this.getUserRoleInfo();
 
       if (!udise) {
         document.getElementById('lblSchoolName').textContent = "-";
         document.getElementById('lblUdise').textContent = "-";
         document.getElementById('lblJsk').textContent = "-";
         document.getElementById('lblCategory').textContent = "-";
-        if (badge) { badge.textContent = "Status: Unlocked 🔓"; badge.style.background = "#f0fdf4"; badge.style.color = "#16a34a"; }
         container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">Please select a school to begin data entry.</div>`;
         return;
       }
@@ -457,52 +468,12 @@
       document.getElementById('lblCategory').textContent = school.category || 'Primary/Middle';
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
-      let isPermanentlyLocked = saved && saved.isPermanentlyLocked === true;
-
-      if (badge) {
-        badge.textContent = isPermanentlyLocked ? "Status: Permanently Locked 🔒" : "Status: Unlocked 🔓";
-        badge.style.background = isPermanentlyLocked ? "#fee2e2" : "#f0fdf4";
-        badge.style.color = isPermanentlyLocked ? "#dc2626" : "#16a34a";
+      if (saved && saved.staff) {
+        saved.staff.forEach(st => {
+          if (st.isFrozen !== true) st.isFrozen = false;
+        });
       }
-
-      if (adminUnblock) {
-        adminUnblock.style.display = (info.isAdmin && isPermanentlyLocked) ? 'block' : 'none';
-      }
-
-      if (isPermanentlyLocked) {
-        if (addBtn) addBtn.style.display = 'none';
-        if (permanentBtn) permanentBtn.style.display = 'none';
-      } else {
-        if (addBtn) addBtn.style.display = 'inline-block';
-        if (permanentBtn) permanentBtn.style.display = 'inline-block';
-      }
-
-      this.renderStaffCards(saved ? saved.staff : [], isPermanentlyLocked);
-    },
-
-    adminUnblockSchool() {
-      let udise = document.getElementById('r4SchoolSelect').value;
-      if (!udise) return;
-      if (confirm("⚠️ Admin Action: Are you sure you want to unblock/unlock this school?")) {
-        let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
-        if (saved) {
-          saved.isPermanentlyLocked = false;
-          if (saved.staff) {
-            saved.staff.forEach(st => st.isFrozen = false);
-          }
-          localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
-          
-          let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-          fetch(this.cloudApiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(saved) })
-          });
-        }
-        alert("School has been unlocked by Admin successfully.");
-        this.loadSchoolForm();
-        this.populateDropdown();
-      }
+      this.renderStaffCards(saved ? saved.staff : []);
     },
 
     toggleCustomDropdown(btn) {
@@ -556,17 +527,7 @@
       } else if (type === 'acc') {
         if (!/^\d{10,}$/.test(val)) isValid = false;
       } else if (type === 'dob') {
-        if (!/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(val)) {
-          isValid = false;
-        } else {
-          let parts = val.split('/');
-          let dobDate = new Date(parts[2], parts[1] - 1, parts[0]);
-          let today = new Date();
-          let age = today.getFullYear() - dobDate.getFullYear();
-          let m = today.getMonth() - dobDate.getMonth();
-          if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) age--;
-          if (age < 18 || age > 65) isValid = false;
-        }
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)) isValid = false;
       } else if (type === 'ifsc') {
         if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(val.toUpperCase())) isValid = false;
       } else if (type === 'unique') {
@@ -589,16 +550,17 @@
       }
     },
 
-    addNewStaffCard(st = {}, isLocked = false) {
+    addNewStaffCard(st = {}, insertAtIndex = -1) {
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
+      let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
-      card.className = 'teacher-card ' + (isLocked ? 'frozen' : '');
+      card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
 
       let selectedClasses = Array.isArray(st.classes) ? st.classes : [];
       let selectedSubjects = Array.isArray(st.subjects) ? st.subjects : [];
-      let disabledAttr = isLocked ? 'disabled' : '';
+      let disabledAttr = isExplicitlyFrozen ? 'disabled' : '';
       
       let classesHtml = this.classesList.map(c => `<label><input type="checkbox" class="t-class-chk" value="${c}" ${selectedClasses.includes(c) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-class-chk', 'Select Classes')"> ${c}</label>`).join('');
       let subjectsHtml = this.subjectsList.map(sub => `<label><input type="checkbox" class="t-subj-chk" value="${sub}" ${selectedSubjects.includes(sub) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-subj-chk', 'Select Subjects')"> ${sub}</label>`).join('');
@@ -606,8 +568,12 @@
       
       card.innerHTML = `
         <div class="teacher-card-header">
-          <span>Staff Member Record</span>
-          <button type="button" onclick="R4App.deleteStaffCard(this)" style="background:#dc2626; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;" ${isLocked ? 'style="display:none;"' : ''}>🗑️ Delete</button>
+          <span>Staff Member [Status: ${isExplicitlyFrozen ? '🔒 Frozen / Saved' : '✍️ Incomplete'}]</span>
+          <div style="display:flex; gap:6px;">
+            <button type="button" onclick="R4App.editCard(this)" style="background:#d97706; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">✏️ Edit</button>
+            <button type="button" onclick="R4App.freezeCard(this)" style="background:#16a34a; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">🔒 Save & Freeze</button>
+            <button type="button" onclick="R4App.deleteStaffCard(this)" style="background:#dc2626; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">🗑️ Delete</button>
+          </div>
         </div>
         <div class="form-grid">
           <div class="form-group">
@@ -657,7 +623,7 @@
           <div class="form-group">
             <label>DOB (DD/MM/YYYY) *</label>
             <input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY" ${disabledAttr} oninput="R4App.validateFieldLive(this, 'dob')">
-            <div class="error-msg">Format DD/MM/YYYY (Age 18-65)</div>
+            <div class="error-msg">Format: DD/MM/YYYY</div>
           </div>
           <div class="form-group">
             <label>Mobile No. *</label>
@@ -678,7 +644,7 @@
           <div class="form-group">
             <label>Classes Taught *</label>
             <div class="custom-dropdown">
-              <div class="dropdown-select-box" onclick="${isLocked ? '' : 'R4App.toggleCustomDropdown(this)'}">
+              <div class="dropdown-select-box" onclick="${isExplicitlyFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
                 <span class="selected-text">Select Classes</span>
                 <span>▼</span>
               </div>
@@ -691,7 +657,7 @@
           <div class="form-group">
             <label>Subjects Taught *</label>
             <div class="custom-dropdown">
-              <div class="dropdown-select-box" onclick="${isLocked ? '' : 'R4App.toggleCustomDropdown(this)'}">
+              <div class="dropdown-select-box" onclick="${isExplicitlyFrozen ? '' : 'R4App.toggleCustomDropdown(this)'}">
                 <span class="selected-text">Select Subjects</span>
                 <span>▼</span>
               </div>
@@ -727,65 +693,113 @@
         </div>
       `;
 
-      container.appendChild(card);
+      if (insertAtIndex >= 0 && insertAtIndex < container.children.length) {
+        container.insertBefore(card, container.children[insertAtIndex]);
+      } else {
+        container.appendChild(card);
+      }
+      
       let cardElem = card;
       this.updateSelectedTags(cardElem.querySelectorAll('.custom-dropdown')[0].querySelector('.dropdown-list-container'), '.t-class-chk', 'Select Classes');
       this.updateSelectedTags(cardElem.querySelectorAll('.custom-dropdown')[1].querySelector('.dropdown-list-container'), '.t-subj-chk', 'Select Subjects');
     },
 
-    renderStaffCards(staff = [], isLocked = false) {
+    editCard(btn) {
+      let card = btn.closest('.teacher-card');
+      card.classList.remove('frozen');
+      card.querySelectorAll('input, select').forEach(el => el.disabled = false);
+      card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Incomplete]';
+      card.querySelectorAll('.dropdown-select-box').forEach(box => box.setAttribute('onclick', 'R4App.toggleCustomDropdown(this)'));
+      this.saveData();
+    },
+
+    freezeCard(btn) {
+      let card = btn.closest('.teacher-card');
+      let inputs = card.querySelectorAll('input[type="text"], select');
+      let isValid = true;
+      inputs.forEach(inp => {
+        if (!inp.value || inp.value.trim() === "") {
+          inp.classList.add('error');
+          isValid = false;
+        }
+      });
+      let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
+      let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
+      if (clsArr.length === 0 || subjArr.length === 0 || !isValid) {
+        alert("Validation Notice: Please complete all mandatory fields and select classes/subjects before freezing this staff record.");
+        return;
+      }
+      card.classList.add('frozen');
+      card.querySelectorAll('input, select').forEach(el => el.disabled = true);
+      card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: 🔒 Frozen / Saved]';
+      card.querySelectorAll('.dropdown-select-box').forEach(box => box.removeAttribute('onclick'));
+      this.saveData();
+      alert("Success: Staff record has been successfully saved and frozen.");
+    },
+
+    renderStaffCards(staff = []) {
       let container = document.getElementById('staffCardsContainer');
       container.innerHTML = '';
       if (!staff || staff.length === 0) {
         container.innerHTML = `<div style="padding:20px; color:#64748b; text-align:center;">No staff members added yet. Click 'Add New Staff' to begin.</div>`;
         return;
       }
-      staff.forEach(st => this.addNewStaffCard(st, isLocked));
+      staff.forEach(st => this.addNewStaffCard(st));
     },
 
     async deleteStaffCard(btn) {
-      let confirmDelete = window.confirm("Confirmation Request: Are you sure you want to delete this staff record?");
+      let confirmDelete = window.confirm("Confirmation Request: Are you sure you want to delete this staff record? This action will remove the entry and back it up.");
       if (confirmDelete) {
         let card = btn.closest('.teacher-card');
+        let cardIndex = Array.from(card.parentNode.children).indexOf(card);
+
+        let staffData = {
+          nature: card.querySelector('.t-nature').value,
+          name: card.querySelector('.t-name').value,
+          uniqueId: card.querySelector('.t-unique').value,
+          originalIndex: cardIndex,
+          deletedAt: new Date().toLocaleString()
+        };
+
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        try {
+          await fetch(this.cloudApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ action: "saveTeacherTrash", session: activeSess, type: "delete", payload: JSON.stringify(staffData) })
+          });
+        } catch(e) {}
+
         card.remove();
+        this.saveData();
+        alert("Information: Staff record has been deleted and backed up successfully.");
       }
     },
 
-    async saveAndPermanentLock() {
+    async saveData() {
       let udise = document.getElementById('r4SchoolSelect').value;
-      if (!udise) { alert("Please select a school first!"); return; }
+      if (!udise) return;
 
       let cards = document.querySelectorAll('.teacher-card');
-      if (cards.length === 0) {
-        alert("Please add at least one staff member before permanent locking!");
-        return;
-      }
-
       let staff = [];
-      let hasError = false;
 
       cards.forEach(card => {
-        card.querySelectorAll('input, select').forEach(el => el.classList.remove('error'));
-
-        let inputs = card.querySelectorAll('input[type="text"], select');
-        inputs.forEach(inp => {
-          if (!inp.value || inp.value.trim() === "") {
-            inp.classList.add('error');
-            hasError = true;
-          }
-        });
-
+        let isFrozen = card.classList.contains('frozen');
+        
+        let nameVal = card.querySelector('.t-name').value.trim();
+        let uniqueVal = card.querySelector('.t-unique').value.trim();
         let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
         let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
-        if (clsArr.length === 0 || subjArr.length === 0) {
-          hasError = true;
+
+        if (!isFrozen || !nameVal || !uniqueVal || clsArr.length === 0 || subjArr.length === 0) {
+          isFrozen = false;
         }
 
         staff.push({
           nature: card.querySelector('.t-nature').value,
-          name: card.querySelector('.t-name').value.trim(),
+          name: nameVal,
           father: card.querySelector('.t-father').value.trim(),
-          uniqueId: card.querySelector('.t-unique').value.trim(),
+          uniqueId: uniqueVal,
           cast: card.querySelector('.t-cast').value,
           gender: card.querySelector('.t-gender').value,
           dob: card.querySelector('.t-dob').value.trim(),
@@ -798,32 +812,21 @@
           branch: card.querySelector('.t-branch').value.trim(),
           accNo: card.querySelector('.t-acc').value.trim(),
           ifsc: card.querySelector('.t-ifsc').value.trim().toUpperCase(),
-          isFrozen: true
+          isFrozen: isFrozen
         });
       });
 
-      if (hasError) {
-        alert("Validation Error: Please fill all mandatory fields across all teacher records before permanent locking.");
-        return;
-      }
+      let payload = { udise: udise, staff: staff };
+      localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
 
-      if (confirm("⚠️ Permanent Lock Warning: Once locked, you cannot modify staff data unless unblocked by Admin. Proceed?")) {
-        let payload = { udise: udise, staff: staff, isPermanentlyLocked: true };
-        localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
-
-        try {
-          let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
-          await fetch(this.cloudApiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(payload) })
-          });
-        } catch(err) {}
-
-        alert("Success: School staff data saved and permanently locked!");
-        this.loadSchoolForm();
-        this.populateDropdown();
-      }
+      try {
+        let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: udise, payload: JSON.stringify(payload) })
+        });
+      } catch(err) {}
     },
 
     renderDashboard() {
@@ -840,25 +843,23 @@
 
       let jskMap = {};
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
-        jskMap[jsk] = { schools: 0, pendingSchools: 0, lockedSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
+        jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
       });
 
       schoolsToProcess.forEach(s => {
         let jsk = s.jsk || "Bhoura";
-        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pendingSchools: 0, lockedSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
+        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pendingSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
         jskMap[jsk].schools++;
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-        let isLocked = saved && saved.isPermanentlyLocked === true;
+        let hasStaff = saved && saved.staff && saved.staff.length > 0;
+        let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
-        if (isLocked) {
-          jskMap[jsk].lockedSchools++;
-        } else {
+        if (!allFrozen) {
           jskMap[jsk].pendingSchools++;
         }
 
         let schoolCompleteCount = 0;
-        let hasStaff = saved && saved.staff && saved.staff.length > 0;
         let schoolTotalCount = hasStaff ? saved.staff.length : 0;
 
         if (hasStaff) {
@@ -867,7 +868,7 @@
             if (st.gender === 'Male') jskMap[jsk].male++;
             else if (st.gender === 'Female') jskMap[jsk].female++;
 
-            if (isLocked || st.isFrozen === true) {
+            if (st.isFrozen === true) {
               schoolCompleteCount++;
             }
           });
@@ -880,7 +881,7 @@
 
       let tbody = document.getElementById('dashSummaryTable');
       tbody.innerHTML = '';
-      let i = 1, tSch = 0, tPend = 0, tLock = 0, tM = 0, tF = 0, tTot = 0, tComplete = 0, tTeacherPend = 0;
+      let i = 1, tSch = 0, tPend = 0, tM = 0, tF = 0, tTot = 0, tComplete = 0, tTeacherPend = 0;
 
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
@@ -888,7 +889,6 @@
 
         tSch += d.schools; 
         tPend += d.pendingSchools; 
-        tLock += d.lockedSchools;
         tM += d.male; 
         tF += d.female; 
         tTot += d.total; 
@@ -936,7 +936,7 @@
 
       if (format === "F_1") {
         html = `<thead><tr>
-          <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Permanent School Lock Status</th><th>Appointment</th>
+          <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Status</th><th>Appointment</th>
           <th>Teacher Name</th><th>Parent/Guardian</th><th>Unique ID</th><th>Cast</th><th>Gender</th>
           <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes Taught</th><th>Subjects Taught</th>
           <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th>
@@ -950,20 +950,18 @@
           if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-          let isLocked = saved && saved.isPermanentlyLocked === true;
-          let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Complete (Locked) 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Pending (Unlocked) 🔓</span>';
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
 
           if (!hasStaff) {
             if (genderFilter === "ALL" && classFilter === "ALL") {
-              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td>${lockText}</td><td colspan="16" style="color:#64748b;">No staff data entered yet</td></tr>`;
+              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="16" style="color:#64748b;">No staff data entered yet</td></tr>`;
             }
           } else {
             saved.staff.forEach(st => {
               if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
               if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
 
-              if (isLocked || st.isFrozen === true) {
+              if (st.isFrozen === true) {
                 if (st.nature === 'Regular') totalReg++; else totalGuest++;
               }
               let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
@@ -974,7 +972,7 @@
                 <td style="text-align:left;">${s.name}</td>
                 <td>${s.udise}</td>
                 <td>${jsk}</td>
-                <td>${lockText}</td>
+                <td><span style="color:${st.isFrozen === true ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen === true ? 'Complete' : 'Incomplete'}</span></td>
                 <td><span style="color:${st.nature==='Regular'?'#16a34a':'#d97706'}; font-weight:bold;">${st.nature}</span></td>
                 <td style="text-align:left; font-weight:bold;">${st.name}</td>
                 <td>${st.father}</td>
@@ -999,10 +997,10 @@
         html += `</tbody>`;
         countText = `Total Records: ${idx - 1} | Regular: ${totalReg}, Guest: ${totalGuest}`;
 
-      } else if (format === "F_2" || format === "F_3") {
+      } else if (format === "F_2") {
         html = `<thead><tr>
           <th>Sr. No.</th><th>School Name</th><th>UDISE Code</th><th>Sankul (JSK)</th>
-          <th>Permanent School Lock Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th><th>Complete Entry</th><th>Teacher Pending</th>
+          <th>Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th><th>Complete Entry</th><th>Teacher Pending</th>
         </tr></thead><tbody>`;
 
         let idx = 1;
@@ -1013,13 +1011,11 @@
           if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
-          let isLocked = saved && saved.isPermanentlyLocked === true;
-          let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Complete (Locked) 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Pending (Unlocked) 🔓</span>';
-
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
           let maleCount = 0, femaleCount = 0;
           let schoolTotal = hasStaff ? saved.staff.length : 0;
           let schoolComplete = 0;
+          let allFrozen = hasStaff && saved.staff.every(st => st.isFrozen === true);
 
           if (hasStaff) {
             saved.staff.forEach(st => {
@@ -1029,13 +1025,14 @@
               if (st.gender === 'Male') maleCount++;
               else if (st.gender === 'Female') femaleCount++;
 
-              if (isLocked || st.isFrozen === true) {
+              if (st.isFrozen === true) {
                 schoolComplete++;
               }
             });
           }
 
           let schoolTeacherPending = schoolTotal - schoolComplete;
+          let statusStr = allFrozen ? "Complete" : "Incomplete";
           totalSchCount++;
 
           grandTotalStaff += schoolTotal;
@@ -1049,7 +1046,7 @@
             <td style="text-align:left; font-weight:bold;">${s.name}</td>
             <td>${s.udise}</td>
             <td>${jsk}</td>
-            <td>${lockText}</td>
+            <td><span style="color:${allFrozen ? '#16a34a' : '#dc2626'}; font-weight:bold;">${statusStr}</span></td>
             <td style="color:#1d4ed8; font-weight:bold;">${maleCount}</td>
             <td style="color:#d97706; font-weight:bold;">${femaleCount}</td>
             <td style="font-weight:bold;">${schoolTotal}</td>
@@ -1115,6 +1112,67 @@
       });
       modalHtml += `</tbody></table></div></div>`;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    promptTransfer(rowIdx, st) {
+      let targetUdise = prompt("Enter Target School UDISE Code for Transfer:");
+      if (!targetUdise) return;
+      targetUdise = targetUdise.trim();
+      let targetSch = this.allSchools.find(s => String(s.udise).trim() === targetUdise);
+      if (!targetSch) {
+        alert("Error: Invalid UDISE code or school not found!");
+        return;
+      }
+
+      let verifyHtml = `
+        <div id="verifyModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px;">
+          <div style="background:#fff; border-radius:12px; max-width:450px; width:100%; padding:20px; text-align:center;">
+            <h3 style="color:#071b38; margin-top:0;">🏫 Verify Target School</h3>
+            <p style="font-size:14px; color:#475569;">You are transferring teacher <b>${st.name}</b> to:</p>
+            <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin:15px 0; font-weight:bold; color:#1d4ed8;">
+              ${targetSch.name} (UDISE: ${targetSch.udise})
+            </div>
+            <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; cursor:pointer; margin-bottom:20px;">
+              <input type="checkbox" id="confirmSchoolChk" style="width:16px; height:16px;"> I confirm this is the correct school.
+            </label>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <button onclick="document.getElementById('verifyModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Cancel</button>
+              <button onclick="if(document.getElementById('confirmSchoolChk').checked){ document.getElementById('verifyModal').remove(); R4App.executeRestore(${rowIdx}, ${JSON.stringify(st)}, 'other', '${targetSch.udise}'); } else { alert('Please check the confirmation box.'); }" style="background:#16a34a; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm & Transfer</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', verifyHtml);
+    },
+
+    async executeRestore(rowIdx, st, type, otherUdise = "") {
+      let targetUdise = type === "other" ? otherUdise : document.getElementById('r4SchoolSelect').value;
+      if (!targetUdise) {
+        alert("Please select a school in Data Entry tab first to rollback.");
+        return;
+      }
+
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + targetUdise) || '{"staff":[]}');
+      let insertIdx = st.originalIndex !== undefined ? st.originalIndex : saved.staff.length;
+      saved.staff.splice(insertIdx, 0, st);
+      localStorage.setItem("brc_teacher_" + targetUdise, JSON.stringify(saved));
+
+      let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
+      await fetch(this.cloudApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "saveTeacherData", session: activeSess, udise: targetUdise, payload: JSON.stringify(saved) })
+      });
+
+      await fetch(this.cloudApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "deleteTeacherTrash", type: "delete", session: activeSess, rowIdx: rowIdx })
+      });
+
+      if (document.getElementById('trashModal')) document.getElementById('trashModal').remove();
+      alert("Success: Record successfully " + (type === 'other' ? 'transferred' : 'restored') + " to UDISE " + targetUdise);
+      this.loadSchoolForm();
     },
 
     exportExcel() {
