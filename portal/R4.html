@@ -28,7 +28,6 @@
   .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
   
   .teacher-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: relative; }
-  .teacher-card.incomplete { border: 2px solid #dc2626; background: #fff5f5; }
   .teacher-card.frozen { border: 2px solid #16a34a; background: #f0fdf4; }
   .teacher-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; font-weight: bold; color: #071b38; }
   
@@ -244,7 +243,6 @@
           if (Array.isArray(cloudTeachers)) {
             cloudTeachers.forEach(item => {
               if (item.udise && item.payload) {
-                // FIXED: Retain the frozen state from cloud without forcing unfreeze
                 localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
               }
             });
@@ -308,13 +306,13 @@
         "School Name", "UDISE Code", "School Category", "JSK", 
         "Nature Of Appointment", "Teacher Name", "Father/Husband", "Unique ID", 
         "Cast", "Gender", "DOB", "Mobile No.", "Aadhar No.", "Email ID", 
-        "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code"
+        "Classes", "Subjects", "Bank Type", "Bank Branch", "Account No.", "IFSC Code", "Teacher National Code"
       ];
       let sample = [
         "GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", 
         "Regular", "Ramesh Kumar", "Sohan Lal", "AA1234", 
         "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", 
-        "\"Class 1, Class 2\"", "\"Hindi, Math\"", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234"
+        "\"Class 1, Class 2\"", "\"Hindi, Math\"", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234", "NAT12345678"
       ];
       
       let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), sample.join(",")].join("\n");
@@ -369,6 +367,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
+              nationalCode: r[20] || "",
               isFrozen: false
             });
           }
@@ -495,7 +494,6 @@
       } else if (type === 'acc') {
         if (!/^\d{10,}$/.test(val)) isValid = false;
       } else if (type === 'dob') {
-        // Strict DOB validation: DD/MM/YYYY format and Age between 18 and 65 years
         if (!/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(val)) {
           isValid = false;
         } else {
@@ -669,6 +667,11 @@
             <input type="text" class="t-ifsc" value="${st.ifsc || ''}" placeholder="e.g. SBIN0001234" ${disabledAttr} oninput="R4App.validateFieldLive(this, 'ifsc')">
             <div class="error-msg">Invalid IFSC format.</div>
           </div>
+          <div class="form-group">
+            <label>Teacher National Code * (Non-Editable / ID)</label>
+            <input type="text" class="t-national" value="${st.nationalCode || ''}" placeholder="National Code / ID" ${isExplicitlyFrozen ? 'disabled' : ''} oninput="R4App.validateFieldLive(this, 'text')">
+            <div class="error-msg">Required field.</div>
+          </div>
         </div>
       `;
 
@@ -791,6 +794,7 @@
           branch: card.querySelector('.t-branch').value.trim(),
           accNo: card.querySelector('.t-acc').value.trim(),
           ifsc: card.querySelector('.t-ifsc').value.trim().toUpperCase(),
+          nationalCode: card.querySelector('.t-national').value.trim(),
           isFrozen: isFrozen
         });
       });
@@ -918,7 +922,7 @@
           <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Status</th><th>Appointment</th>
           <th>Teacher Name</th><th>Parent/Guardian</th><th>Unique ID</th><th>Cast</th><th>Gender</th>
           <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes Taught</th><th>Subjects Taught</th>
-          <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th>
+          <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th><th>Teacher National Code</th>
         </tr></thead><tbody>`;
 
         let idx = 1;
@@ -933,7 +937,7 @@
 
           if (!hasStaff) {
             if (genderFilter === "ALL" && classFilter === "ALL") {
-              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="16" style="color:#64748b;">No staff data entered yet</td></tr>`;
+              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="17" style="color:#64748b;">No staff data entered yet</td></tr>`;
             }
           } else {
             saved.staff.forEach(st => {
@@ -968,11 +972,12 @@
                 <td>${st.branch}</td>
                 <td>${st.accNo}</td>
                 <td>${st.ifsc}</td>
+                <td><b>${st.nationalCode || '-'}</b></td>
               </tr>`;
             });
           }
         });
-        if (idx === 1) html += `<tr><td colspan="21" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
+        if (idx === 1) html += `<tr><td colspan="22" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
         html += `</tbody>`;
         countText = `Total Records: ${idx - 1} | Regular: ${totalReg}, Guest: ${totalGuest}`;
 
