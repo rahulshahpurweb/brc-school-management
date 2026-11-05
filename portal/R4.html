@@ -527,7 +527,18 @@
       } else if (type === 'acc') {
         if (!/^\d{10,}$/.test(val)) isValid = false;
       } else if (type === 'dob') {
-        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)) isValid = false;
+        // Strict DOB validation: DD/MM/YYYY format and Age between 18 and 65 years
+        if (!/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(val)) {
+          isValid = false;
+        } else {
+          let parts = val.split('/');
+          let dobDate = new Date(parts[2], parts[1] - 1, parts[0]);
+          let today = new Date();
+          let age = today.getFullYear() - dobDate.getFullYear();
+          let m = today.getMonth() - dobDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) age--;
+          if (age < 18 || age > 65) isValid = false;
+        }
       } else if (type === 'ifsc') {
         if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(val.toUpperCase())) isValid = false;
       } else if (type === 'unique') {
@@ -623,7 +634,7 @@
           <div class="form-group">
             <label>DOB (DD/MM/YYYY) *</label>
             <input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY" ${disabledAttr} oninput="R4App.validateFieldLive(this, 'dob')">
-            <div class="error-msg">Format: DD/MM/YYYY</div>
+            <div class="error-msg">Format DD/MM/YYYY (Age 18-65)</div>
           </div>
           <div class="form-group">
             <label>Mobile No. *</label>
