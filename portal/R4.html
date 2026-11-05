@@ -244,40 +244,13 @@
           if (Array.isArray(cloudTeachers)) {
             cloudTeachers.forEach(item => {
               if (item.udise && item.payload) {
-                // GLOBAL UNFREEZE: Saare purane records ko ek baar unfreeze kar diya taaki manual Save & Freeze karna pade
-                if (item.payload.staff) {
-                  item.payload.staff.forEach(st => {
-                    st.isFrozen = false;
-                  });
-                }
+                // FIXED: Retain the frozen state from cloud without forcing unfreeze
                 localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
               }
             });
           }
         }
       } catch(e) {}
-
-      // Local storage cleaning loop to force manual freeze for existing records
-      for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key && key.startsWith("brc_teacher_")) {
-          try {
-            let data = JSON.parse(localStorage.getItem(key));
-            if (data && data.staff) {
-              let modified = false;
-              data.staff.forEach(st => {
-                if (st.isFrozen === true) {
-                  st.isFrozen = false; // Reset to require manual freeze
-                  modified = true;
-                }
-              });
-              if (modified) {
-                localStorage.setItem(key, JSON.stringify(data));
-              }
-            }
-          } catch(err) {}
-        }
-      }
 
       if (!this.allSchools || this.allSchools.length === 0) {
         let sessionData = SessionManager.getData();
@@ -468,11 +441,6 @@
       document.getElementById('lblCategory').textContent = school.category || 'Primary/Middle';
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
-      if (saved && saved.staff) {
-        saved.staff.forEach(st => {
-          if (st.isFrozen !== true) st.isFrozen = false;
-        });
-      }
       this.renderStaffCards(saved ? saved.staff : []);
     },
 
