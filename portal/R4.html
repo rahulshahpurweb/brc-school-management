@@ -155,7 +155,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        <button type="button" id="saveAndPermanentLockBtn" onclick="R4App.saveAndPermanentLock()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Permanent Locked</button>
+        <button type="button" id="permanentLockedBtn" onclick="R4App.saveAndPermanentLock()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">🔒 Permanent Locked</button>
       </div>
     </div>
   </section>
@@ -374,7 +374,8 @@
               bank: r[16] || "SBI",
               branch: r[17] || "",
               accNo: r[18] || "",
-              ifsc: r[19] || ""
+              ifsc: r[19] || "",
+              isFrozen: true
             });
           }
 
@@ -486,6 +487,9 @@
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
         if (saved) {
           saved.isPermanentlyLocked = false;
+          if (saved.staff) {
+            saved.staff.forEach(st => st.isFrozen = false);
+          }
           localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
           
           let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -793,7 +797,8 @@
           bank: card.querySelector('.t-bank').value,
           branch: card.querySelector('.t-branch').value.trim(),
           accNo: card.querySelector('.t-acc').value.trim(),
-          ifsc: card.querySelector('.t-ifsc').value.trim().toUpperCase()
+          ifsc: card.querySelector('.t-ifsc').value.trim().toUpperCase(),
+          isFrozen: true
         });
       });
 
@@ -835,12 +840,12 @@
 
       let jskMap = {};
       ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
-        jskMap[jsk] = { schools: 0, pendingSchools: 0, lockedSchools: 0, male: 0, female: 0, total: 0 };
+        jskMap[jsk] = { schools: 0, pendingSchools: 0, lockedSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
       });
 
       schoolsToProcess.forEach(s => {
         let jsk = s.jsk || "Bhoura";
-        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pendingSchools: 0, lockedSchools: 0, male: 0, female: 0, total: 0 };
+        if (!jskMap[jsk]) jskMap[jsk] = { schools: 0, pendingSchools: 0, lockedSchools: 0, male: 0, female: 0, total: 0, completeEntry: 0, teacherPending: 0 };
         jskMap[jsk].schools++;
 
         let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
@@ -852,18 +857,30 @@
           jskMap[jsk].pendingSchools++;
         }
 
-        if (saved && saved.staff) {
+        let schoolCompleteCount = 0;
+        let hasStaff = saved && saved.staff && saved.staff.length > 0;
+        let schoolTotalCount = hasStaff ? saved.staff.length : 0;
+
+        if (hasStaff) {
           saved.staff.forEach(st => {
             jskMap[jsk].total++;
             if (st.gender === 'Male') jskMap[jsk].male++;
             else if (st.gender === 'Female') jskMap[jsk].female++;
+
+            if (isLocked || st.isFrozen === true) {
+              schoolCompleteCount++;
+            }
           });
         }
+
+        jskMap[jsk].completeEntry += schoolCompleteCount;
+        let schoolTeacherPending = schoolTotalCount - schoolCompleteCount;
+        jskMap[jsk].teacherPending += schoolTeacherPending;
       });
 
       let tbody = document.getElementById('dashSummaryTable');
       tbody.innerHTML = '';
-      let i = 1, tSch = 0, tPend = 0, tLock = 0, tM = 0, tF = 0, tTot = 0;
+      let i = 1, tSch = 0, tPend = 0, tLock = 0, tM = 0, tF = 0, tTot = 0, tComplete = 0, tTeacherPend = 0;
 
       for (let jsk in jskMap) {
         let d = jskMap[jsk];
@@ -875,26 +892,30 @@
         tM += d.male; 
         tF += d.female; 
         tTot += d.total; 
+        tComplete += d.completeEntry;
+        tTeacherPend += d.teacherPending;
 
         tbody.innerHTML += `<tr>
           <td>${i++}</td>
           <td style="text-align:left; font-weight:bold;">${jsk}</td>
           <td>${d.schools}</td>
           <td style="color:#dc2626; font-weight:bold;">${d.pendingSchools}</td>
-          <td style="color:#16a34a; font-weight:bold;">${d.lockedSchools}</td>
           <td style="color:#1d4ed8; font-weight:bold;">${d.male}</td>
           <td style="color:#d97706; font-weight:bold;">${d.female}</td>
           <td style="font-weight:bold;">${d.total}</td>
+          <td style="color:#16a34a; font-weight:bold;">${d.completeEntry}</td>
+          <td style="color:#dc2626; font-weight:bold;">${d.teacherPending}</td>
         </tr>`;
       }
       tbody.innerHTML += `<tr style="background:#f1f5f9; font-weight:bold;">
         <td colspan="2">Grand Total</td>
         <td>${tSch}</td>
         <td style="color:#dc2626;">${tPend}</td>
-        <td style="color:#16a34a;">${tLock}</td>
         <td style="color:#1d4ed8;">${tM}</td>
         <td style="color:#d97706;">${tF}</td>
         <td style="color:#1d4ed8;">${tTot}</td>
+        <td style="color:#16a34a;">${tComplete}</td>
+        <td style="color:#dc2626;">${tTeacherPend}</td>
       </tr>`;
     },
 
@@ -942,7 +963,7 @@
               if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
               if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
 
-              if (st.isFrozen === true || isLocked) {
+              if (isLocked || st.isFrozen === true) {
                 if (st.nature === 'Regular') totalReg++; else totalGuest++;
               }
               let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
@@ -981,11 +1002,11 @@
       } else if (format === "F_2" || format === "F_3") {
         html = `<thead><tr>
           <th>Sr. No.</th><th>School Name</th><th>UDISE Code</th><th>Sankul (JSK)</th>
-          <th>Permanent School Lock Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th>
+          <th>Permanent School Lock Status</th><th>Male Teachers</th><th>Female Teachers</th><th>Total Staff</th><th>Complete Entry</th><th>Teacher Pending</th>
         </tr></thead><tbody>`;
 
         let idx = 1;
-        let totalSchCount = 0, grandTotalStaff = 0, gMale = 0, gFemale = 0, lockedCount = 0;
+        let totalSchCount = 0, grandTotalStaff = 0, gMale = 0, gFemale = 0, gComplete = 0, gTeacherPending = 0;
 
         targetSchools.forEach(s => {
           let jsk = s.jsk || 'Bhoura';
@@ -993,12 +1014,12 @@
 
           let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
           let isLocked = saved && saved.isPermanentlyLocked === true;
-          if (isLocked) lockedCount++;
           let lockText = isLocked ? '<span style="color:#16a34a; font-weight:bold;">Complete (Locked) 🔒</span>' : '<span style="color:#dc2626; font-weight:bold;">Pending (Unlocked) 🔓</span>';
 
           let hasStaff = saved && saved.staff && saved.staff.length > 0;
           let maleCount = 0, femaleCount = 0;
           let schoolTotal = hasStaff ? saved.staff.length : 0;
+          let schoolComplete = 0;
 
           if (hasStaff) {
             saved.staff.forEach(st => {
@@ -1007,13 +1028,21 @@
 
               if (st.gender === 'Male') maleCount++;
               else if (st.gender === 'Female') femaleCount++;
+
+              if (isLocked || st.isFrozen === true) {
+                schoolComplete++;
+              }
             });
           }
 
+          let schoolTeacherPending = schoolTotal - schoolComplete;
           totalSchCount++;
+
           grandTotalStaff += schoolTotal;
           gMale += maleCount;
           gFemale += femaleCount;
+          gComplete += schoolComplete;
+          gTeacherPending += schoolTeacherPending;
 
           html += `<tr>
             <td>${idx++}</td>
@@ -1024,6 +1053,8 @@
             <td style="color:#1d4ed8; font-weight:bold;">${maleCount}</td>
             <td style="color:#d97706; font-weight:bold;">${femaleCount}</td>
             <td style="font-weight:bold;">${schoolTotal}</td>
+            <td style="color:#16a34a; font-weight:bold;">${schoolComplete}</td>
+            <td style="color:#dc2626; font-weight:bold;">${schoolTeacherPending}</td>
           </tr>`;
         });
 
@@ -1032,9 +1063,11 @@
           <td style="color:#1d4ed8;">${gMale}</td>
           <td style="color:#d97706;">${gFemale}</td>
           <td style="color:#1d4ed8;">${grandTotalStaff}</td>
+          <td style="color:#16a34a;">${gComplete}</td>
+          <td style="color:#dc2626;">${gTeacherPending}</td>
         </tr>`;
         html += `</tbody>`;
-        countText = `Total Schools: ${totalSchCount} | Permanently Locked: ${lockedCount} | Total Staff: ${grandTotalStaff}`;
+        countText = `Total Schools: ${totalSchCount} | Total Staff: ${grandTotalStaff}, Complete Entry: ${gComplete}, Teacher Pending: ${gTeacherPending}`;
       }
 
       table.innerHTML = html;
@@ -1064,7 +1097,7 @@
               <button onclick="document.getElementById('trashModal').remove()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Close</button>
             </div>
             <table>
-              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>Deleted At</th></tr></thead>
+              <thead><tr><th>Teacher Name</th><th>Unique ID</th><th>Original Index</th><th>Deleted At</th><th>Actions</th></tr></thead>
               <tbody>
       `;
       trashList.forEach(item => {
@@ -1072,7 +1105,12 @@
         modalHtml += `<tr>
           <td>${st.name || '-'}</td>
           <td>${st.uniqueId || '-'}</td>
+          <td>${st.originalIndex !== undefined ? st.originalIndex + 1 : 'End'}</td>
           <td>${st.deletedAt || '-'}</td>
+          <td>
+            <button onclick='R4App.executeRestore(${item.rowIdx}, ${JSON.stringify(st)}, "same")' style="background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-right:5px;">Rollback (Same School)</button>
+            <button onclick='R4App.promptTransfer(${item.rowIdx}, ${JSON.stringify(st)})' style="background:#1d4ed8; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Transfer to Other School</button>
+          </td>
         </tr>`;
       });
       modalHtml += `</tbody></table></div></div>`;
