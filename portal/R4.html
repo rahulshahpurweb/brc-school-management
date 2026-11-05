@@ -244,13 +244,40 @@
           if (Array.isArray(cloudTeachers)) {
             cloudTeachers.forEach(item => {
               if (item.udise && item.payload) {
-                // FIXED: Retain cloud freeze state without overwriting or resetting to false
+                // GLOBAL UNFREEZE: Saare purane records ko ek baar unfreeze kar diya taaki manual Save & Freeze karna pade
+                if (item.payload.staff) {
+                  item.payload.staff.forEach(st => {
+                    st.isFrozen = false;
+                  });
+                }
                 localStorage.setItem("brc_teacher_" + String(item.udise).trim(), JSON.stringify(item.payload));
               }
             });
           }
         }
       } catch(e) {}
+
+      // Local storage cleaning loop to force manual freeze for existing records
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && key.startsWith("brc_teacher_")) {
+          try {
+            let data = JSON.parse(localStorage.getItem(key));
+            if (data && data.staff) {
+              let modified = false;
+              data.staff.forEach(st => {
+                if (st.isFrozen === true) {
+                  st.isFrozen = false; // Reset to require manual freeze
+                  modified = true;
+                }
+              });
+              if (modified) {
+                localStorage.setItem(key, JSON.stringify(data));
+              }
+            }
+          } catch(err) {}
+        }
+      }
 
       if (!this.allSchools || this.allSchools.length === 0) {
         let sessionData = SessionManager.getData();
@@ -369,7 +396,7 @@
               branch: r[17] || "",
               accNo: r[18] || "",
               ifsc: r[19] || "",
-              isFrozen: true
+              isFrozen: false
             });
           }
 
@@ -441,6 +468,11 @@
       document.getElementById('lblCategory').textContent = school.category || 'Primary/Middle';
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
+      if (saved && saved.staff) {
+        saved.staff.forEach(st => {
+          if (st.isFrozen !== true) st.isFrozen = false;
+        });
+      }
       this.renderStaffCards(saved ? saved.staff : []);
     },
 
@@ -495,6 +527,7 @@
       } else if (type === 'acc') {
         if (!/^\d{10,}$/.test(val)) isValid = false;
       } else if (type === 'dob') {
+        // Strict DOB validation: DD/MM/YYYY format and Age between 18 and 65 years
         if (!/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(val)) {
           isValid = false;
         } else {
