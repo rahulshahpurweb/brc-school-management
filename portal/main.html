@@ -17,7 +17,6 @@ body{
   padding-top: env(safe-area-inset-top, 5px);
 }
 
-/* Ultra Compact Top App Bar */
 .master-header{
   background: linear-gradient(135deg,#071b38,#0e3d7e);
   color: white;
@@ -51,7 +50,6 @@ body{
   letter-spacing: .2px;
 }
 
-/* Sleek & Organized Side Drawer Menu */
 .side-drawer {
   position: fixed;
   top: 0;
@@ -133,7 +131,6 @@ body{
   padding-bottom: 2px;
 }
 
-/* Backdrop Overlay */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -146,7 +143,6 @@ body{
   display: block;
 }
 
-/* Frame Container */
 .frame-container{
   flex: 1;
   width: 100%;
@@ -154,7 +150,6 @@ body{
 }
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* LOGIN OVERLAY */
 #authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:none;align-items:center;justify-content:center;padding:15px}
 .auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
 .auth-card h2{margin-top:0;color:#082a63}
@@ -163,7 +158,6 @@ body{
 .auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;margin-bottom:10px}
 .auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
 
-/* Maintenance Overlay */
 #maintenanceOverlay {
   position: fixed;
   inset: 0;
@@ -193,27 +187,26 @@ body{
 
 <div id="maintenanceOverlay">
   <div class="maint-card">
-    <h1>🚧 Portal Under Maintenance</h1>
+    <h1>Portal Under Maintenance</h1>
     <p>The portal is currently undergoing maintenance. Please try logging in later.</p>
   </div>
 </div>
 
 <div id="authOverlay">
   <div class="auth-card">
-    <h2>🔐 BRC_Login</h2>
+    <h2>BRC_Login</h2>
     <p>BRC, JSKs, SCHOOLs Cloud Login</p>
     <div id="authErr" class="auth-err">Please enter a valid User ID and Password!</div>
     <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
     <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
     
-    <!-- Forgot Password Link -->
     <div style="text-align:right; margin-bottom:12px;">
       <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:12px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
     </div>
 
     <button class="auth-btn" onclick="checkAuth()">Login</button>
     <div style="text-align:center; margin-top:10px;">
-      <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">🔍 SNA Account Check</a>
+      <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">SNA Account Check</a>
     </div>
   </div>
 </div>
@@ -221,14 +214,14 @@ body{
 <!-- Forgot Password Modal Popup -->
 <div id="forgotModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;">
   <div style="background:#fff; border-radius:14px; max-width:360px; width:100%; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-align:left;">
-    <h3 style="margin-top:0; color:#071b38; text-align:center;">🔑 Reset Password</h3>
-    <p style="font-size:12px; color:#64748b; margin-bottom:14px; text-align:center;">Enter your School UDISE Code and Teacher National Code to verify and reset your password.</p>
+    <h3 style="margin-top:0; color:#071b38; text-align:center;">Reset Password</h3>
+    <p style="font-size:12px; color:#64748b; margin-bottom:14px; text-align:center;">Enter your School UDISE Code and valid Teacher National Code to verify and reset your password.</p>
     
     <label style="font-size:11px; font-weight:bold; color:#475569;">School UDISE Code</label>
     <input type="text" id="forgotUdise" class="auth-input" placeholder="Enter UDISE Code">
     
     <label style="font-size:11px; font-weight:bold; color:#475569;">Teacher National Code</label>
-    <input type="text" id="forgotNatCode" class="auth-input" placeholder="Enter National Code">
+    <input type="text" id="forgotNatCode" class="auth-input" placeholder="Enter Teacher National Code">
     
     <label style="font-size:11px; font-weight:bold; color:#475569;">New Password</label>
     <input type="password" id="forgotNewPass" class="auth-input" placeholder="New Password">
@@ -245,13 +238,11 @@ body{
   </div>
 </div>
 
-<!-- Backdrop Overlay -->
 <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer()"></div>
 
-<!-- Slide-out Side Drawer Menu -->
 <div id="sideDrawer" class="side-drawer">
   <div class="drawer-header">
-    <h3>🏛️ BRC Shahpur</h3>
+    <h3>BRC Shahpur</h3>
     <button class="drawer-close" onclick="toggleDrawer()">✕</button>
   </div>
   <div class="drawer-links">
@@ -270,7 +261,6 @@ body{
       <span>🔍</span> SNA Account Check
     </a>
 
-    <!-- Admin Controls Section -->
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
 
@@ -279,7 +269,7 @@ body{
       </button>
 
       <div id="adminMaintenancePanel" style="display:flex; flex-direction:column; gap:4px; background:rgba(255,255,255,0.06); padding:8px; border-radius:6px; margin-top:4px; border:1px solid rgba(255,255,255,0.1);">
-        <span style="font-size:10px; font-weight:bold; color:#ffd21c;">🛠️ Maintenance Mode:</span>
+        <span style="font-size:10px; font-weight:bold; color:#ffd21c;">Maintenance Mode:</span>
         <button id="maintToggleBtn" onclick="toggleMaintenance()" style="padding:5px; border-radius:4px; font-weight:bold; border:0; cursor:pointer; font-size:11px;"></button>
       </div>
     </div>
@@ -291,7 +281,6 @@ body{
   </div>
 </div>
 
-<!-- Ultra Compact Top App Bar -->
 <header class="master-header">
   <div class="header-left">
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
@@ -299,7 +288,6 @@ body{
   </div>
 </header>
 
-<!-- Main Data Display Iframe -->
 <div class="frame-container">
   <iframe id="moduleFrame" src="R2.html"></iframe>
 </div>
@@ -381,11 +369,11 @@ function updateMaintUI(isMaint) {
   let btn = document.getElementById("maintToggleBtn");
   if(btn) {
     if(isMaint) {
-      btn.innerText = "🔴 ON (Site Offline)";
+      btn.innerText = "ON (Site Offline)";
       btn.style.background = "#dc2626";
       btn.style.color = "#fff";
     } else {
-      btn.innerText = "🟢 OFF (Site Live)";
+      btn.innerText = "OFF (Site Live)";
       btn.style.background = "#16a34a";
       btn.style.color = "#fff";
     }
@@ -416,7 +404,6 @@ async function toggleMaintenance() {
   location.reload();
 }
 
-// Forgot Password Modal Functions
 function openForgotPasswordModal() {
   document.getElementById("forgotModal").style.display = "flex";
 }
@@ -460,6 +447,7 @@ async function submitForgotPassword() {
     if (result.status === "success") {
       alert("Password updated successfully! Please login with your new password.");
       closeForgotPasswordModal();
+      errDiv.style.display = "none";
     } else {
       errDiv.innerText = result.message || "Verification failed!";
       errDiv.style.display = "block";
