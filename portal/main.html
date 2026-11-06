@@ -225,11 +225,37 @@ body{
   </div>
 </div>
 
+<!-- Forgot Password Modal Popup -->
+<div id="forgotModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:none; align-items:center; justify-content:center; padding:15px;">
+  <div style="background:#fff; border-radius:14px; max-width:360px; width:100%; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-align:left;">
+    <h3 style="margin-top:0; color:#071b38; text-align:center;">Reset Password</h3>
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">School UDISE Code</label>
+    <input type="text" id="forgotUdise" class="auth-input" placeholder="Enter UDISE Code">
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">Teacher National Code</label>
+    <input type="text" id="forgotNatCode" class="auth-input" placeholder="Enter Teacher National Code">
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">New Password</label>
+    <input type="password" id="forgotNewPass" class="auth-input" placeholder="New Password">
+    
+    <label style="font-size:11px; font-weight:bold; color:#475569;">Confirm New Password</label>
+    <input type="password" id="forgotConfirmPass" class="auth-input" placeholder="Confirm Password">
+    
+    <div id="forgotErr" class="auth-err" style="display:none;"></div>
+    
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button onclick="closeForgotPasswordModal()" style="flex:1; height:40px; background:#64748b; color:#fff; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">Cancel</button>
+      <button onclick="submitForgotPassword()" style="flex:1; height:40px; background:#16a34a; color:#fff; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">Update</button>
+    </div>
+  </div>
+</div>
+
 <!-- Master Feature Control Modal -->
 <div id="permissionModal" class="modal-overlay">  
   <div class="modal-box">  
     <h3>⚙️ Master Feature Control Center</h3>  
-    <p style="font-size:12px; color:#64748b;">Manage separate permissions for JSK, Schools and Module Access[span_4](start_span)[span_4](end_span).</p>  
+    <p style="font-size:12px; color:#64748b;">Manage separate permissions for JSK, Schools and Module Access[span_0](start_span)[span_0](end_span).</p>  
     <div id="permissionListContainer" style="margin:12px 0; display:flex; flex-direction:column; gap:8px;"></div>  
     <button class="btn-save" onclick="saveMasterPermissions()">Save Settings</button>  
     <button class="btn-cancel" onclick="closePermissionModal()">Cancel</button>  
@@ -470,6 +496,60 @@ async function toggleMaintenance() {
   location.reload();
 }
 
+function openForgotPasswordModal() {
+  document.getElementById("forgotModal").style.display = "flex";
+}
+function closeForgotPasswordModal() {
+  document.getElementById("forgotModal").style.display = "none";
+}
+
+async function submitForgotPassword() {
+  let udise = document.getElementById("forgotUdise").value.trim();
+  let natCode = document.getElementById("forgotNatCode").value.trim();
+  let newPass = document.getElementById("forgotNewPass").value.trim();
+  let confirmPass = document.getElementById("forgotConfirmPass").value.trim();
+  let errDiv = document.getElementById("forgotErr");
+
+  if (!udise || !natCode || !newPass || !confirmPass) {
+    errDiv.innerText = "Please fill all fields!";
+    errDiv.style.display = "block";
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    errDiv.innerText = "New Password and Confirm Password do not match!";
+    errDiv.style.display = "block";
+    return;
+  }
+
+  errDiv.innerText = "Verifying National Code and updating...";
+  errDiv.style.display = "block";
+
+  try {
+    let res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "forgotPassword",
+        udise: udise,
+        nationalCode: natCode,
+        newPassword: newPass
+      })
+    });
+    let result = await res.json();
+    if (result.status === "success") {
+      alert("Password updated successfully! Please login with your new password.");
+      closeForgotPasswordModal();
+      errDiv.style.display = "none";
+    } else {
+      errDiv.innerText = result.message || "Verification failed!";
+      errDiv.style.display = "block";
+    }
+  } catch (e) {
+    errDiv.innerText = "Network error. Please try again.";
+    errDiv.style.display = "block";
+  }
+}
+
 async function checkAuth(){
   const inputVal = document.getElementById("authUserInput").value.trim();
   const passVal = document.getElementById("authPass").value.trim();
@@ -497,20 +577,28 @@ async function checkAuth(){
     let credentials = await response.json();
 
     if (Array.isArray(credentials)) {
-      let matchedUser = credentials.find(c => String(c.userId || c.UserID || "").trim() === inputVal);
+      let matchedUser = credentials.find(c => {
+        let uId = String(c.userId || c.UserID || c.userid || "").trim();
+        return uId === inputVal;
+      });
+      
       if (matchedUser) {
         let dbPass = String(matchedUser.password || matchedUser.Password || "").trim();
         let dbRole = String(matchedUser.role || matchedUser.Role || "school").trim();
 
         if (dbPass === passVal) {
           sessionStorage.setItem("brc_logged_in", "true");
-          localStorage.setItem("brc_logged_user", JSON.stringify({ role: dbRole, udise: dbRole === 'school' ? inputVal : '', name: matchedUser.name || inputVal }));
+          localStorage.setItem("brc_logged_user", JSON.stringify({ 
+            role: dbRole, 
+            udise: dbRole === 'school' ? inputVal : '', 
+            name: matchedUser.name || matchedUser.Name || inputVal 
+          }));
           document.getElementById("authOverlay").style.display = "none";
           document.getElementById("maintenanceOverlay").style.display = "none";
           location.reload();
           return;
         } else {
-          err.innerText = "Incorrect Password!";
+          err.innerText = "Incorrect Password! Please enter the correct password.";
           err.style.display = "block";
           return;
         }
@@ -536,7 +624,7 @@ async function checkAuth(){
     return;
   }
 
-  err.innerText = "Invalid User ID or Password!";
+  err.innerText = "Invalid User ID or Password! Please check your credentials.";
   err.style.display = "block";
 }
 
@@ -544,8 +632,12 @@ function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
   localStorage.removeItem("brc_current_user");
+  
   let authOverlay = document.getElementById("authOverlay");
+  let maintOverlay = document.getElementById("maintenanceOverlay");
   if(authOverlay) authOverlay.style.display = "flex";
+  if(maintOverlay) maintOverlay.style.display = "none";
+  
   location.reload();
 }
 
