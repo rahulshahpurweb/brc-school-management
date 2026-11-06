@@ -4,7 +4,6 @@ const FeaturePermissions = {
 
   getDefaults() {
     return {
-      // --- JSK Specific Controls ---
       jsk_dash_view: true,
       jsk_records_view: true,
       jsk_compilation_view: true,
@@ -12,20 +11,14 @@ const FeaturePermissions = {
       jsk_upload_excel: false,
       jsk_template_download: false,
       jsk_school_list: true,
-
-      // --- School Specific Controls ---
       school_dash_view: true,
       school_records_view: true,
       school_entry_view: true,
       school_can_edit_locked_session: false,
-
-      // --- All Modules Access Controls ---
       r2_enrollment_access: true,
       r3_cwsn_access: true,
       r4_teacher_access: true,
       sna_account_check_access: true,
-
-      // Maintenance & Sessions
       portal_maintenance: false,
       global_active_session: "2026-27",
       session_2026_27: false,
@@ -86,7 +79,6 @@ const FeaturePermissions = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings)
       });
-      console.log("Settings successfully updated on npoint Cloud!");
     } catch (e) {
       console.error("Cloud save failed.", e);
     }
