@@ -1,6 +1,6 @@
-// Feature, Module & Academic Session Permissions Control Module (100% Cloud-Synced)
+// Feature, Module & Academic Session Permissions Control Module (100% Google Sheet Cloud-Synced)
 const FeaturePermissions = {
-  cloudApiUrl: "https://api.npoint.io/7c280aaadade1e14b43f", 
+  cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
 
   getDefaults() {
     return {
@@ -43,10 +43,10 @@ const FeaturePermissions = {
 
   async fetchCloudSettings() {
     try {
-      let response = await fetch(this.cloudApiUrl + "?t=" + new Date().getTime());
+      let response = await fetch(this.cloudApiUrl + "?action=getPermissions&t=" + new Date().getTime());
       if (response.ok) {
         let remoteSettings = await response.json();
-        if (remoteSettings && typeof remoteSettings === 'object') {
+        if (remoteSettings && typeof remoteSettings === 'object' && Object.keys(remoteSettings).length > 0) {
           localStorage.setItem("brc_feature_permissions", JSON.stringify(remoteSettings));
           if (remoteSettings.global_active_session) {
             localStorage.setItem("brc_active_session", remoteSettings.global_active_session);
@@ -76,9 +76,13 @@ const FeaturePermissions = {
     try {
       await fetch(this.cloudApiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings)
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "savePermissions",
+          settings: JSON.stringify(settings)
+        })
       });
+      console.log("Settings successfully updated on Google Sheet Cloud!");
     } catch (e) {
       console.error("Cloud save failed.", e);
     }
