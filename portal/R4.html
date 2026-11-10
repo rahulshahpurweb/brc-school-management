@@ -412,27 +412,20 @@
       let classes = [];
       let subjects = [];
 
-      // 1. Sabse pehle 1 to 8 / 1 to 10 / 1 to 12 (Primary with Middle / Higher Sec) check hoga
       if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("PRIMARY WITH MIDDLE") || 
           combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
           combined.includes("1 TO 10") || combined.includes("1 TO 12") || 
           (combined.includes("1 TO") && combined.includes("8"))) {
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
-      }
-      // 2. Pure Primary School (Class 1 to 5)
-      else if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
+      } else if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
         subjects = ["Hindi", "English", "Math", "EVS"];
-      }
-      // 3. Middle School-only (6 to 8 / Upper Primary 6-8)
-      else if (combined.includes("6 TO 8") || combined.includes("6-8") || combined.includes("UPPER PRIMARY") || 
+      } else if (combined.includes("6 TO 8") || combined.includes("6-8") || combined.includes("UPPER PRIMARY") || 
                (combined.includes("MIDDLE") && !combined.includes("1 TO") && !combined.includes("PRIMARY"))) {
         classes = ["Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit"];
-      }
-      // 4. Default Fallback -> Class 1 se 8, 7 Subjects
-      else {
+      } else {
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
       }
@@ -576,7 +569,7 @@
 
       if (isFinalized) {
         btn.textContent = "Finalized";
-        btn.style.background = "#16a34a"; // Green
+        btn.style.background = "#16a34a";
         if(btnAdd) btnAdd.style.display = 'none';
         if(btnSave) btnSave.style.display = 'none';
         
@@ -594,7 +587,7 @@
         }
       } else {
         btn.textContent = "Finalize";
-        btn.style.background = "#dc2626"; // Red
+        btn.style.background = "#dc2626";
         btn.disabled = false;
         btn.style.cursor = "pointer";
         if(btnAdd) btnAdd.style.display = 'inline-block';
@@ -687,6 +680,42 @@
       this.updateSelectedTags(container, selector, defaultText);
     },
 
+    calculateAgeOnFly(dobInput) {
+      let val = dobInput.value;
+      let card = dobInput.closest('.teacher-card');
+      let ageDisplay = card.querySelector('.t-age-display');
+      let errDiv = dobInput.parentElement.querySelector('.error-msg');
+
+      if (!val) {
+        if (ageDisplay) ageDisplay.value = "";
+        dobInput.classList.add('error');
+        if (errDiv) errDiv.style.display = 'block';
+        return;
+      }
+
+      let dobDate = new Date(val);
+      let today = new Date();
+      let years = today.getFullYear() - dobDate.getFullYear();
+      let m = today.getMonth() - dobDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+        years--;
+      }
+
+      // Check age limit: 18 to 62 years
+      if (years < 18 || years > 62) {
+        dobInput.classList.add('error');
+        if (errDiv) {
+          errDiv.textContent = "Age must be between 18 and 62 years (Current: " + years + " yrs)";
+          errDiv.style.display = 'block';
+        }
+        if (ageDisplay) ageDisplay.value = "Invalid Age (" + years + " yrs)";
+      } else {
+        dobInput.classList.remove('error');
+        if (errDiv) errDiv.style.display = 'none';
+        if (ageDisplay) ageDisplay.value = years + " Years";
+      }
+    },
+
     validateFieldLive(input, type) {
       let val = input.value.trim();
       let errDiv = input.parentElement.querySelector('.error-msg');
@@ -709,7 +738,7 @@
           let age = today.getFullYear() - dobDate.getFullYear();
           let m = today.getMonth() - dobDate.getMonth();
           if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) age--;
-          if (age < 18 || age > 65) isValid = false;
+          if (age < 18 || age > 62) isValid = false;
         }
       } else if (type === 'ifsc') {
         if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(val.toUpperCase())) isValid = false;
@@ -808,9 +837,13 @@
             <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
-            <label>Date of Birth (DOB) *</label>
-            <input type="date" class="t-dob" value="${st.dob || ''}" ${disabledAttr} oninput="R4App.validateFieldLive(this, 'dob')">
-            <div class="error-msg">Select valid DOB (Age 18-65)</div>
+            <label>Date of Birth (DOB) * (18-62 Yrs)</label>
+            <input type="date" class="t-dob" min="1964-01-01" max="2008-12-31" value="${st.dob || ''}" ${disabledAttr} onchange="R4App.calculateAgeOnFly(this)" oninput="R4App.validateFieldLive(this, 'dob')">
+            <div class="error-msg">Age must be between 18 and 62 years</div>
+          </div>
+          <div class="form-group">
+            <label>Calculated Age (Auto)</label>
+            <input type="text" class="t-age-display" readonly placeholder="Auto age" style="background:#f1f5f9; font-weight:bold;">
           </div>
           <div class="form-group">
             <label>Mobile No. *</label>
@@ -894,13 +927,19 @@
       let cardElem = card;
       this.updateSelectedTags(cardElem.querySelectorAll('.custom-dropdown')[0].querySelector('.dropdown-list-container'), '.t-class-chk', 'Select Classes');
       this.updateSelectedTags(cardElem.querySelectorAll('.custom-dropdown')[1].querySelector('.dropdown-list-container'), '.t-subj-chk', 'Select Subjects');
+
+      // Trigger initial age calc if DOB exists
+      let dobField = card.querySelector('.t-dob');
+      if (dobField && dobField.value) {
+        this.calculateAgeOnFly(dobField);
+      }
     },
 
     editCard(btn) {
       let card = btn.closest('.teacher-card');
       card.classList.remove('frozen');
       card.querySelectorAll('input, select').forEach(el => {
-        if (!el.classList.contains('t-national')) el.disabled = false;
+        if (!el.classList.contains('t-national') && !el.classList.contains('t-age-display')) el.disabled = false;
       });
       card.querySelector('.teacher-card-header span').textContent = 'Staff Member [Status: ✍️ Incomplete]';
       card.querySelectorAll('.dropdown-select-box').forEach(box => box.setAttribute('onclick', 'R4App.toggleCustomDropdown(this)'));
@@ -917,10 +956,14 @@
           isValid = false;
         }
       });
+      let dobInput = card.querySelector('.t-dob');
+      if (dobInput && dobInput.classList.contains('error')) {
+        isValid = false;
+      }
       let clsArr = Array.from(card.querySelectorAll('.t-class-chk:checked')).map(cb => cb.value);
       let subjArr = Array.from(card.querySelectorAll('.t-subj-chk:checked')).map(cb => cb.value);
       if (clsArr.length === 0 || subjArr.length === 0 || !isValid) {
-        alert("Validation Notice: Please complete all mandatory fields and select classes/subjects before freezing this staff record.");
+        alert("Validation Notice: Please complete all mandatory fields, ensure age is between 18-62, and select classes/subjects before freezing.");
         return;
       }
       card.classList.add('frozen');
@@ -942,7 +985,7 @@
     },
 
     async deleteStaffCard(btn) {
-      let confirmDelete = window.confirm("Confirmation Request: Are you sure you want to delete this staff record? This action will remove the entry and back it up.");
+      let confirmDelete = window.confirm("Confirmation Request: Are you sure you want to delete this staff record?");
       if (confirmDelete) {
         let card = btn.closest('.teacher-card');
         let cardIndex = Array.from(card.parentNode.children).indexOf(card);
@@ -1291,7 +1334,6 @@
         countText = `Total Schools: ${totalSchCount} | Total Staff: ${grandTotalStaff}, Complete Entry: ${gComplete}, Teacher Pending: ${gTeacherPending}`;
 
       } else if (format === "F_3") {
-        // F_3: JSK-wise Regular & Guest Count (Male/Female/Total) with JSK subtotals & Grand Total
         html = `<thead><tr>
           <th>Sr. No.</th><th>Sankul (JSK)</th>
           <th>Regular Male</th><th>Regular Female</th><th>Regular Total</th>
