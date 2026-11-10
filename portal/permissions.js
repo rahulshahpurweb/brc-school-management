@@ -1,18 +1,18 @@
-// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + ID-Based UI Enforcement + Auto-Polling)
+// Feature, Module & Academic Session Permissions Control Module (100% Google Sheet Cloud-Synced)
 const FeaturePermissions = {
-  // Aapka Google Apps Script (GAS) Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
 
   getDefaults() {
     return {
       jsk_dash_view: true,
-      jsk_school_list: true,
+      jsk_records_view: true,
       jsk_compilation_view: true,
       jsk_entry_view: false,
       jsk_upload_excel: false,
       jsk_template_download: false,
+      jsk_school_list: true,
       school_dash_view: true,
-      school_school_list: true,
+      school_records_view: true,
       school_entry_view: true,
       school_can_edit_locked_session: false,
       r2_enrollment_access: true,
@@ -47,17 +47,13 @@ const FeaturePermissions = {
       if (response.ok) {
         let remoteSettings = await response.json();
         if (remoteSettings && typeof remoteSettings === 'object' && Object.keys(remoteSettings).length > 0) {
-          let defaults = this.getDefaults();
-          let mergedRemote = Object.assign({}, defaults, remoteSettings);
-          localStorage.setItem("brc_feature_permissions", JSON.stringify(mergedRemote));
-          
-          if (mergedRemote.global_active_session) {
-            localStorage.setItem("brc_active_session", mergedRemote.global_active_session);
+          localStorage.setItem("brc_feature_permissions", JSON.stringify(remoteSettings));
+          if (remoteSettings.global_active_session) {
+            localStorage.setItem("brc_active_session", remoteSettings.global_active_session);
           }
-          if (mergedRemote.portal_maintenance !== undefined) {
-            localStorage.setItem("brc_maintenance_mode", mergedRemote.portal_maintenance ? "true" : "false");
+          if (remoteSettings.portal_maintenance !== undefined) {
+            localStorage.setItem("brc_maintenance_mode", remoteSettings.portal_maintenance ? "true" : "false");
           }
-          
           if (typeof this.enforceUI === 'function') {
             this.enforceUI();
           }
@@ -80,14 +76,13 @@ const FeaturePermissions = {
     try {
       await fetch(this.cloudApiUrl, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           action: "savePermissions",
           settings: JSON.stringify(settings)
         })
       });
-      console.log("Settings successfully sent to Google Sheet Cloud!");
+      console.log("Settings successfully updated on Google Sheet Cloud!");
     } catch (e) {
       console.error("Cloud save failed.", e);
     }
@@ -139,54 +134,30 @@ const FeaturePermissions = {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return;
 
-    // Permissions nikalna
-    let canDash = user.role === 'jsk' ? this.isAllowed('jsk_dash_view') : this.isAllowed('school_dash_view');
-    let canList = user.role === 'jsk' ? this.isAllowed('jsk_school_list') : this.isAllowed('school_school_list');
-    let canComp = user.role === 'jsk' ? this.isAllowed('jsk_compilation_view') : false;
-    let canEntry = user.role === 'jsk' ? this.isAllowed('jsk_entry_view') : this.isAllowed('school_entry_view');
-    let canExcel = user.role === 'jsk' ? this.isAllowed('jsk_upload_excel') : false;
-    let canTemplate = user.role === 'jsk' ? this.isAllowed('jsk_template_download') : false;
+    let dashBtn = document.querySelector("button[onclick*=\"showTab('dash')\"]");
+    let recordsBtn = document.getElementById("navRecordsBtn");
+    let entryBtn = document.getElementById("navEntryBtn");
+    let compilationBtn = document.querySelector("button[onclick*=\"showTab('compilation')\"]");
+    let uploadBtn = document.getElementById("uploadLabelBtn");
+    let templateBtn = document.getElementById("templateBtn");
 
-    // ID-based elements check karna
-    let dashBtn = document.getElementById("menuDashBtn");
-    let listBtn = document.getElementById("menuSchoolListBtn");
-    let compBtn = document.getElementById("menuCompilationBtn");
-    let entryBtn = document.getElementById("menuEntryBtn");
-    let excelBtn = document.getElementById("menuExcelBtn");
-    let templateBtn = document.getElementById("menuTemplateBtn");
-
-    if (dashBtn) dashBtn.style.display = canDash ? '' : 'none';
-    if (listBtn) listBtn.style.display = canList ? '' : 'none';
-    if (compBtn) compBtn.style.display = canComp ? '' : 'none';
-    if (entryBtn) entryBtn.style.display = canEntry ? '' : 'none';
-    if (excelBtn) excelBtn.style.display = canExcel ? '' : 'none';
-    if (templateBtn) templateBtn.style.display = canTemplate ? '' : 'none';
-
-    // Universal Text & Attribute Backup: Agar kisi button par ID nahi bhi lagi hai, toh text se pakad kar hide kar dega!
-    document.querySelectorAll("button, a, .menu-item, div").forEach(el => {
-      let text = (el.innerText || "").toLowerCase();
-      let onclickAttr = (el.getAttribute("onclick") || "").toLowerCase();
-
-      // Agar Excel upload allowed nahi hai, toh use kahin bhi dikhne mat do
-      if (!canExcel && (text.includes("upload") || text.includes("excel") || onclickAttr.includes("upload") || onclickAttr.includes("excel"))) {
-        // Master header ke top buttons ko chhod kar menu items ko hide karein
-        if (!el.classList.contains('master-header') && !el.closest('.master-header') && !el.classList.contains('nav-top')) {
-          el.style.display = 'none';
-        }
-      }
-
-      // Agar Compilation allowed nahi hai
-      if (!canComp && (text.includes("compilation") || onclickAttr.includes("compilation"))) {
-        el.style.display = 'none';
-      }
-
-      // Agar Template allowed nahi hai
-      if (!canTemplate && (text.includes("template") || onclickAttr.includes("template"))) {
-        el.style.display = 'none';
-      }
-    });
+    if (user.role === 'jsk') {
+      if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? 'flex' : 'none';
+      if (recordsBtn) recordsBtn.style.display = this.isAllowed('jsk_records_view') ? 'flex' : 'none';
+      if (compilationBtn) compilationBtn.style.display = this.isAllowed('jsk_compilation_view') ? 'flex' : 'none';
+      if (entryBtn) entryBtn.style.display = this.isAllowed('jsk_entry_view') ? 'flex' : 'none';
+      if (uploadBtn) uploadBtn.style.display = this.isAllowed('jsk_upload_excel') ? 'flex' : 'none';
+      if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? 'flex' : 'none';
+    }
 
     if (user.role === 'school') {
+      if (dashBtn) dashBtn.style.display = this.isAllowed('school_dash_view') ? 'flex' : 'none';
+      if (recordsBtn) recordsBtn.style.display = this.isAllowed('school_records_view') ? 'flex' : 'none';
+      if (entryBtn) entryBtn.style.display = this.isAllowed('school_entry_view') ? 'flex' : 'none';
+      if (compilationBtn) compilationBtn.style.display = 'none'; 
+      if (uploadBtn) uploadBtn.style.display = 'none';
+      if (templateBtn) templateBtn.style.display = 'none';
+
       let activeSess = this.getActiveSession();
       if (this.isSessionLocked(activeSess)) {
         let canEditLocked = this.isAllowed('school_can_edit_locked_session');
@@ -203,13 +174,6 @@ window.AdminLocks = FeaturePermissions;
 document.addEventListener("DOMContentLoaded", () => {
   FeaturePermissions.fetchCloudSettings();
   setTimeout(() => { FeaturePermissions.enforceUI(); }, 300);
-
-  // Background Auto-Polling: Har 15 seconds mein Google Sheet se live sync karega bina cache clear kiye
-  setInterval(() => {
-    FeaturePermissions.fetchCloudSettings();
-  }, 15000);
 });
 
-window.addEventListener("focus", () => { 
-  FeaturePermissions.fetchCloudSettings(); 
-});
+window.addEventListener("focus", () => { FeaturePermissions.fetchCloudSettings(); });
