@@ -1,5 +1,6 @@
-// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + Exact Checkbox Key Mapping)
+// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + ID-Based UI Enforcement + Auto-Polling)
 const FeaturePermissions = {
+  // Aapka Google Apps Script (GAS) Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
 
   getDefaults() {
@@ -138,66 +139,32 @@ const FeaturePermissions = {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return;
 
-    // 1. JSK Role Enforcement based on exact checkboxes
+    let dashBtn = document.getElementById("menuDashBtn");
+    let listBtn = document.getElementById("menuSchoolListBtn");
+    let compBtn = document.getElementById("menuCompilationBtn");
+    let entryBtn = document.getElementById("menuEntryBtn");
+    let excelBtn = document.getElementById("menuExcelBtn");
+    let templateBtn = document.getElementById("menuTemplateBtn");
+
+    // 1. JSK Role Enforcement
     if (user.role === 'jsk') {
-      let canDash = this.isAllowed('jsk_dash_view');
-      let canList = this.isAllowed('jsk_school_list');
-      let canComp = this.isAllowed('jsk_compilation_view');
-      let canEntry = this.isAllowed('jsk_entry_view');
-      let canExcel = this.isAllowed('jsk_upload_excel');
-      let canTemplate = this.isAllowed('jsk_template_download');
-
-      document.querySelectorAll("button, a, .menu-item").forEach(el => {
-        let text = el.innerText || "";
-        let onclickAttr = el.getAttribute("onclick") || "";
-
-        if (text.includes("Summary Dashboard") || onclickAttr.includes("dash")) {
-          el.style.display = canDash ? '' : 'none';
-        }
-        if (text.includes("School List") || onclickAttr.includes("school")) {
-          el.style.display = canList ? '' : 'none';
-        }
-        if (text.includes("Compilation Report") || onclickAttr.includes("compilation")) {
-          el.style.display = canComp ? '' : 'none';
-        }
-        if (text.includes("Data Entry") || onclickAttr.includes("entry")) {
-          el.style.display = canEntry ? '' : 'none';
-        }
-        if (text.includes("Excel") || onclickAttr.includes("upload")) {
-          el.style.display = canExcel ? '' : 'none';
-        }
-        if (text.includes("Template") || onclickAttr.includes("template")) {
-          el.style.display = canTemplate ? '' : 'none';
-        }
-      });
+      if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? '' : 'none';
+      if (listBtn) listBtn.style.display = this.isAllowed('jsk_school_list') ? '' : 'none';
+      if (compBtn) compBtn.style.display = this.isAllowed('jsk_compilation_view') ? '' : 'none';
+      if (entryBtn) entryBtn.style.display = this.isAllowed('jsk_entry_view') ? '' : 'none';
+      if (excelBtn) excelBtn.style.display = this.isAllowed('jsk_upload_excel') ? '' : 'none';
+      if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? '' : 'none';
     }
 
-    // 2. School Role Enforcement based on exact checkboxes
+    // 2. School Role Enforcement (School login par JSK / Compilation / Excel / Template hamesha hide rahenge)
     if (user.role === 'school') {
-      let canDash = this.isAllowed('school_dash_view');
-      let canList = this.isAllowed('school_school_list');
-      let canEntry = this.isAllowed('school_entry_view');
+      if (dashBtn) dashBtn.style.display = this.isAllowed('school_dash_view') ? '' : 'none';
+      if (listBtn) listBtn.style.display = this.isAllowed('school_school_list') ? '' : 'none';
+      if (entryBtn) entryBtn.style.display = this.isAllowed('school_entry_view') ? '' : 'none';
 
-      document.querySelectorAll("button, a, .menu-item").forEach(el => {
-        let text = el.innerText || "";
-        let onclickAttr = el.getAttribute("onclick") || "";
-
-        // JSK specific controls ko School ke liye hamesha block rakhein
-        if (text.includes("Compilation Report") || text.includes("Excel") || text.includes("Template") || onclickAttr.includes("compilation") || onclickAttr.includes("upload") || onclickAttr.includes("template")) {
-          el.style.display = 'none';
-          return;
-        }
-
-        if (text.includes("Summary Dashboard") || onclickAttr.includes("dash")) {
-          el.style.display = canDash ? '' : 'none';
-        }
-        if (text.includes("School List") || onclickAttr.includes("school")) {
-          el.style.display = canList ? '' : 'none';
-        }
-        if (text.includes("Data Entry") || onclickAttr.includes("entry") || onclickAttr.includes("form")) {
-          el.style.display = canEntry ? '' : 'none';
-        }
-      });
+      if (compBtn) compBtn.style.display = 'none';
+      if (excelBtn) compBtn.style.display = 'none';
+      if (templateBtn) compBtn.style.display = 'none';
 
       let activeSess = this.getActiveSession();
       if (this.isSessionLocked(activeSess)) {
@@ -216,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
   FeaturePermissions.fetchCloudSettings();
   setTimeout(() => { FeaturePermissions.enforceUI(); }, 300);
 
-  // Background Auto-Polling: Har 15 seconds mein Google Sheet se sync karega
+  // Background Auto-Polling: Har 15 seconds mein Google Sheet se live sync karega bina cache clear kiye
   setInterval(() => {
     FeaturePermissions.fetchCloudSettings();
   }, 15000);
