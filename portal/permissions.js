@@ -71,7 +71,7 @@ const FeaturePermissions = {
     }
   },
 
-  async saveSettings(settings) {
+    async saveSettings(settings) {
     localStorage.setItem("brc_feature_permissions", JSON.stringify(settings));
     if (settings.global_active_session) {
       localStorage.setItem("brc_active_session", settings.global_active_session);
@@ -81,19 +81,22 @@ const FeaturePermissions = {
     }
 
     try {
+      // CORS block se bachne ke liye 'no-cors' mode ka use kiya gaya hai
       await fetch(this.cloudApiUrl, {
         method: "POST",
+        mode: "no-cors", 
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           action: "savePermissions",
           settings: JSON.stringify(settings)
         })
       });
-      console.log("Settings successfully updated on Google Sheet Cloud!");
+      console.log("Settings successfully sent to Google Sheet Cloud!");
     } catch (e) {
       console.error("Cloud save failed.", e);
     }
   },
+  
 
   getActiveSession() {
     let settings = this.getSettings();
