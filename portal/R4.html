@@ -185,6 +185,9 @@
         <select id="reportFormatSelect" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold; color:#1d4ed8;">
           <option value="F_1">F_1: Detailed Teacher List</option>
           <option value="F_2">F_2: School-wise Teacher Count (Male / Female / Total)</option>
+          <option value="F_3">F_3: JSK-wise Regular & Guest Count (Male/Female/Total)</option>
+          <option value="F_4">F_4: Regular Teachers List (All Details)</option>
+          <option value="F_5">F_5: Guest Faculty List (All Details)</option>
         </select>
 
         <label style="margin-left:5px;"><b>F4 (Gender Filter):</b></label>
@@ -394,7 +397,7 @@
       this.loadSchoolForm();
     },
 
-        getCategoryOptions(schoolInput) {
+    getCategoryOptions(schoolInput) {
       let cat = "";
       let name = "";
       
@@ -409,22 +412,22 @@
       let classes = [];
       let subjects = [];
 
-      // 1. Pure Primary School (Class 1 to 5) -> Class 1 se 5, 4 Subjects (EVS sahit)
-      if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
-        classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
-        subjects = ["Hindi", "English", "Math", "EVS"];
-      }
-      // 2. Primary with Middle / 1 to 8 / 1 to 10 / 1 to 12 -> Class 1 se 8, 7 Subjects (EVS sahit)
-      else if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("PRIMARY WITH MIDDLE") || 
-               combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
-               (combined.includes("1 TO") && (combined.includes("8") || combined.includes("10") || combined.includes("12")))) {
+      // 1. Sabse pehle 1 to 8 / 1 to 10 / 1 to 12 (Primary with Middle / Higher Sec) check hoga
+      if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("PRIMARY WITH MIDDLE") || 
+          combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
+          combined.includes("1 TO 10") || combined.includes("1 TO 12") || 
+          (combined.includes("1 TO") && combined.includes("8"))) {
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
       }
-      // 3. Middle School-only (6 to 8) ya 6 se shuru hone wale -> Class 6 se 8, 6 Subjects (EVS chhodkar)
-      else if (combined.includes("6 TO 8") || combined.includes("6-8") || combined.includes("MIDDLE SCHOOL") || 
-               combined.includes("MIDDLE TO HIGH") || combined.includes("MIDDLE TO HIGHER SECONDARY") || 
-               combined.includes("6 TO") || combined.includes("6-")) {
+      // 2. Pure Primary School (Class 1 to 5)
+      else if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
+        classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
+        subjects = ["Hindi", "English", "Math", "EVS"];
+      }
+      // 3. Middle School-only (6 to 8 / Upper Primary 6-8)
+      else if (combined.includes("6 TO 8") || combined.includes("6-8") || combined.includes("UPPER PRIMARY") || 
+               (combined.includes("MIDDLE") && !combined.includes("1 TO") && !combined.includes("PRIMARY"))) {
         classes = ["Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit"];
       }
@@ -436,7 +439,6 @@
 
       return { classes, subjects };
     },
-    
 
     downloadTemplate() {
       let headers = [
@@ -1287,6 +1289,130 @@
         </tr>`;
         html += `</tbody>`;
         countText = `Total Schools: ${totalSchCount} | Total Staff: ${grandTotalStaff}, Complete Entry: ${gComplete}, Teacher Pending: ${gTeacherPending}`;
+
+      } else if (format === "F_3") {
+        // F_3: JSK-wise Regular & Guest Count (Male/Female/Total) with JSK subtotals & Grand Total
+        html = `<thead><tr>
+          <th>Sr. No.</th><th>Sankul (JSK)</th>
+          <th>Regular Male</th><th>Regular Female</th><th>Regular Total</th>
+          <th>Guest Male</th><th>Guest Female</th><th>Guest Total</th>
+          <th>Grand Total Staff</th>
+        </tr></thead><tbody>`;
+
+        let jskNames = ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"];
+        let idx = 1;
+        let tRegM = 0, tRegF = 0, tGuestM = 0, tGuestF = 0, tGrandTot = 0;
+
+        jskNames.forEach(jsk => {
+          if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
+          let rM = 0, rF = 0, gM = 0, gF = 0;
+
+          targetSchools.forEach(s => {
+            if ((s.jsk || "Bhoura").toLowerCase() === jsk.toLowerCase()) {
+              let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
+              if (saved && saved.staff) {
+                saved.staff.forEach(st => {
+                  if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+                  if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+
+                  if (st.nature === "Regular") {
+                    if (st.gender === "Male") rM++; else if (st.gender === "Female") rF++;
+                  } else if (st.nature === "Guest") {
+                    if (st.gender === "Male") gM++; else if (st.gender === "Female") gF++;
+                  }
+                });
+              }
+            }
+          });
+
+          let rTot = rM + rF;
+          let gTot = gM + gF;
+          let rowTot = rTot + gTot;
+
+          tRegM += rM; tRegF += rF; tGuestM += gM; tGuestF += gF; tGrandTot += rowTot;
+
+          html += `<tr>
+            <td>${idx++}</td>
+            <td style="text-align:left; font-weight:bold;">${jsk}</td>
+            <td style="color:#1d4ed8;">${rM}</td>
+            <td style="color:#d97706;">${rF}</td>
+            <td style="font-weight:bold;">${rTot}</td>
+            <td style="color:#1d4ed8;">${gM}</td>
+            <td style="color:#d97706;">${gF}</td>
+            <td style="font-weight:bold;">${gTot}</td>
+            <td style="font-weight:bold; background:#eef2ff;">${rowTot}</td>
+          </tr>`;
+        });
+
+        html += `<tr style="background:#f1f5f9; font-weight:bold;">
+          <td colspan="2">Grand Total</td>
+          <td style="color:#1d4ed8;">${tRegM}</td>
+          <td style="color:#d97706;">${tRegF}</td>
+          <td>${tRegM + tRegF}</td>
+          <td style="color:#1d4ed8;">${tGuestM}</td>
+          <td style="color:#d97706;">${tGuestF}</td>
+          <td>${tGuestM + tGuestF}</td>
+          <td style="background:#dcfce7; color:#14532d;">${tGrandTot}</td>
+        </tr>`;
+        html += `</tbody>`;
+        countText = `Regular Total: ${tRegM + tRegF} | Guest Total: ${tGuestM + tGuestF} | Grand Total: ${tGrandTot}`;
+
+      } else if (format === "F_4" || format === "F_5") {
+        let natType = (format === "F_4") ? "Regular" : "Guest";
+        let titleName = (format === "F_4") ? "Regular Teachers List" : "Guest Faculty List";
+
+        html = `<thead><tr>
+          <th>Sr. No.</th><th>School Name</th><th>UDISE</th><th>JSK</th><th>Status</th>
+          <th>Teacher Name</th><th>Parent/Guardian</th><th>Unique ID</th><th>Cast</th><th>Gender</th>
+          <th>DOB</th><th>Mobile</th><th>Aadhar</th><th>Email</th><th>Classes Taught</th><th>Subjects Taught</th>
+          <th>Bank Type</th><th>Branch</th><th>Account No.</th><th>IFSC Code</th><th>Teacher National Code</th>
+        </tr></thead><tbody>`;
+
+        let idx = 1;
+        targetSchools.forEach(s => {
+          let jsk = s.jsk || 'Bhoura';
+          if (!info.isSchool && jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
+          let saved = JSON.parse(localStorage.getItem("brc_teacher_" + s.udise) || "null");
+          if (saved && saved.staff) {
+            saved.staff.forEach(st => {
+              if (st.nature !== natType) return;
+              if (genderFilter !== "ALL" && st.gender !== genderFilter) return;
+              if (classFilter !== "ALL" && (!st.classes || !st.classes.includes(classFilter))) return;
+
+              let clsStr = Array.isArray(st.classes) ? st.classes.join(", ") : "";
+              let subjStr = Array.isArray(st.subjects) ? st.subjects.join(", ") : "";
+
+              html += `<tr>
+                <td>${idx++}</td>
+                <td style="text-align:left;">${s.name}</td>
+                <td>${s.udise}</td>
+                <td>${jsk}</td>
+                <td><span style="color:${st.isFrozen === true ? '#16a34a' : '#d97706'}; font-weight:bold;">${st.isFrozen === true ? 'Complete' : 'Incomplete'}</span></td>
+                <td style="text-align:left; font-weight:bold;">${st.name}</td>
+                <td>${st.father}</td>
+                <td>${st.uniqueId}</td>
+                <td>${st.cast}</td>
+                <td>${st.gender}</td>
+                <td>${st.dob}</td>
+                <td>${st.mobile}</td>
+                <td>${st.aadhar}</td>
+                <td>${st.email}</td>
+                <td style="text-align:left;">${clsStr}</td>
+                <td style="text-align:left;">${subjStr}</td>
+                <td>${st.bank}</td>
+                <td>${st.branch}</td>
+                <td>${st.accNo}</td>
+                <td>${st.ifsc}</td>
+                <td><b>${st.nationalCode || '-'}</b></td>
+              </tr>`;
+            });
+          }
+        });
+        if (idx === 1) html += `<tr><td colspan="21" style="padding:20px; color:#64748b;">No matching records found.</td></tr>`;
+        html += `</tbody>`;
+        countText = `Total ${titleName}: ${idx - 1}`;
       }
 
       table.innerHTML = html;
