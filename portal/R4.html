@@ -394,7 +394,7 @@
       this.loadSchoolForm();
     },
 
-    getCategoryOptions(schoolInput) {
+        getCategoryOptions(schoolInput) {
       let cat = "";
       let name = "";
       
@@ -414,19 +414,21 @@
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
         subjects = ["Hindi", "English", "Math", "EVS"];
       }
-      // 2. Middle School-only (6 to 8) ya 6 se shuru hone wale -> Class 6 se 8, 6 Subjects (EVS chhodkar)
-      else if (combined.includes("MIDDLE SCHOOL") || combined.includes("MIDDLE TO HIGH") || 
-               combined.includes("MIDDLE TO HIGHER SECONDARY") || combined.includes("6 TO") || combined.includes("6-")) {
-        classes = ["Class 6", "Class 7", "Class 8"];
-        subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit"];
-      }
-      // 3. Primary with Middle (1 to 8) ya Primary to High/Higher Secondary (1 to 10/12) -> Class 1 se 8, 7 Subjects
-      else if (combined.includes("PRIMARY WITH MIDDLE") || combined.includes("PRIMARY TO HIGH") || 
-               combined.includes("PRIMARY TO HIGHER SECONDARY") || (combined.includes("1 TO") && (combined.includes("8") || combined.includes("10") || combined.includes("12")))) {
+      // 2. Primary with Middle / 1 to 8 / 1 to 10 / 1 to 12 -> Class 1 se 8, 7 Subjects (EVS sahit)
+      else if (combined.includes("1 TO 8") || combined.includes("1-8") || combined.includes("PRIMARY WITH MIDDLE") || 
+               combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
+               (combined.includes("1 TO") && (combined.includes("8") || combined.includes("10") || combined.includes("12")))) {
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
       }
-      // 4. Default Fallback (High School / Higher Secondary / Any other) -> Class 1 se 8, 7 Subjects
+      // 3. Middle School-only (6 to 8) ya 6 se shuru hone wale -> Class 6 se 8, 6 Subjects (EVS chhodkar)
+      else if (combined.includes("6 TO 8") || combined.includes("6-8") || combined.includes("MIDDLE SCHOOL") || 
+               combined.includes("MIDDLE TO HIGH") || combined.includes("MIDDLE TO HIGHER SECONDARY") || 
+               combined.includes("6 TO") || combined.includes("6-")) {
+        classes = ["Class 6", "Class 7", "Class 8"];
+        subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit"];
+      }
+      // 4. Default Fallback -> Class 1 se 8, 7 Subjects
       else {
         classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
         subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
@@ -434,6 +436,7 @@
 
       return { classes, subjects };
     },
+    
 
     downloadTemplate() {
       let headers = [
