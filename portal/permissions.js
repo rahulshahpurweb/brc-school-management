@@ -1,4 +1,4 @@
-// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + Cloud Priority + Auto-Polling)
+// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + Cloud Priority + Auto-Polling + Dynamic UI Enforcement)
 const FeaturePermissions = {
   // Aapka Google Apps Script (GAS) Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
@@ -49,7 +49,7 @@ const FeaturePermissions = {
         let remoteSettings = await response.json();
         if (remoteSettings && typeof remoteSettings === 'object' && Object.keys(remoteSettings).length > 0) {
           
-          // Cloud Priority: Local cache ko override karke seedha Google Sheet ka naya data set karein
+          // Cloud Priority: Purana local cache ignore karke seedha Google Sheet ka naya data set karein
           let defaults = this.getDefaults();
           let mergedRemote = Object.assign({}, defaults, remoteSettings);
           localStorage.setItem("brc_feature_permissions", JSON.stringify(mergedRemote));
@@ -71,7 +71,7 @@ const FeaturePermissions = {
     }
   },
 
-    async saveSettings(settings) {
+  async saveSettings(settings) {
     localStorage.setItem("brc_feature_permissions", JSON.stringify(settings));
     if (settings.global_active_session) {
       localStorage.setItem("brc_active_session", settings.global_active_session);
@@ -81,10 +81,10 @@ const FeaturePermissions = {
     }
 
     try {
-      // CORS block se bachne ke liye 'no-cors' mode ka use kiya gaya hai
+      // CORS block se bachne ke liye 'no-cors' mode ka use kiya gaya hai taaki request seedha Google Sheet tak jaye
       await fetch(this.cloudApiUrl, {
         method: "POST",
-        mode: "no-cors", 
+        mode: "no-cors",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           action: "savePermissions",
@@ -96,7 +96,6 @@ const FeaturePermissions = {
       console.error("Cloud save failed.", e);
     }
   },
-  
 
   getActiveSession() {
     let settings = this.getSettings();
@@ -144,30 +143,41 @@ const FeaturePermissions = {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return;
 
-    let dashBtn = document.querySelector("button[onclick*=\"showTab('dash')\"]");
-    let recordsBtn = document.getElementById("navRecordsBtn");
-    let entryBtn = document.getElementById("navEntryBtn");
-    let compilationBtn = document.querySelector("button[onclick*=\"showTab('compilation')\"]");
-    let uploadBtn = document.getElementById("uploadLabelBtn");
-    let templateBtn = document.getElementById("templateBtn");
-
     if (user.role === 'jsk') {
-      if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? 'flex' : 'none';
-      if (recordsBtn) recordsBtn.style.display = this.isAllowed('jsk_records_view') ? 'flex' : 'none';
-      if (compilationBtn) compilationBtn.style.display = this.isAllowed('jsk_compilation_view') ? 'flex' : 'none';
-      if (entryBtn) entryBtn.style.display = this.isAllowed('jsk_entry_view') ? 'flex' : 'none';
-      if (uploadBtn) uploadBtn.style.display = this.isAllowed('jsk_upload_excel') ? 'flex' : 'none';
-      if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? 'flex' : 'none';
+      let canDash = this.isAllowed('jsk_dash_view');
+      let canList = this.isAllowed('jsk_school_list');
+      let canComp = this.isAllowed('jsk_compilation_view');
+      let canEntry = this.isAllowed('jsk_entry_view');
+      let canExcel = this.isAllowed('jsk_upload_excel');
+      let canTemplate = this.isAllowed('jsk_template_download');
+
+      // Buttons aur menu items ko text aur onclick attributes ke aadhar par dynamically hide/show karna
+      document.querySelectorAll("button, a, .menu-item").forEach(el => {
+        let text = el.innerText || "";
+        let onclickAttr = el.getAttribute("onclick") || "";
+
+        if (text.includes("Summary Dashboard") || onclickAttr.includes("dash")) {
+          el.style.display = canDash ? '' : 'none';
+        }
+        if (text.includes("School List") || onclickAttr.includes("school")) {
+          el.style.display = canList ? '' : 'none';
+        }
+        if (text.includes("Compilation Report") || onclickAttr.includes("compilation")) {
+          el.style.display = canComp ? '' : 'none';
+        }
+        if (text.includes("Data Entry") || onclickAttr.includes("entry")) {
+          el.style.display = canEntry ? '' : 'none';
+        }
+        if (text.includes("Excel") || onclickAttr.includes("upload")) {
+          el.style.display = canExcel ? '' : 'none';
+        }
+        if (text.includes("Template") || onclickAttr.includes("template")) {
+          el.style.display = canTemplate ? '' : 'none';
+        }
+      });
     }
 
     if (user.role === 'school') {
-      if (dashBtn) dashBtn.style.display = this.isAllowed('school_dash_view') ? 'flex' : 'none';
-      if (recordsBtn) recordsBtn.style.display = this.isAllowed('school_records_view') ? 'flex' : 'none';
-      if (entryBtn) entryBtn.style.display = this.isAllowed('school_entry_view') ? 'flex' : 'none';
-      if (compilationBtn) compilationBtn.style.display = 'none'; 
-      if (uploadBtn) uploadBtn.style.display = 'none';
-      if (templateBtn) templateBtn.style.display = 'none';
-
       let activeSess = this.getActiveSession();
       if (this.isSessionLocked(activeSess)) {
         let canEditLocked = this.isAllowed('school_can_edit_locked_session');
@@ -185,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
   FeaturePermissions.fetchCloudSettings();
   setTimeout(() => { FeaturePermissions.enforceUI(); }, 300);
 
-  // Background Auto-Polling: Har 15 seconds mein Google Sheet se latest settings check karega
+  // Background Auto-Polling: Har 15 seconds mein Google Sheet se latest settings check karega bina cache clear kiye
   setInterval(() => {
     FeaturePermissions.fetchCloudSettings();
   }, 15000);
