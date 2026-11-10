@@ -325,7 +325,6 @@ async function checkGlobalMaintenance() {
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true"; 
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  // Admin controls visibility check
   let adminSec = document.getElementById("adminControlsSection");
   if (adminSec) {
     if (user.role === 'admin' || user.name === 'BRC Admin' || String(user.role).toLowerCase() === 'admin') {
