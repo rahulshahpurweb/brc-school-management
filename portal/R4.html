@@ -705,7 +705,7 @@
       if (years < 18 || years > 62) {
         dobInput.classList.add('error');
         if (errDiv) {
-          errDiv.textContent = "Age must be between 18 and 62 years (Current: " + years + " yrs)";
+          errDiv.textContent = "Age must be between 18 to 62 years (Current: " + years + " yrs)";
           errDiv.style.display = 'block';
         }
         if (ageDisplay) ageDisplay.value = "Invalid Age (" + years + " yrs)";
