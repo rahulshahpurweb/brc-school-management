@@ -159,6 +159,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -184,7 +185,6 @@
         <select id="reportFormatSelect" onchange="R4App.renderReports()" style="padding:6px; border-radius:4px; font-weight:bold; color:#1d4ed8;">
           <option value="F_1">F_1: Detailed Teacher List</option>
           <option value="F_2">F_2: School-wise Teacher Count (Male / Female / Total)</option>
-        
         </select>
 
         <label style="margin-left:5px;"><b>F4 (Gender Filter):</b></label>
@@ -220,8 +220,6 @@
   window.R4App = {
     cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
     banksList: ["SBI", "PNB", "BOI", "BOM", "CBI", "Bank of Baroda", "Canara Bank", "Union Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab & Sind Bank", "UCO Bank", "Indian Bank"],
-    subjectsList: ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"],
-    classesList: ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
     pendingTransfer: null,
 
     showLoader(show) {
@@ -396,6 +394,47 @@
       this.loadSchoolForm();
     },
 
+    getCategoryOptions(schoolInput) {
+      let cat = "";
+      let name = "";
+      
+      if (typeof schoolInput === 'object' && schoolInput !== null) {
+        cat = (schoolInput.category || "").toUpperCase().trim();
+        name = (schoolInput.name || "").toUpperCase().trim();
+      } else {
+        cat = (schoolInput || "").toUpperCase().trim();
+      }
+      
+      let combined = cat + " " + name;
+      let classes = [];
+      let subjects = [];
+
+      // 1. Pure Primary School (Class 1 to 5) -> Class 1 se 5, 4 Subjects (EVS sahit)
+      if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
+        classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
+        subjects = ["Hindi", "English", "Math", "EVS"];
+      }
+      // 2. Middle School-only (6 to 8) ya 6 se shuru hone wale -> Class 6 se 8, 6 Subjects (EVS chhodkar)
+      else if (combined.includes("MIDDLE SCHOOL") || combined.includes("MIDDLE TO HIGH") || 
+               combined.includes("MIDDLE TO HIGHER SECONDARY") || combined.includes("6 TO") || combined.includes("6-")) {
+        classes = ["Class 6", "Class 7", "Class 8"];
+        subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit"];
+      }
+      // 3. Primary with Middle (1 to 8) ya Primary to High/Higher Secondary (1 to 10/12) -> Class 1 se 8, 7 Subjects
+      else if (combined.includes("PRIMARY WITH MIDDLE") || combined.includes("PRIMARY TO HIGH") || 
+               combined.includes("PRIMARY TO HIGHER SECONDARY") || (combined.includes("1 TO") && (combined.includes("8") || combined.includes("10") || combined.includes("12")))) {
+        classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+        subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
+      }
+      // 4. Default Fallback (High School / Higher Secondary / Any other) -> Class 1 se 8, 7 Subjects
+      else {
+        classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
+        subjects = ["Hindi", "English", "Math", "Science", "Social Science", "Sanskrit", "EVS"];
+      }
+
+      return { classes, subjects };
+    },
+
     downloadTemplate() {
       let headers = [
         "School Name", "UDISE Code", "School Category", "JSK", 
@@ -406,8 +445,8 @@
       let sample = [
         "GHSS MODEL SHAHPUR", "23351003914", "6 to 12", "Shahpur", 
         "Regular", "Ramesh Kumar", "Sohan Lal", "AA1234", 
-        "SC", "Male", "15/08/1985", "9876543210", "123456789012", "ramesh@email.com", 
-        "\"Class 1, Class 2\"", "\"Hindi, Math\"", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234", "NAT12345678"
+        "SC", "Male", "1985-08-15", "9876543210", "123456789012", "ramesh@email.com", 
+        "\"Class 6, Class 7\"", "\"Hindi, Math\"", "SBI", "Shahpur Branch", "12345678901", "SBIN0001234", "NAT12345678"
       ];
       
       let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), sample.join(",")].join("\n");
@@ -657,11 +696,10 @@
       } else if (type === 'acc') {
         if (!/^\d{10,}$/.test(val)) isValid = false;
       } else if (type === 'dob') {
-        if (!/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/.test(val)) {
+        if (!val) {
           isValid = false;
         } else {
-          let parts = val.split('/');
-          let dobDate = new Date(parts[2], parts[1] - 1, parts[0]);
+          let dobDate = new Date(val);
           let today = new Date();
           let age = today.getFullYear() - dobDate.getFullYear();
           let m = today.getMonth() - dobDate.getMonth();
@@ -694,6 +732,10 @@
       let container = document.getElementById('staffCardsContainer');
       if (container.querySelector('div[style*="text-align:center"]')) container.innerHTML = '';
       
+      let udise = document.getElementById('r4SchoolSelect').value;
+      let school = this.allSchools.find(s => String(s.udise) === String(udise));
+      let options = this.getCategoryOptions(school || "1 to 8");
+
       let isExplicitlyFrozen = (st.isFrozen === true);
       let card = document.createElement('div');
       card.className = 'teacher-card ' + (isExplicitlyFrozen ? 'frozen' : '');
@@ -702,8 +744,8 @@
       let selectedSubjects = Array.isArray(st.subjects) ? st.subjects : [];
       let disabledAttr = isExplicitlyFrozen ? 'disabled' : '';
       
-      let classesHtml = this.classesList.map(c => `<label><input type="checkbox" class="t-class-chk" value="${c}" ${selectedClasses.includes(c) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-class-chk', 'Select Classes')"> ${c}</label>`).join('');
-      let subjectsHtml = this.subjectsList.map(sub => `<label><input type="checkbox" class="t-subj-chk" value="${sub}" ${selectedSubjects.includes(sub) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-subj-chk', 'Select Subjects')"> ${sub}</label>`).join('');
+      let classesHtml = options.classes.map(c => `<label><input type="checkbox" class="t-class-chk" value="${c}" ${selectedClasses.includes(c) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-class-chk', 'Select Classes')"> ${c}</label>`).join('');
+      let subjectsHtml = options.subjects.map(sub => `<label><input type="checkbox" class="t-subj-chk" value="${sub}" ${selectedSubjects.includes(sub) ? 'checked' : ''} ${disabledAttr} onchange="R4App.onCheckboxChange(this, '.t-subj-chk', 'Select Subjects')"> ${sub}</label>`).join('');
       let banksHtml = this.banksList.map(b => `<option value="${b}" ${st.bank === b ? 'selected' : ''}>${b}</option>`).join('');
       
       card.innerHTML = `
@@ -761,9 +803,9 @@
             <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
-            <label>DOB (DD/MM/YYYY) *</label>
-            <input type="text" class="t-dob" maxlength="10" value="${st.dob || ''}" placeholder="DD/MM/YYYY" ${disabledAttr} oninput="R4App.validateFieldLive(this, 'dob')">
-            <div class="error-msg">Format DD/MM/YYYY (Age 18-65)</div>
+            <label>Date of Birth (DOB) *</label>
+            <input type="date" class="t-dob" value="${st.dob || ''}" ${disabledAttr} oninput="R4App.validateFieldLive(this, 'dob')">
+            <div class="error-msg">Select valid DOB (Age 18-65)</div>
           </div>
           <div class="form-group">
             <label>Mobile No. *</label>
@@ -862,7 +904,7 @@
 
     freezeCard(btn) {
       let card = btn.closest('.teacher-card');
-      let inputs = card.querySelectorAll('input[type="text"], select');
+      let inputs = card.querySelectorAll('input[type="text"], input[type="date"], select');
       let isValid = true;
       inputs.forEach(inp => {
         if (!inp.value || inp.value.trim() === "") {
