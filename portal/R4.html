@@ -837,9 +837,9 @@
             <div class="error-msg">Required field.</div>
           </div>
           <div class="form-group">
-            <label>Date of Birth (DOB) * (18-62 Yrs)</label>
+            <label>Date of Birth (DOB)</label>
             <input type="date" class="t-dob" min="1964-01-01" max="2008-12-31" value="${st.dob || ''}" ${disabledAttr} onchange="R4App.calculateAgeOnFly(this)" oninput="R4App.validateFieldLive(this, 'dob')">
-            <div class="error-msg">Age must be between 18 and 62 years</div>
+            <div class="error-msg">Age must be between 18 to 62 years</div>
           </div>
           <div class="form-group">
             <label>Calculated Age (Auto)</label>
