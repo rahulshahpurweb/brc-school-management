@@ -680,7 +680,7 @@
       this.updateSelectedTags(container, selector, defaultText);
     },
 
-    calculateAgeOnFly(dobInput) {
+        calculateAgeOnFly(dobInput) {
       let val = dobInput.value;
       let card = dobInput.closest('.teacher-card');
       let ageDisplay = card.querySelector('.t-age-display');
@@ -695,26 +695,43 @@
 
       let dobDate = new Date(val);
       let today = new Date();
+
       let years = today.getFullYear() - dobDate.getFullYear();
-      let m = today.getMonth() - dobDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+      let months = today.getMonth() - dobDate.getMonth();
+      let days = today.getDate() - dobDate.getDate();
+
+      if (days < 0) {
+        months--;
+        let prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        days += prevMonth.getDate();
+      }
+
+      if (months < 0) {
         years--;
+        months += 12;
       }
 
       // Check age limit: 18 to 62 years
       if (years < 18 || years > 62) {
         dobInput.classList.add('error');
         if (errDiv) {
-          errDiv.textContent = "Age must be between 18 to 62 years (Current: " + years + " yrs)";
+          errDiv.textContent = "Age must be between 18 and 62 years (Current: " + years + " yrs)";
           errDiv.style.display = 'block';
         }
         if (ageDisplay) ageDisplay.value = "Invalid Age (" + years + " yrs)";
       } else {
         dobInput.classList.remove('error');
         if (errDiv) errDiv.style.display = 'none';
-        if (ageDisplay) ageDisplay.value = years + " Years";
+        
+        // Saal aur Mahine dono display karne ke liye
+        let ageString = years + " Years";
+        if (months > 0) {
+          ageString += " " + months + " Months";
+        }
+        if (ageDisplay) ageDisplay.value = ageString;
       }
     },
+    
 
     validateFieldLive(input, type) {
       let val = input.value.trim();
