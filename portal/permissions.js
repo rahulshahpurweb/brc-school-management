@@ -1,19 +1,17 @@
-// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + Cloud Priority + Auto-Polling + Dynamic UI Enforcement)
+// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + Exact Checkbox Key Mapping)
 const FeaturePermissions = {
-  // Aapka Google Apps Script (GAS) Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
 
   getDefaults() {
     return {
       jsk_dash_view: true,
-      jsk_records_view: true,
+      jsk_school_list: true,
       jsk_compilation_view: true,
-      jsk_entry_view: false, // JSK Data Entry Permission
+      jsk_entry_view: false,
       jsk_upload_excel: false,
       jsk_template_download: false,
-      jsk_school_list: true,
       school_dash_view: true,
-      school_records_view: true,
+      school_school_list: true,
       school_entry_view: true,
       school_can_edit_locked_session: false,
       r2_enrollment_access: true,
@@ -48,8 +46,6 @@ const FeaturePermissions = {
       if (response.ok) {
         let remoteSettings = await response.json();
         if (remoteSettings && typeof remoteSettings === 'object' && Object.keys(remoteSettings).length > 0) {
-          
-          // Cloud Priority: Purana local cache ignore karke seedha Google Sheet ka naya data set karein
           let defaults = this.getDefaults();
           let mergedRemote = Object.assign({}, defaults, remoteSettings);
           localStorage.setItem("brc_feature_permissions", JSON.stringify(mergedRemote));
@@ -81,7 +77,6 @@ const FeaturePermissions = {
     }
 
     try {
-      // CORS block se bachne ke liye 'no-cors' mode ka use kiya gaya hai taaki request seedha Google Sheet tak jaye
       await fetch(this.cloudApiUrl, {
         method: "POST",
         mode: "no-cors",
@@ -143,6 +138,7 @@ const FeaturePermissions = {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return;
 
+    // 1. JSK Role Enforcement based on exact checkboxes
     if (user.role === 'jsk') {
       let canDash = this.isAllowed('jsk_dash_view');
       let canList = this.isAllowed('jsk_school_list');
@@ -151,7 +147,6 @@ const FeaturePermissions = {
       let canExcel = this.isAllowed('jsk_upload_excel');
       let canTemplate = this.isAllowed('jsk_template_download');
 
-      // Buttons aur menu items ko text aur onclick attributes ke aadhar par dynamically hide/show karna
       document.querySelectorAll("button, a, .menu-item").forEach(el => {
         let text = el.innerText || "";
         let onclickAttr = el.getAttribute("onclick") || "";
@@ -177,7 +172,33 @@ const FeaturePermissions = {
       });
     }
 
+    // 2. School Role Enforcement based on exact checkboxes
     if (user.role === 'school') {
+      let canDash = this.isAllowed('school_dash_view');
+      let canList = this.isAllowed('school_school_list');
+      let canEntry = this.isAllowed('school_entry_view');
+
+      document.querySelectorAll("button, a, .menu-item").forEach(el => {
+        let text = el.innerText || "";
+        let onclickAttr = el.getAttribute("onclick") || "";
+
+        // JSK specific controls ko School ke liye hamesha block rakhein
+        if (text.includes("Compilation Report") || text.includes("Excel") || text.includes("Template") || onclickAttr.includes("compilation") || onclickAttr.includes("upload") || onclickAttr.includes("template")) {
+          el.style.display = 'none';
+          return;
+        }
+
+        if (text.includes("Summary Dashboard") || onclickAttr.includes("dash")) {
+          el.style.display = canDash ? '' : 'none';
+        }
+        if (text.includes("School List") || onclickAttr.includes("school")) {
+          el.style.display = canList ? '' : 'none';
+        }
+        if (text.includes("Data Entry") || onclickAttr.includes("entry") || onclickAttr.includes("form")) {
+          el.style.display = canEntry ? '' : 'none';
+        }
+      });
+
       let activeSess = this.getActiveSession();
       if (this.isSessionLocked(activeSess)) {
         let canEditLocked = this.isAllowed('school_can_edit_locked_session');
@@ -195,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   FeaturePermissions.fetchCloudSettings();
   setTimeout(() => { FeaturePermissions.enforceUI(); }, 300);
 
-  // Background Auto-Polling: Har 15 seconds mein Google Sheet se latest settings check karega bina cache clear kiye
+  // Background Auto-Polling: Har 15 seconds mein Google Sheet se sync karega
   setInterval(() => {
     FeaturePermissions.fetchCloudSettings();
   }, 15000);
