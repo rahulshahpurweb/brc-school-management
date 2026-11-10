@@ -1,5 +1,6 @@
-// Feature, Module & Academic Session Permissions Control Module (100% Google Sheet Cloud-Synced)
+// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced)
 const FeaturePermissions = {
+  // Aapka Google Apps Script (GAS) Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
 
   getDefaults() {
@@ -7,7 +8,7 @@ const FeaturePermissions = {
       jsk_dash_view: true,
       jsk_records_view: true,
       jsk_compilation_view: true,
-      jsk_entry_view: false,
+      jsk_entry_view: false, // JSK Data Entry Permission
       jsk_upload_excel: false,
       jsk_template_download: false,
       jsk_school_list: true,
@@ -47,12 +48,15 @@ const FeaturePermissions = {
       if (response.ok) {
         let remoteSettings = await response.json();
         if (remoteSettings && typeof remoteSettings === 'object' && Object.keys(remoteSettings).length > 0) {
-          localStorage.setItem("brc_feature_permissions", JSON.stringify(remoteSettings));
-          if (remoteSettings.global_active_session) {
-            localStorage.setItem("brc_active_session", remoteSettings.global_active_session);
+          let currentLocal = JSON.parse(localStorage.getItem("brc_feature_permissions") || "{}");
+          let merged = Object.assign({}, remoteSettings, currentLocal);
+          localStorage.setItem("brc_feature_permissions", JSON.stringify(merged));
+          
+          if (merged.global_active_session) {
+            localStorage.setItem("brc_active_session", merged.global_active_session);
           }
-          if (remoteSettings.portal_maintenance !== undefined) {
-            localStorage.setItem("brc_maintenance_mode", remoteSettings.portal_maintenance ? "true" : "false");
+          if (merged.portal_maintenance !== undefined) {
+            localStorage.setItem("brc_maintenance_mode", merged.portal_maintenance ? "true" : "false");
           }
           if (typeof this.enforceUI === 'function') {
             this.enforceUI();
