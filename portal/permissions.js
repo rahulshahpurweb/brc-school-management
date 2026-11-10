@@ -139,6 +139,15 @@ const FeaturePermissions = {
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'admin') return;
 
+    // Permissions nikalna
+    let canDash = user.role === 'jsk' ? this.isAllowed('jsk_dash_view') : this.isAllowed('school_dash_view');
+    let canList = user.role === 'jsk' ? this.isAllowed('jsk_school_list') : this.isAllowed('school_school_list');
+    let canComp = user.role === 'jsk' ? this.isAllowed('jsk_compilation_view') : false;
+    let canEntry = user.role === 'jsk' ? this.isAllowed('jsk_entry_view') : this.isAllowed('school_entry_view');
+    let canExcel = user.role === 'jsk' ? this.isAllowed('jsk_upload_excel') : false;
+    let canTemplate = user.role === 'jsk' ? this.isAllowed('jsk_template_download') : false;
+
+    // ID-based elements check karna
     let dashBtn = document.getElementById("menuDashBtn");
     let listBtn = document.getElementById("menuSchoolListBtn");
     let compBtn = document.getElementById("menuCompilationBtn");
@@ -146,26 +155,38 @@ const FeaturePermissions = {
     let excelBtn = document.getElementById("menuExcelBtn");
     let templateBtn = document.getElementById("menuTemplateBtn");
 
-    // 1. JSK Role Enforcement
-    if (user.role === 'jsk') {
-      if (dashBtn) dashBtn.style.display = this.isAllowed('jsk_dash_view') ? '' : 'none';
-      if (listBtn) listBtn.style.display = this.isAllowed('jsk_school_list') ? '' : 'none';
-      if (compBtn) compBtn.style.display = this.isAllowed('jsk_compilation_view') ? '' : 'none';
-      if (entryBtn) entryBtn.style.display = this.isAllowed('jsk_entry_view') ? '' : 'none';
-      if (excelBtn) excelBtn.style.display = this.isAllowed('jsk_upload_excel') ? '' : 'none';
-      if (templateBtn) templateBtn.style.display = this.isAllowed('jsk_template_download') ? '' : 'none';
-    }
+    if (dashBtn) dashBtn.style.display = canDash ? '' : 'none';
+    if (listBtn) listBtn.style.display = canList ? '' : 'none';
+    if (compBtn) compBtn.style.display = canComp ? '' : 'none';
+    if (entryBtn) entryBtn.style.display = canEntry ? '' : 'none';
+    if (excelBtn) excelBtn.style.display = canExcel ? '' : 'none';
+    if (templateBtn) templateBtn.style.display = canTemplate ? '' : 'none';
 
-    // 2. School Role Enforcement (School login par JSK / Compilation / Excel / Template hamesha hide rahenge)
+    // Universal Text & Attribute Backup: Agar kisi button par ID nahi bhi lagi hai, toh text se pakad kar hide kar dega!
+    document.querySelectorAll("button, a, .menu-item, div").forEach(el => {
+      let text = (el.innerText || "").toLowerCase();
+      let onclickAttr = (el.getAttribute("onclick") || "").toLowerCase();
+
+      // Agar Excel upload allowed nahi hai, toh use kahin bhi dikhne mat do
+      if (!canExcel && (text.includes("upload") || text.includes("excel") || onclickAttr.includes("upload") || onclickAttr.includes("excel"))) {
+        // Master header ke top buttons ko chhod kar menu items ko hide karein
+        if (!el.classList.contains('master-header') && !el.closest('.master-header') && !el.classList.contains('nav-top')) {
+          el.style.display = 'none';
+        }
+      }
+
+      // Agar Compilation allowed nahi hai
+      if (!canComp && (text.includes("compilation") || onclickAttr.includes("compilation"))) {
+        el.style.display = 'none';
+      }
+
+      // Agar Template allowed nahi hai
+      if (!canTemplate && (text.includes("template") || onclickAttr.includes("template"))) {
+        el.style.display = 'none';
+      }
+    });
+
     if (user.role === 'school') {
-      if (dashBtn) dashBtn.style.display = this.isAllowed('school_dash_view') ? '' : 'none';
-      if (listBtn) listBtn.style.display = this.isAllowed('school_school_list') ? '' : 'none';
-      if (entryBtn) entryBtn.style.display = this.isAllowed('school_entry_view') ? '' : 'none';
-
-      if (compBtn) compBtn.style.display = 'none';
-      if (excelBtn) compBtn.style.display = 'none';
-      if (templateBtn) compBtn.style.display = 'none';
-
       let activeSess = this.getActiveSession();
       if (this.isSessionLocked(activeSess)) {
         let canEditLocked = this.isAllowed('school_can_edit_locked_session');
