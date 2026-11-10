@@ -1,4 +1,4 @@
-// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced)
+// Feature & Module Permissions Control Module (100% Google Sheet Cloud-Synced + Auto-Polling)
 const FeaturePermissions = {
   // Aapka Google Apps Script (GAS) Web App URL
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
@@ -49,17 +49,28 @@ const FeaturePermissions = {
         let remoteSettings = await response.json();
         if (remoteSettings && typeof remoteSettings === 'object' && Object.keys(remoteSettings).length > 0) {
           let currentLocal = JSON.parse(localStorage.getItem("brc_feature_permissions") || "{}");
+          
+          // Check if remote settings are different from local cache to avoid unnecessary UI redraws
+          let remoteStr = JSON.stringify(remoteSettings);
+          let localRemoteStr = JSON.stringify(currentLocal);
+
           let merged = Object.assign({}, remoteSettings, currentLocal);
           localStorage.setItem("brc_feature_permissions", JSON.stringify(merged));
           
-          if (merged.global_active_session) {
-            localStorage.setItem("brc_active_session", merged.global_active_session);
+          if (remoteSettings.global_active_session) {
+            localStorage.setItem("brc_active_session", remoteSettings.global_active_session);
           }
-          if (merged.portal_maintenance !== undefined) {
-            localStorage.setItem("brc_maintenance_mode", merged.portal_maintenance ? "true" : "false");
+          if (remoteSettings.portal_maintenance !== undefined) {
+            localStorage.setItem("brc_maintenance_mode", remoteSettings.portal_maintenance ? "true" : "false");
           }
+          
           if (typeof this.enforceUI === 'function') {
             this.enforceUI();
+          }
+
+          // Agar cloud par kuch badla hai toh page ka state bhi synchronize kar lein
+          if (remoteStr !== localRemoteStr && window.location.pathname.includes("main.html")) {
+            // Optional: Chaho toh yahan soft reload ya UI update trigger kar sakte hain
           }
         }
       }
@@ -178,6 +189,13 @@ window.AdminLocks = FeaturePermissions;
 document.addEventListener("DOMContentLoaded", () => {
   FeaturePermissions.fetchCloudSettings();
   setTimeout(() => { FeaturePermissions.enforceUI(); }, 300);
+
+  // Background Auto-Polling: Har 15 seconds mein cloud se latest settings check karega bina page refresh kiye
+  setInterval(() => {
+    FeaturePermissions.fetchCloudSettings();
+  }, 15000);
 });
 
-window.addEventListener("focus", () => { FeaturePermissions.fetchCloudSettings(); });
+window.addEventListener("focus", () => { 
+  FeaturePermissions.fetchCloudSettings(); 
+});
