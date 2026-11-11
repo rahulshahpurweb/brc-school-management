@@ -21,7 +21,6 @@
   .btn-orange{background:#d97706}
   .btn-gray{background:#475569}
   .btn-purple{background:#9333ea}
-  .btn-teal{background:#0d9488}
   
   .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:15px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;background:#f8fafc}
   
@@ -32,6 +31,14 @@
   .view-tabs{display:flex;gap:10px;margin-top:15px;background:#1e293b;padding:10px;border-radius:8px}
   .tab-btn{background:#334155;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px}
   .tab-btn.active{background:#1d4ed8}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:15px}
+  .stat-box{background:#fff;padding:15px;border-radius:8px;border-left:4px solid #1d4ed8;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
+  .stat-box.green{border-left-color:#16a34a}
+  .stat-box.orange{border-left-color:#d97706}
+  .stat-box.red{border-left-color:#dc2626}
+  .stat-title{font-size:11px;color:#64748b;font-weight:bold;text-transform:uppercase}
+  .stat-value{font-size:22px;font-weight:800;color:#071b38;margin-top:5px}
 
   .table-card{background:#fff;border-radius:8px;margin-top:15px;padding:15px;border:1px solid #cbd5e1}
   .tablewrap{width:100%;overflow-x:auto;max-height:550px;border:1px solid #cbd5e1;border-radius:6px}
@@ -49,7 +56,7 @@
 
   @media print {
     body { background: #fff; color: #000; padding: 0; }
-    header, .upload-section, .filters-grid, .view-tabs, .btn-group { display: none !important; }
+    header, .upload-section, .filters-grid, .view-tabs, .matrix-controls, .btn-group { display: none !important; }
     .container { box-shadow: none; padding: 0; max-width: 100%; background: #fff; }
     .table-card { border: none; padding: 0; margin: 0; }
     .tablewrap { max-height: none; overflow: visible; border: none; }
@@ -99,7 +106,7 @@
     <button class="tab-btn" id="tabMatrix" onclick="switchView('matrix')">📊 JSK-wise Matrix Summary Report</button>
   </div>
 
-  <!-- Print Header with Larger Fonts & Date/Time -->
+  <!-- Print Header -->
   <div class="print-header" id="printHeaderDiv">
     <h2 id="printTitleText">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
     <div class="print-meta">
@@ -117,10 +124,8 @@
     <input type="file" id="bulkExcelInput" accept=".xlsx, .xls, .csv" onchange="handleBulkExcelUpload(event)" style="font-size:12px; font-weight:bold;">
   </div>
 
-  <!-- Filters Bar -->
+  <!-- Filters Bar (Only for Detailed View) -->
   <div class="filters-grid" id="filtersBar">
-    <div class="filter-group" id="matrixReportTypeGroup" style="grid-column: span 2; display: none;">
-    </div>
     <div class="filter-group">
       <label>Search (छात्र/स्कूल/यूडाइस/PEN)</label>
       <input type="text" id="searchInput" placeholder="Type to search..." oninput="applyFilters()">
@@ -175,8 +180,8 @@
     </div>
   </div>
 
-  <!-- Matrix Report Category Selector (Appears only in Matrix View) -->
-  <div class="filters-grid" id="matrixControls" style="display: none; background: #e2e8f0; border: 2px solid #1d4ed8;">
+  <!-- Matrix Controls (Only for Matrix View) -->
+  <div class="filters-grid matrix-controls" id="matrixControls" style="display: none; background: #e2e8f0; border: 2px solid #1d4ed8;">
     <div class="filter-group" style="grid-column: 1 / -1;">
       <label style="font-size: 13px; color: #1d4ed8; font-weight: 900;">📊 JSK Matrix Report Category Select Karein:</label>
       <select id="matrixCategorySelect" onchange="renderMatrixReport()" style="font-size: 14px; font-weight: bold; background: #fff; padding: 10px; border: 2px solid #1d4ed8;">
@@ -190,7 +195,7 @@
     </div>
   </div>
 
-  <!-- Summary Cards (Visible in Detail View) -->
+  <!-- Summary Cards (Only for Detailed View) -->
   <div class="stats-grid" id="statsGrid">
     <div class="stat-box">
       <div class="stat-title">Total Records</div>
@@ -210,14 +215,13 @@
     </div>
   </div>
 
-  <!-- Data Table Display -->
+  <!-- Data Table Display Card -->
   <div class="table-card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
       <h3 id="tableHeadingTitle" style="margin:0;font-size:14px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
       <span id="recordCountLabel" style="font-size:12px;font-weight:bold;color:#1d4ed8;">Showing 0 rows</span>
     </div>
     <div class="tablewrap" id="tableWrapperDiv">
-      <!-- Detailed View Table -->
       <table id="reportTable">
         <thead>
           <tr>
@@ -494,7 +498,6 @@ function updateDashboard(){
   tbody.innerHTML = html;
 }
 
-// Render Matrix Report Table (JSK-wise Class Matrix like image)
 function renderMatrixReport(){
   let cat = document.getElementById('matrixCategorySelect').value;
   let categoryText = document.getElementById('matrixCategorySelect').options[document.getElementById('matrixCategorySelect').selectedIndex].text;
@@ -502,24 +505,21 @@ function renderMatrixReport(){
   document.getElementById('printTitleText').innerText = `जनशिक्षा केन्द्रवार छात्रों की संख्यात्मक जानकारी: ${categoryText}`;
   document.getElementById('tableHeadingTitle').innerText = `JSK-wise Matrix Summary (${categoryText})`;
 
-  // Extract unique JSKs
   let jskSet = new Set();
   globalData.forEach(item => { if(item.jsk) jskSet.add(item.jsk); });
   let jsks = Array.from(jskSet).sort();
 
-  // Define standard class columns matching user's image
+  // Updated class columns to match both "Nursery/KG" and standard naming variants
   let classCols = [
-    "Nursery", "LKG/KG1/Pre-School", "UKG/KG2/Pre-Primary", 
+    "Nursery/KG", "LKG/KG1/Pre-School", "UKG/KG2/Pre-Primary", 
     "I", "II", "III", "IV", "V", "VI", "VII", "VIII", 
     "IX", "X", "XI", "XII"
   ];
 
-  // Helper function to check if item matches selected matrix category
   function matchesCategory(item){
     if(cat === 'ALL') return true;
     let val = item[cat];
     if(!val || val === '--') return false;
-    // Check if it's a valid pending/status text or True
     return true;
   }
 
@@ -568,10 +568,15 @@ function renderMatrixReport(){
     
     let counts = {};
     classCols.forEach(c => {
-      counts[c] = jskRows.filter(i => String(i.studentClass || '').trim().toLowerCase() === c.toLowerCase()).length;
+      counts[c] = jskRows.filter(i => {
+        let cls = String(i.studentClass || '').trim().toLowerCase();
+        let target = c.toLowerCase();
+        if(target === "nursery/kg" && (cls === "nursery/kg" || cls === "nursery")) return true;
+        return cls === target;
+      }).length;
     });
 
-    let prePriTot = counts["Nursery"] + counts["LKG/KG1/Pre-School"] + counts["UKG/KG2/Pre-Primary"];
+    let prePriTot = counts["Nursery/KG"] + counts["LKG/KG1/Pre-School"] + counts["UKG/KG2/Pre-Primary"];
     let t1to8 = counts["I"] + counts["II"] + counts["III"] + counts["IV"] + counts["V"] + counts["VI"] + counts["VII"] + counts["VIII"];
     let t9to12 = counts["IX"] + counts["X"] + counts["XI"] + counts["XII"];
     let rowTotal = prePriTot + t1to8 + t9to12;
@@ -584,7 +589,7 @@ function renderMatrixReport(){
 
     tableHtml += `<tr>
       <td style="font-weight:bold; text-align:left; background:#f8fafc;">${jskName}</td>
-      <td>${counts["Nursery"] || 0}</td>
+      <td>${counts["Nursery/KG"] || 0}</td>
       <td>${counts["LKG/KG1/Pre-School"] || 0}</td>
       <td>${counts["UKG/KG2/Pre-Primary"] || 0}</td>
       <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${prePriTot}</td>
@@ -606,7 +611,6 @@ function renderMatrixReport(){
     </tr>`;
   });
 
-  // Grand Total Row
   tableHtml += `<tr style="background:#e2e8f0; font-weight:bold;">
     <td style="text-align:left; background:#071b38; color:#fff;">Grand Total</td>`;
   
