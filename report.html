@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BRC Shahpur - UDISE & Student Pending Report Portal</title>
+<title id="pageTitle">BRC Shahpur - UDISE & Student Pending Report Portal</title>
 <!-- SheetJS for Exporting Filtered Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- html2canvas for Image Download -->
@@ -131,7 +131,7 @@
     <button class="tab-btn" id="tabMatrix" onclick="switchView('matrix')">📊 JSK-wise Matrix Summary Report</button>
   </div>
 
-  <!-- Print/Image Header (Hidden on screen, shown in print & image capture) -->
+  <!-- Print/Image Header -->
   <div class="print-header" id="printHeaderDiv">
     <h2 id="printTitleText">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
     <div class="print-meta">
@@ -140,7 +140,7 @@
     </div>
   </div>
 
-  <!-- Bulk Upload Section (Hidden in print and image) -->
+  <!-- Bulk Upload Section -->
   <div class="upload-section" id="uploadSectionDiv">
     <div>
       <b style="font-size:11px; color:#071b38;">📁 Excel / CSV Data Upload Karein:</b>
@@ -301,7 +301,7 @@ function updateDateTimeMeta(){
     let catSelect = document.getElementById('matrixCategorySelect');
     if(catSelect && catSelect.selectedIndex >= 0){
       let selectedOptText = catSelect.options[catSelect.selectedIndex].text;
-      titleStr = `संकुलवार मैट्रिक्स रिपोर्ट: ${selectedOptText}`;
+      titleStr = `संकुलवार मैट्रिक्स रिपोर्ट - ${selectedOptText}`;
     }
   } else {
     let f1 = document.getElementById('f1Filter') ? document.getElementById('f1Filter').value : 'ALL';
@@ -310,13 +310,14 @@ function updateDateTimeMeta(){
     let f4 = document.getElementById('f4Filter') ? document.getElementById('f4Filter').value : 'ALL';
     let f5 = document.getElementById('f5Filter') ? document.getElementById('f5Filter').value : 'ALL';
     
-    if(f1 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: One Click से अपार (${f1})`;
-    else if(f2 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: SO3 फार्म जमा करें (${f2})`;
-    else if(f3 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: आधार मैच किंतु Verified नहीं (${f3})`;
-    else if(f4 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: आधार बनाया जाना हैं (${f4})`;
-    else if(f5 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: आधार मिसमैच (${f5})`;
+    if(f1 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - One Click से अपार (${f1})`;
+    else if(f2 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - SO3 फार्म जमा करें (${f2})`;
+    else if(f3 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - आधार मैच किंतु Verified नहीं (${f3})`;
+    else if(f4 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - आधार बनाया जाना हैं (${f4})`;
+    else if(f5 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - आधार मिसमैच (${f5})`;
   }
 
+  document.getElementById('pageTitle').innerText = titleStr;
   document.getElementById('printTitleText').innerText = titleStr;
   
   let jskVal = document.getElementById('jskFilter') ? document.getElementById('jskFilter').value : 'ALL';
