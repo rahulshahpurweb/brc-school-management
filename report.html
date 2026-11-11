@@ -47,7 +47,7 @@
   .spinner{border:5px solid #f3f3f3;border-top:5px solid #f4b400;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite}
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
-  /* Print & PDF Header Styling */
+  /* Print & PDF Header Styling with Larger Fonts */
   .print-header { display: none; }
 
   @media print {
@@ -57,23 +57,22 @@
     .table-card { border: none; padding: 0; margin: 0; }
     .tablewrap { max-height: none; overflow: visible; border: none; }
     
-    /* Highly Colorful & Attractive Print Title Box */
     .print-header { 
       display: block !important; 
       text-align: center; 
       margin-bottom: 15px; 
       background: linear-gradient(135deg, #1d4ed8, #9333ea) !important;
       color: #fff !important;
-      padding: 12px 15px;
-      border-radius: 6px;
+      padding: 15px 20px;
+      border-radius: 8px;
       -webkit-print-color-adjust: exact; 
       print-color-adjust: exact; 
     }
-    .print-header h2 { margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #ffd21c !important; text-transform: uppercase; }
-    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-top: 5px; color: #f8fafc !important; }
+    .print-header h2 { margin: 0 0 8px 0; font-size: 20px !important; font-weight: 900; color: #ffd21c !important; text-transform: uppercase; letter-spacing: 0.5px; }
+    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 13px !important; font-weight: bold; margin-top: 8px; color: #f8fafc !important; }
 
     table { width: 100% !important; font-size: 9px; border-collapse: collapse; }
-    th, td { border: 1px solid #000 !important; padding: 4px 5px; color: #000 !important; }
+    th, td { border: 1px solid #000 !important; padding: 5px 6px; color: #000 !important; }
     th { background: #071b38 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     tr { page-break-inside: avoid; }
   }
@@ -97,7 +96,7 @@
     </div>
   </header>
 
-  <!-- Colorful Print Header with Hindi Title and Date/Time -->
+  <!-- Print Header with Larger Fonts -->
   <div class="print-header" id="printHeaderDiv">
     <h2>समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
     <div class="print-meta">
@@ -208,11 +207,11 @@
             <th>Student PEN</th>
             <th>Student Name</th>
             <th>JSK (Sankul)</th>
-            <th>One Click से अपार</th>
-            <th>SO3 फार्म जमा करें</th>
-            <th>आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है</th>
-            <th>आधार बनाया जाना हैं</th>
-            <th>आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है</th>
+            <th id="th_col1">One Click से अपार</th>
+            <th id="th_col2">SO3 फार्म जमा करें</th>
+            <th id="th_col3">आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है</th>
+            <th id="th_col4">आधार बनाया जाना हैं</th>
+            <th id="th_col5">आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है</th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -404,6 +403,27 @@ function updateDashboard(){
   document.getElementById('statClasses').innerText = new Set(filteredData.map(i => i.studentClass)).size;
   document.getElementById('recordCountLabel').innerText = `Showing ${filteredData.length} rows`;
   
+  // Dynamic Column Hide/Show based on filter selection
+  let f1 = document.getElementById('f1Filter').value;
+  let f2 = document.getElementById('f2Filter').value;
+  let f3 = document.getElementById('f3Filter').value;
+  let f4 = document.getElementById('f4Filter').value;
+  let f5 = document.getElementById('f5Filter').value;
+
+  let showAll = (f1 === 'ALL' && f2 === 'ALL' && f3 === 'ALL' && f4 === 'ALL' && f5 === 'ALL');
+
+  let c1Visible = showAll || f1 !== 'ALL';
+  let c2Visible = showAll || f2 !== 'ALL';
+  let c3Visible = showAll || f3 !== 'ALL';
+  let c4Visible = showAll || f4 !== 'ALL';
+  let c5Visible = showAll || f5 !== 'ALL';
+
+  document.getElementById('th_col1').style.display = c1Visible ? '' : 'none';
+  document.getElementById('th_col2').style.display = c2Visible ? '' : 'none';
+  document.getElementById('th_col3').style.display = c3Visible ? '' : 'none';
+  document.getElementById('th_col4').style.display = c4Visible ? '' : 'none';
+  document.getElementById('th_col5').style.display = c5Visible ? '' : 'none';
+
   let tbody = document.getElementById('tableBody');
   if(filteredData.length === 0){
     tbody.innerHTML = `<tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">कोई रिकॉर्ड नहीं मिला। कृपया डेटा अपलोड करें।</td></tr>`;
@@ -420,17 +440,16 @@ function updateDashboard(){
       <td><b>${item.pen || ''}</b></td>
       <td style="text-align:left;font-weight:bold">${item.studentName || ''}</td>
       <td>${item.jsk || ''}</td>
-      <td>${item.col1 || '--'}</td>
-      <td>${item.col2 || '--'}</td>
-      <td>${item.col3 || '--'}</td>
-      <td>${item.col4 || '--'}</td>
-      <td>${item.col5 || '--'}</td>
+      <td style="display:${c1Visible?'':'none'}">${item.col1 || '--'}</td>
+      <td style="display:${c2Visible?'':'none'}">${item.col2 || '--'}</td>
+      <td style="display:${c3Visible?'':'none'}">${item.col3 || '--'}</td>
+      <td style="display:${c4Visible?'':'none'}">${item.col4 || '--'}</td>
+      <td style="display:${c5Visible?'':'none'}">${item.col5 || '--'}</td>
     </tr>`;
   });
   tbody.innerHTML = html;
 }
 
-// Print setup with colorful gradient header
 function triggerPrint(){
   let now = new Date();
   let dateStr = now.toLocaleDateString('hi-IN');
