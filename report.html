@@ -744,7 +744,6 @@ function downloadReportImage(){
     btnGroups.forEach(el => el.style.display = '');
     showLoader(false);
     
-    // Generate clean file name based on current title
     let currentTitle = document.getElementById('printTitleText').innerText || 'Report_Summary';
     let safeFileName = currentTitle.replace(/[\/\\?%*:|"<>]/g, '_').replace(/\s+/g, '_') + '.png';
     
