@@ -81,7 +81,6 @@
     tr { page-break-inside: avoid; }
   }
 
-  /* Desktop View enhancements */
   @media(min-width: 768px) {
     body { padding: 15px; }
     .container { padding: 20px; }
@@ -552,12 +551,12 @@ function renderMatrixReport(){
       <tr style="background:#071b38; color:#fff;">
         <th rowspan="2" style="border:1px solid #cbd5e1; padding:6px;">JSK</th>
         <th colspan="3" style="border:1px solid #cbd5e1; padding:5px;">Pre-Primary</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8;">Pre-Pri Total</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8; padding-left:12px; padding-right:12px;">Pre-Pri Total</th>
         <th colspan="8" style="border:1px solid #cbd5e1; padding:5px;">Primary & Middle</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8;">1 to 8 Total</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8; padding-left:12px; padding-right:12px;">1 to 8 Total</th>
         <th colspan="4" style="border:1px solid #cbd5e1; padding:5px;">High & Higher Sec</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8;">9 to 12 Total</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#b91c1c;">Grand Total</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8; padding-left:12px; padding-right:12px;">9 to 12 Total</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#b91c1c; padding-left:14px; padding-right:14px;">Grand Total</th>
       </tr>
       <tr style="background:#071b38; color:#fff;">
         <th style="border:1px solid #cbd5e1; padding:5px;">Nursery</th>
@@ -611,11 +610,11 @@ function renderMatrixReport(){
     classCols.forEach(c => grandTotals[c] += counts[c]);
 
     tableHtml += `<tr>
-      <td style="font-weight:bold; text-align:left; background:#f8fafc;">${jskName}</td>
+      <td style="font-weight:bold; text-align:left; background:#f8fafc; padding-left:10px; padding-right:10px;">${jskName}</td>
       <td>${counts["Nursery/KG"] || 0}</td>
       <td>${counts["LKG/KG1/Pre-School"] || 0}</td>
       <td>${counts["UKG/KG2/Pre-Primary"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${prePriTot}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:12px; padding-right:12px;">${prePriTot}</td>
       <td>${counts["I"] || 0}</td>
       <td>${counts["II"] || 0}</td>
       <td>${counts["III"] || 0}</td>
@@ -624,30 +623,30 @@ function renderMatrixReport(){
       <td>${counts["VI"] || 0}</td>
       <td>${counts["VII"] || 0}</td>
       <td>${counts["VIII"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${t1to8}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:12px; padding-right:12px;">${t1to8}</td>
       <td>${counts["IX"] || 0}</td>
       <td>${counts["X"] || 0}</td>
       <td>${counts["XI"] || 0}</td>
       <td>${counts["XII"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${t9to12}</td>
-      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c;">${rowTotal}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:12px; padding-right:12px;">${t9to12}</td>
+      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c; padding-left:14px; padding-right:14px;">${rowTotal}</td>
     </tr>`;
   });
 
   tableHtml += `<tr style="background:#e2e8f0; font-weight:bold;">
-    <td style="text-align:left; background:#071b38; color:#fff;">Grand Total</td>`;
+    <td style="text-align:left; background:#071b38; color:#fff; padding-left:10px; padding-right:10px;">Grand Total</td>`;
   
   classCols.forEach(c => {
     tableHtml += `<td style="background:#071b38; color:#fff;">${grandTotals[c]}</td>`;
     if(c === "UKG/KG2/Pre-Primary") {
-      tableHtml += `<td style="background:#1d4ed8; color:#fff;">${grandPrePriTot}</td>`;
+      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:12px; padding-right:12px;">${grandPrePriTot}</td>`;
     }
     if(c === "VIII") {
-      tableHtml += `<td style="background:#1d4ed8; color:#fff;">${grand1to8Tot}</td>`;
+      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:12px; padding-right:12px;">${grand1to8Tot}</td>`;
     }
   });
-  tableHtml += `<td style="background:#1d4ed8; color:#fff;">${grand9to12Tot}</td>
-    <td style="background:#b91c1c; color:#fff; font-size:12px;">${grandOverall}</td>
+  tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:12px; padding-right:12px;">${grand9to12Tot}</td>
+    <td style="background:#b91c1c; color:#fff; font-size:12px; padding-left:14px; padding-right:14px;">${grandOverall}</td>
   </tr>`;
 
   tableHtml += `</tbody></table>`;
