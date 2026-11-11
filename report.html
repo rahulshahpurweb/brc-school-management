@@ -6,6 +6,8 @@
 <title>BRC Shahpur - UDISE & Student Pending Report Portal</title>
 <!-- SheetJS for Exporting Filtered Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- html2canvas for Auto-Fit Image Download -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;color:#1e293b;padding:4px}
@@ -21,6 +23,7 @@
   .btn-orange{background:#d97706}
   .btn-gray{background:#475569}
   .btn-purple{background:#9333ea}
+  .btn-teal{background:#0d9488}
   
   .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:8px;border-radius:6px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;background:#f8fafc}
   
@@ -43,7 +46,7 @@
   .table-card{background:#fff;border-radius:6px;margin-top:8px;padding:8px;border:1px solid #cbd5e1}
   .tablewrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:550px;border:1px solid #cbd5e1;border-radius:5px}
   
-  /* Extremely Compact Matrix Table Styles to Fit Mobile Screen Without Scrolling */
+  /* Extremely Compact Matrix Table Styles */
   .matrix-table { width: 100%; border-collapse: collapse; font-size: 9px; table-layout: fixed; }
   .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 1px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .matrix-table th { background: #071b38; color: #fff; vertical-align: middle; font-size: 8px; }
@@ -110,12 +113,13 @@
   <div id="loadingText">Processing Data...</div>
 </div>
 
-<div class="container">
+<div class="container" id="printableArea">
   <header>
     <h1>✨ UDISE & Student Pending Report Portal</h1>
     <div class="btn-group">
       <a href="portal/main.html" class="btn btn-gray">🏠 Back</a>
-      <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print / PDF</button>
+      <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print</button>
+      <button class="btn btn-teal" onclick="downloadReportImage()">📷 Download Image</button>
       <button class="btn btn-orange" onclick="downloadTemplate()">📥 Template</button>
       <button class="btn btn-blue" onclick="exportExcel()">📤 Excel</button>
     </div>
@@ -127,10 +131,10 @@
     <button class="tab-btn" id="tabMatrix" onclick="switchView('matrix')">📊 JSK-wise Matrix Summary Report</button>
   </div>
 
-  <!-- Print Header -->
-  <div class="print-header" id="printHeaderDiv">
-    <h2 id="printTitleText">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
-    <div class="print-meta">
+  <!-- Print Header (Appears in Image and Print) -->
+  <div class="print-header" id="printHeaderDiv" style="display: block; margin-top: 10px;">
+    <h2 id="printTitleText" style="font-size: 15px; color: #ffd21c; margin: 0 0 5px 0; text-align: center;">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
+    <div class="print-meta" style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; color: #f8fafc;">
       <span id="printFilterInfo">फिल्टर: सभी स्कूल एवं कक्षाएं</span>
       <span id="printDateTime">दिनांक एवं समय: </span>
     </div>
@@ -287,6 +291,25 @@ function showLoader(show, text){
   if(text) document.getElementById('loadingText').innerText = text;
 }
 
+function updateDateTimeMeta(){
+  let now = new Date();
+  let dateStr = now.toLocaleDateString('hi-IN');
+  let timeStr = now.toLocaleTimeString('hi-IN');
+  
+  let jskVal = document.getElementById('jskFilter') ? document.getElementById('jskFilter').value : 'ALL';
+  let schVal = document.getElementById('schoolFilter') ? document.getElementById('schoolFilter').value : 'ALL';
+  let clsVal = document.getElementById('classFilter') ? document.getElementById('classFilter').value : 'ALL';
+  
+  let filterText = (currentView === 'matrix') ? `रिपोर्ट मोड: संकुलवार मैट्रिक्स सारांश (JSK Matrix Summary)` : `संकुल: ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
+  
+  if(document.getElementById('printDateTime')) {
+    document.getElementById('printDateTime').innerText = `दिनांक: ${dateStr} | समय: ${timeStr}`;
+  }
+  if(document.getElementById('printFilterInfo')) {
+    document.getElementById('printFilterInfo').innerText = filterText;
+  }
+}
+
 function downloadTemplate(){
   let headers = [
     "sn", "School Name", "UDISE Code", "Class", "Student PEN", 
@@ -440,6 +463,7 @@ function switchView(mode){
 }
 
 function applyFilters(){
+  updateDateTimeMeta();
   if(currentView === 'matrix'){
     renderMatrixReport();
     return;
@@ -531,6 +555,7 @@ function updateDashboard(){
 }
 
 function renderMatrixReport(){
+  updateDateTimeMeta();
   let cat = document.getElementById('matrixCategorySelect').value;
   let categoryText = document.getElementById('matrixCategorySelect').options[document.getElementById('matrixCategorySelect').selectedIndex].text;
   
@@ -560,12 +585,12 @@ function renderMatrixReport(){
       <tr>
         <th rowspan="2">JSK</th>
         <th colspan="3">Pre-Primary</th>
-        <th rowspan="2" style="background:#1d4ed8; padding-left:6px; padding-right:6px;">Pre-Pri Total</th>
+        <th rowspan="2" style="background:#1d4ed8; padding-left:4px; padding-right:4px;">Pre-Pri Total</th>
         <th colspan="8">Primary & Middle</th>
-        <th rowspan="2" style="background:#1d4ed8; padding-left:6px; padding-right:6px;">1 to 8 Total</th>
+        <th rowspan="2" style="background:#1d4ed8; padding-left:4px; padding-right:4px;">1 to 8 Total</th>
         <th colspan="4">High & Higher Sec</th>
-        <th rowspan="2" style="background:#1d4ed8; padding-left:6px; padding-right:6px;">9 to 12 Total</th>
-        <th rowspan="2" style="background:#b91c1c; padding-left:8px; padding-right:8px;">Grand Total</th>
+        <th rowspan="2" style="background:#1d4ed8; padding-left:4px; padding-right:4px;">9 to 12 Total</th>
+        <th rowspan="2" style="background:#b91c1c; padding-left:6px; padding-right:6px;">Grand Total</th>
       </tr>
       <tr>
         <th>Nursery</th>
@@ -619,11 +644,11 @@ function renderMatrixReport(){
     classCols.forEach(c => grandTotals[c] += counts[c]);
 
     tableHtml += `<tr>
-      <td style="font-weight:bold; text-align:left; background:#f8fafc; padding-left:6px; padding-right:6px;">${jskName}</td>
+      <td style="font-weight:bold; text-align:left; background:#f8fafc; padding-left:4px; padding-right:4px;">${jskName}</td>
       <td>${counts["Nursery/KG"] || 0}</td>
       <td>${counts["LKG/KG1/Pre-School"] || 0}</td>
       <td>${counts["UKG/KG2/Pre-Primary"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:6px; padding-right:6px;">${prePriTot}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:4px; padding-right:4px;">${prePriTot}</td>
       <td>${counts["I"] || 0}</td>
       <td>${counts["II"] || 0}</td>
       <td>${counts["III"] || 0}</td>
@@ -632,30 +657,30 @@ function renderMatrixReport(){
       <td>${counts["VI"] || 0}</td>
       <td>${counts["VII"] || 0}</td>
       <td>${counts["VIII"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:6px; padding-right:6px;">${t1to8}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:4px; padding-right:4px;">${t1to8}</td>
       <td>${counts["IX"] || 0}</td>
       <td>${counts["X"] || 0}</td>
       <td>${counts["XI"] || 0}</td>
       <td>${counts["XII"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:6px; padding-right:6px;">${t9to12}</td>
-      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c; padding-left:8px; padding-right:8px;">${rowTotal}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:4px; padding-right:4px;">${t9to12}</td>
+      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c; padding-left:6px; padding-right:6px;">${rowTotal}</td>
     </tr>`;
   });
 
   tableHtml += `<tr style="background:#e2e8f0; font-weight:bold;">
-    <td style="text-align:left; background:#071b38; color:#fff; padding-left:6px; padding-right:6px;">Grand Total</td>`;
+    <td style="text-align:left; background:#071b38; color:#fff; padding-left:4px; padding-right:4px;">Grand Total</td>`;
   
   classCols.forEach(c => {
     tableHtml += `<td style="background:#071b38; color:#fff;">${grandTotals[c]}</td>`;
     if(c === "UKG/KG2/Pre-Primary") {
-      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:6px; padding-right:6px;">${grandPrePriTot}</td>`;
+      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:4px; padding-right:4px;">${grandPrePriTot}</td>`;
     }
     if(c === "VIII") {
-      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:6px; padding-right:6px;">${grand1to8Tot}</td>`;
+      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:4px; padding-right:4px;">${grand1to8Tot}</td>`;
     }
   });
-  tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:6px; padding-right:6px;">${grand9to12Tot}</td>
-    <td style="background:#b91c1c; color:#fff; font-size:10px; padding-left:8px; padding-right:8px;">${grandOverall}</td>
+  tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:4px; padding-right:4px;">${grand9to12Tot}</td>
+    <td style="background:#b91c1c; color:#fff; font-size:9px; padding-left:6px; padding-right:6px;">${grandOverall}</td>
   </tr>`;
 
   tableHtml += `</tbody></table>`;
@@ -664,20 +689,34 @@ function renderMatrixReport(){
 }
 
 function triggerPrint(){
-  let now = new Date();
-  let dateStr = now.toLocaleDateString('hi-IN');
-  let timeStr = now.toLocaleTimeString('hi-IN');
-  
-  let jskVal = document.getElementById('jskFilter').value;
-  let schVal = document.getElementById('schoolFilter').value;
-  let clsVal = document.getElementById('classFilter').value;
-  
-  let filterText = (currentView === 'matrix') ? `रिपोर्ट मोड: संकुलवार मैट्रिक्स सारांश (JSK Matrix Summary)` : `संकुल (JSK): ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
-  
-  document.getElementById('printDateTime').innerText = `दिनांक: ${dateStr} | समय: ${timeStr}`;
-  document.getElementById('printFilterInfo').innerText = filterText;
-  
+  updateDateTimeMeta();
   window.print();
+}
+
+// Download Report as Image Function (Auto-Fit)
+function downloadReportImage(){
+  updateDateTimeMeta();
+  showLoader(true, "Generating Auto-Fit Image...");
+  
+  let element = document.getElementById('printableArea');
+  
+  // Temporarily hide buttons for clean image
+  let btnGroups = document.querySelectorAll('.btn-group, .view-tabs');
+  btnGroups.forEach(el => el.style.display = 'none');
+  
+  html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+    btnGroups.forEach(el => el.style.display = '');
+    showLoader(false);
+    
+    let link = document.createElement('a');
+    link.download = 'BRC_Report_Summary.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err => {
+    btnGroups.forEach(el => el.style.display = '');
+    showLoader(false);
+    alert("Error generating image: " + err.message);
+  });
 }
 
 function exportExcel(){
