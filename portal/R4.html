@@ -159,7 +159,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-    
+      
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -505,14 +505,15 @@
                 accNo: r[18] || "",
                 ifsc: r[19] || "",
                 nationalCode: nCode,
-                isFrozen: false
+                isFrozen: true
               });
             }
           }
 
           let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
           for (let udise in schoolMap) {
-            let payload = { udise: udise, staff: schoolMap[udise].staff, isFinalized: false };
+            let staffList = schoolMap[udise].staff;
+            let payload = { udise: udise, staff: staffList, isFinalized: staffList.length > 0 };
             localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
             await fetch(this.cloudApiUrl, {
               method: "POST",
@@ -554,8 +555,9 @@
       document.getElementById('lblCategory').textContent = school.category || 'Primary/Middle';
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || "null");
+      let isFin = saved ? (saved.isFinalized === true) : false;
       this.renderStaffCards(saved ? saved.staff : []);
-      this.updateFinalizeUI(saved ? saved.isFinalized : false);
+      this.updateFinalizeUI(isFin);
     },
 
     updateFinalizeUI(isFinalized) {
@@ -569,7 +571,7 @@
 
       if (isFinalized) {
         btn.textContent = "Finalized";
-        btn.style.background = "#16a34a";
+        btn.style.background = "#16a34a"; // Green
         if(btnAdd) btnAdd.style.display = 'none';
         if(btnSave) btnSave.style.display = 'none';
         
@@ -587,7 +589,7 @@
         }
       } else {
         btn.textContent = "Finalize";
-        btn.style.background = "#dc2626";
+        btn.style.background = "#dc2626"; // Red
         btn.disabled = false;
         btn.style.cursor = "pointer";
         if(btnAdd) btnAdd.style.display = 'inline-block';
@@ -611,15 +613,16 @@
         return;
       }
 
+      // STRICT CHECK: Bina data bhare ya freeze kiye koi school finalise nahi kar sakta!
+      let staffList = saved.staff || [];
       if (!isCurrentlyFinalized) {
-        let staffList = saved.staff || [];
         if (staffList.length === 0) {
-          alert("Please add and save at least one staff member before finalizing.");
+          alert("Error: Please add and save at least one staff member before finalizing.");
           return;
         }
         let allFrozen = staffList.every(st => st.isFrozen === true);
         if (!allFrozen) {
-          alert("Please click 'Save & Freeze' for all staff records before finalizing the school data.");
+          alert("Error: Please click 'Save & Freeze' for all staff records before finalizing the school data.");
           return;
         }
       }
@@ -1476,6 +1479,14 @@
 
     async adminEnableSchool(udise) {
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[], "isFinalized":false}');
+      
+      // STRICT ADMIN CHECK: Bina data bhare admin bhi finalise/enable nahi kar payega!
+      let staffList = saved.staff || [];
+      if (!saved.isFinalized && staffList.length === 0) {
+        alert("Action Denied: This school has not entered any staff data yet. It cannot be finalized.");
+        return;
+      }
+
       saved.isFinalized = !saved.isFinalized;
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
 
