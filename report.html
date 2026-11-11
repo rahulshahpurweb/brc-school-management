@@ -9,7 +9,7 @@
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;color:#1e293b;padding:15px}
-  .container{max-width:1400px;margin:0 auto;background:#f4f7fb;border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+  .container{max-width:1450px;margin:0 auto;background:#f4f7fb;border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
   
   /* Attractive Colorful Header */
   header{background:linear-gradient(135deg,#1d4ed8,#071b38,#9333ea);color:white;padding:18px 25px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;border-bottom:4px solid #f4b400;box-shadow:0 4px 15px rgba(29,78,216,0.3)}
@@ -21,20 +21,17 @@
   .btn-orange{background:#d97706}
   .btn-gray{background:#475569}
   .btn-purple{background:#9333ea}
+  .btn-teal{background:#0d9488}
   
   .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:15px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;background:#f8fafc}
   
-  .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:15px;background:#fff;padding:15px;border-radius:8px;border:1px solid #cbd5e1}
+  .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:15px;background:#fff;padding:15px;border-radius:8px;border:1px solid #cbd5e1}
   .filter-group label{display:block;font-size:11px;font-weight:bold;color:#475569;margin-bottom:4px}
-  .filter-group select, .filter-group input{width:100%;padding:7px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-weight:500;background:#fff}
+  .filter-group select, .filter-group input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:500;background:#fff}
   
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:15px}
-  .stat-box{background:#fff;padding:15px;border-radius:8px;border-left:4px solid #1d4ed8;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
-  .stat-box.green{border-left-color:#16a34a}
-  .stat-box.orange{border-left-color:#d97706}
-  .stat-box.red{border-left-color:#dc2626}
-  .stat-title{font-size:11px;color:#64748b;font-weight:bold;text-transform:uppercase}
-  .stat-value{font-size:22px;font-weight:800;color:#071b38;margin-top:5px}
+  .view-tabs{display:flex;gap:10px;margin-top:15px;background:#1e293b;padding:10px;border-radius:8px}
+  .tab-btn{background:#334155;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px}
+  .tab-btn.active{background:#1d4ed8}
 
   .table-card{background:#fff;border-radius:8px;margin-top:15px;padding:15px;border:1px solid #cbd5e1}
   .tablewrap{width:100%;overflow-x:auto;max-height:550px;border:1px solid #cbd5e1;border-radius:6px}
@@ -47,12 +44,12 @@
   .spinner{border:5px solid #f3f3f3;border-top:5px solid #f4b400;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite}
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
-  /* Print & PDF Header Styling with Larger Fonts */
+  /* Print & PDF Header Styling */
   .print-header { display: none; }
 
   @media print {
     body { background: #fff; color: #000; padding: 0; }
-    header, .upload-section, .filters-grid, .stats-grid, .btn-group { display: none !important; }
+    header, .upload-section, .filters-grid, .view-tabs, .btn-group { display: none !important; }
     .container { box-shadow: none; padding: 0; max-width: 100%; background: #fff; }
     .table-card { border: none; padding: 0; margin: 0; }
     .tablewrap { max-height: none; overflow: visible; border: none; }
@@ -68,8 +65,8 @@
       -webkit-print-color-adjust: exact; 
       print-color-adjust: exact; 
     }
-    .print-header h2 { margin: 0 0 8px 0; font-size: 20px !important; font-weight: 900; color: #ffd21c !important; text-transform: uppercase; letter-spacing: 0.5px; }
-    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 13px !important; font-weight: bold; margin-top: 8px; color: #f8fafc !important; }
+    .print-header h2 { margin: 0 0 8px 0; font-size: 18px !important; font-weight: 900; color: #ffd21c !important; }
+    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 12px !important; font-weight: bold; margin-top: 8px; color: #f8fafc !important; }
 
     table { width: 100% !important; font-size: 9px; border-collapse: collapse; }
     th, td { border: 1px solid #000 !important; padding: 5px 6px; color: #000 !important; }
@@ -92,13 +89,19 @@
       <a href="portal/main.html" class="btn btn-gray">🏠 Back to Login</a>
       <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print / PDF</button>
       <button class="btn btn-orange" onclick="downloadTemplate()">📥 Template</button>
-      <button class="btn btn-blue" onclick="exportAutofitExcel()">📤 Export Excel</button>
+      <button class="btn btn-blue" onclick="exportExcel()">📤 Export Excel</button>
     </div>
   </header>
 
-  <!-- Print Header with Larger Fonts -->
+  <!-- View Mode Tabs -->
+  <div class="view-tabs">
+    <button class="tab-btn active" id="tabDetail" onclick="switchView('detail')">📋 Detailed Student View</button>
+    <button class="tab-btn" id="tabMatrix" onclick="switchView('matrix')">📊 JSK-wise Matrix Summary Report</button>
+  </div>
+
+  <!-- Print Header with Larger Fonts & Date/Time -->
   <div class="print-header" id="printHeaderDiv">
-    <h2>समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
+    <h2 id="printTitleText">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
     <div class="print-meta">
       <span id="printFilterInfo">फिल्टर: सभी स्कूल एवं कक्षाएं</span>
       <span id="printDateTime">दिनांक एवं समय: </span>
@@ -115,7 +118,9 @@
   </div>
 
   <!-- Filters Bar -->
-  <div class="filters-grid">
+  <div class="filters-grid" id="filtersBar">
+    <div class="filter-group" id="matrixReportTypeGroup" style="grid-column: span 2; display: none;">
+    </div>
     <div class="filter-group">
       <label>Search (छात्र/स्कूल/यूडाइस/PEN)</label>
       <input type="text" id="searchInput" placeholder="Type to search..." oninput="applyFilters()">
@@ -170,8 +175,23 @@
     </div>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="stats-grid">
+  <!-- Matrix Report Category Selector (Appears only in Matrix View) -->
+  <div class="filters-grid" id="matrixControls" style="display: none; background: #e2e8f0; border: 2px solid #1d4ed8;">
+    <div class="filter-group" style="grid-column: 1 / -1;">
+      <label style="font-size: 13px; color: #1d4ed8; font-weight: 900;">📊 JSK Matrix Report Category Select Karein:</label>
+      <select id="matrixCategorySelect" onchange="renderMatrixReport()" style="font-size: 14px; font-weight: bold; background: #fff; padding: 10px; border: 2px solid #1d4ed8;">
+        <option value="ALL">All (सभी पेंडेंसी एवं सत्यापन रिकॉर्ड)</option>
+        <option value="col1">1. One Click से अपार</option>
+        <option value="col2">2. SO3 फार्म जमा करें</option>
+        <option value="col3">3. आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है</option>
+        <option value="col4">4. आधार बनाया जाना हैं</option>
+        <option value="col5">5. आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Summary Cards (Visible in Detail View) -->
+  <div class="stats-grid" id="statsGrid">
     <div class="stat-box">
       <div class="stat-title">Total Records</div>
       <div class="stat-value" id="statTotal">0</div>
@@ -193,10 +213,11 @@
   <!-- Data Table Display -->
   <div class="table-card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;font-size:14px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
+      <h3 id="tableHeadingTitle" style="margin:0;font-size:14px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
       <span id="recordCountLabel" style="font-size:12px;font-weight:bold;color:#1d4ed8;">Showing 0 rows</span>
     </div>
-    <div class="tablewrap">
+    <div class="tablewrap" id="tableWrapperDiv">
+      <!-- Detailed View Table -->
       <table id="reportTable">
         <thead>
           <tr>
@@ -227,6 +248,7 @@ const NPOINT_API_URL = "https://api.npoint.io/f90acbc40bae16ad5c65";
 
 let globalData = [];
 let filteredData = [];
+let currentView = 'detail'; // 'detail' or 'matrix'
 
 function showLoader(show, text){
   document.getElementById('loading').style.display = show ? 'flex' : 'none';
@@ -363,7 +385,30 @@ function fillSelect(elementId, setObj){
   });
 }
 
+function switchView(mode){
+  currentView = mode;
+  document.getElementById('tabDetail').className = (mode === 'detail') ? 'tab-btn active' : 'tab-btn';
+  document.getElementById('tabMatrix').className = (mode === 'matrix') ? 'tab-btn active' : 'tab-btn';
+
+  if(mode === 'matrix'){
+    document.getElementById('filtersBar').style.display = 'none';
+    document.getElementById('matrixControls').style.display = 'grid';
+    document.getElementById('statsGrid').style.display = 'none';
+    renderMatrixReport();
+  } else {
+    document.getElementById('filtersBar').style.display = 'grid';
+    document.getElementById('matrixControls').style.display = 'none';
+    document.getElementById('statsGrid').style.display = 'grid';
+    applyFilters();
+  }
+}
+
 function applyFilters(){
+  if(currentView === 'matrix'){
+    renderMatrixReport();
+    return;
+  }
+
   let search = document.getElementById('searchInput').value.toLowerCase().trim();
   let jsk = document.getElementById('jskFilter').value;
   let school = document.getElementById('schoolFilter').value;
@@ -403,7 +448,6 @@ function updateDashboard(){
   document.getElementById('statClasses').innerText = new Set(filteredData.map(i => i.studentClass)).size;
   document.getElementById('recordCountLabel').innerText = `Showing ${filteredData.length} rows`;
   
-  // Dynamic Column Hide/Show based on filter selection
   let f1 = document.getElementById('f1Filter').value;
   let f2 = document.getElementById('f2Filter').value;
   let f3 = document.getElementById('f3Filter').value;
@@ -450,6 +494,140 @@ function updateDashboard(){
   tbody.innerHTML = html;
 }
 
+// Render Matrix Report Table (JSK-wise Class Matrix like image)
+function renderMatrixReport(){
+  let cat = document.getElementById('matrixCategorySelect').value;
+  let categoryText = document.getElementById('matrixCategorySelect').options[document.getElementById('matrixCategorySelect').selectedIndex].text;
+  
+  document.getElementById('printTitleText').innerText = `जनशिक्षा केन्द्रवार छात्रों की संख्यात्मक जानकारी: ${categoryText}`;
+  document.getElementById('tableHeadingTitle').innerText = `JSK-wise Matrix Summary (${categoryText})`;
+
+  // Extract unique JSKs
+  let jskSet = new Set();
+  globalData.forEach(item => { if(item.jsk) jskSet.add(item.jsk); });
+  let jsks = Array.from(jskSet).sort();
+
+  // Define standard class columns matching user's image
+  let classCols = [
+    "Nursery", "LKG/KG1/Pre-School", "UKG/KG2/Pre-Primary", 
+    "I", "II", "III", "IV", "V", "VI", "VII", "VIII", 
+    "IX", "X", "XI", "XII"
+  ];
+
+  // Helper function to check if item matches selected matrix category
+  function matchesCategory(item){
+    if(cat === 'ALL') return true;
+    let val = item[cat];
+    if(!val || val === '--') return false;
+    // Check if it's a valid pending/status text or True
+    return true;
+  }
+
+  let wrapper = document.getElementById('tableWrapperDiv');
+  let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:11px;">
+    <thead>
+      <tr style="background:#071b38; color:#fff;">
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:8px;">JSK</th>
+        <th colspan="3" style="border:1px solid #cbd5e1; padding:6px;">Pre-Primary</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:6px; background:#1d4ed8;">Pre-Pri Total</th>
+        <th colspan="8" style="border:1px solid #cbd5e1; padding:6px;">Primary & Middle</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:6px; background:#1d4ed8;">1 to 8 Total</th>
+        <th colspan="4" style="border:1px solid #cbd5e1; padding:6px;">High & Higher Sec</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:6px; background:#1d4ed8;">9 to 12 Total</th>
+        <th rowspan="2" style="border:1px solid #cbd5e1; padding:6px; background:#b91c1c;">Grand Total</th>
+      </tr>
+      <tr style="background:#071b38; color:#fff;">
+        <th style="border:1px solid #cbd5e1; padding:6px;">Nursery</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">LKG/KG1</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">UKG/KG2</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">I</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">II</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">III</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">IV</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">V</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">VI</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">VII</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">VIII</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">IX</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">X</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">XI</th>
+        <th style="border:1px solid #cbd5e1; padding:6px;">XII</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  let grandTotals = {};
+  classCols.forEach(c => grandTotals[c] = 0);
+  let grandPrePriTot = 0;
+  let grand1to8Tot = 0;
+  let grand9to12Tot = 0;
+  let grandOverall = 0;
+
+  jsks.forEach(jskName => {
+    let jskRows = globalData.filter(i => i.jsk === jskName && matchesCategory(i));
+    
+    let counts = {};
+    classCols.forEach(c => {
+      counts[c] = jskRows.filter(i => String(i.studentClass || '').trim().toLowerCase() === c.toLowerCase()).length;
+    });
+
+    let prePriTot = counts["Nursery"] + counts["LKG/KG1/Pre-School"] + counts["UKG/KG2/Pre-Primary"];
+    let t1to8 = counts["I"] + counts["II"] + counts["III"] + counts["IV"] + counts["V"] + counts["VI"] + counts["VII"] + counts["VIII"];
+    let t9to12 = counts["IX"] + counts["X"] + counts["XI"] + counts["XII"];
+    let rowTotal = prePriTot + t1to8 + t9to12;
+
+    grandPrePriTot += prePriTot;
+    grand1to8Tot += t1to8;
+    grand9to12Tot += t9to12;
+    grandOverall += rowTotal;
+    classCols.forEach(c => grandTotals[c] += counts[c]);
+
+    tableHtml += `<tr>
+      <td style="font-weight:bold; text-align:left; background:#f8fafc;">${jskName}</td>
+      <td>${counts["Nursery"] || 0}</td>
+      <td>${counts["LKG/KG1/Pre-School"] || 0}</td>
+      <td>${counts["UKG/KG2/Pre-Primary"] || 0}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${prePriTot}</td>
+      <td>${counts["I"] || 0}</td>
+      <td>${counts["II"] || 0}</td>
+      <td>${counts["III"] || 0}</td>
+      <td>${counts["IV"] || 0}</td>
+      <td>${counts["V"] || 0}</td>
+      <td>${counts["VI"] || 0}</td>
+      <td>${counts["VII"] || 0}</td>
+      <td>${counts["VIII"] || 0}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${t1to8}</td>
+      <td>${counts["IX"] || 0}</td>
+      <td>${counts["X"] || 0}</td>
+      <td>${counts["XI"] || 0}</td>
+      <td>${counts["XII"] || 0}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8;">${t9to12}</td>
+      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c;">${rowTotal}</td>
+    </tr>`;
+  });
+
+  // Grand Total Row
+  tableHtml += `<tr style="background:#e2e8f0; font-weight:bold;">
+    <td style="text-align:left; background:#071b38; color:#fff;">Grand Total</td>`;
+  
+  classCols.forEach(c => {
+    tableHtml += `<td style="background:#071b38; color:#fff;">${grandTotals[c]}</td>`;
+    if(c === "UKG/KG2/Pre-Primary") {
+      tableHtml += `<td style="background:#1d4ed8; color:#fff;">${grandPrePriTot}</td>`;
+    }
+    if(c === "VIII") {
+      tableHtml += `<td style="background:#1d4ed8; color:#fff;">${grand1to8Tot}</td>`;
+    }
+  });
+  tableHtml += `<td style="background:#1d4ed8; color:#fff;">${grand9to12Tot}</td>
+    <td style="background:#b91c1c; color:#fff; font-size:13px;">${grandOverall}</td>
+  </tr>`;
+
+  tableHtml += `</tbody></table>`;
+  wrapper.innerHTML = tableHtml;
+  document.getElementById('recordCountLabel').innerText = `Total JSKs: ${jsks.length} | Grand Total Students: ${grandOverall}`;
+}
+
 function triggerPrint(){
   let now = new Date();
   let dateStr = now.toLocaleDateString('hi-IN');
@@ -459,7 +637,7 @@ function triggerPrint(){
   let schVal = document.getElementById('schoolFilter').value;
   let clsVal = document.getElementById('classFilter').value;
   
-  let filterText = `संकुल (JSK): ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
+  let filterText = (currentView === 'matrix') ? `रिपोर्ट मोड: संकुलवार मैट्रिक्स सारांश (JSK Matrix Summary)` : `संकुल (JSK): ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
   
   document.getElementById('printDateTime').innerText = `दिनांक: ${dateStr} | समय: ${timeStr}`;
   document.getElementById('printFilterInfo').innerText = filterText;
@@ -467,7 +645,11 @@ function triggerPrint(){
   window.print();
 }
 
-function exportAutofitExcel(){
+function exportExcel(){
+  if(currentView === 'matrix'){
+    alert("मैटrix रिपोर्ट का एक्सेल एक्सपोर्ट जल्द ही उपलब्ध होगा। विस्तृत रिपोर्ट (Detailed View) से एक्सपोर्ट करें।");
+    return;
+  }
   if(filteredData.length === 0){
     alert("एक्सपोर्ट करने के लिए कोई डेटा उपलब्ध नहीं है!");
     return;
