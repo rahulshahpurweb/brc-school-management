@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title id="pageTitle">BRC Shahpur - UDISE & Student Pending Report Portal</title>
+<title id="pageTitle">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</title>
 <!-- SheetJS for Exporting Filtered Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- html2canvas for Image Download -->
@@ -744,9 +744,12 @@ function downloadReportImage(){
     btnGroups.forEach(el => el.style.display = '');
     showLoader(false);
     
-    let fileName = (currentView === 'matrix') ? 'JSK_Matrix_Report.png' : 'Detailed_Student_Report.png';
+    // Generate clean file name based on current title
+    let currentTitle = document.getElementById('printTitleText').innerText || 'Report_Summary';
+    let safeFileName = currentTitle.replace(/[\/\\?%*:|"<>]/g, '_').replace(/\s+/g, '_') + '.png';
+    
     let link = document.createElement('a');
-    link.download = fileName;
+    link.download = safeFileName;
     link.href = canvas.toDataURL('image/png');
     link.click();
   }).catch(err => {
