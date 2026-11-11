@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BRC Shahpur - Global UDISE & Student Pending Report Portal</title>
-<!-- SheetJS for High-Speed Excel Processing -->
+<!-- SheetJS for Exporting Filtered Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *{box-sizing:border-box}
@@ -19,14 +19,13 @@
   .btn-gray{background:#475569}
   .btn-purple{background:#9333ea}
   
-  /* Bulk Upload & Drop Zone Styling */
-  .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:20px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;background:#f8fafc}
+  .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:15px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;background:#f8fafc}
   
-  .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:15px;background:#fff;padding:15px;border-radius:8px;border:1px solid #cbd5e1}
+  .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:15px;background:#fff;padding:15px;border-radius:8px;border:1px solid #cbd5e1}
   .filter-group label{display:block;font-size:11px;font-weight:bold;color:#475569;margin-bottom:4px}
-  .filter-group select, .filter-group input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:500;background:#fff}
+  .filter-group select, .filter-group input{width:100%;padding:7px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-weight:500;background:#fff}
   
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:15px}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:15px}
   .stat-box{background:#fff;padding:15px;border-radius:8px;border-left:4px solid #1d4ed8;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
   .stat-box.green{border-left-color:#16a34a}
   .stat-box.orange{border-left-color:#d97706}
@@ -36,25 +35,33 @@
 
   .table-card{background:#fff;border-radius:8px;margin-top:15px;padding:15px;border:1px solid #cbd5e1}
   .tablewrap{width:100%;overflow-x:auto;max-height:550px;border:1px solid #cbd5e1;border-radius:6px}
-  table{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto;}
-  th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:center;white-space:nowrap}
-  th{background:#071b38;color:#fff;position:sticky;top:0;z-index:10}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th,td{border:1px solid #cbd5e1;padding:8px 10px;text-align:center;white-space:nowrap}
+  th{background:#071b38;color:#fff;position:sticky;top:0;z-index:10;vertical-align:middle}
   tr:nth-child(even){background:#f8fafc}
   
   #loading{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;justify-content:center;align-items:center;color:#fff;font-size:18px;font-weight:bold;flex-direction:column;gap:15px}
   .spinner{border:5px solid #f3f3f3;border-top:5px solid #f4b400;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite}
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
-  /* Print Styles for Autofit Table */
+  /* Print & PDF Heading Header Styling */
+  .print-header { display: none; }
+
   @media print {
     body { background: #fff; color: #000; padding: 0; }
     header, .upload-section, .filters-grid, .stats-grid, .btn-group { display: none !important; }
-    .container { box-shadow: none; padding: 0; max-width: 100%; }
+    .container { box-shadow: none; padding: 0; max-width: 100%; background: #fff; }
     .table-card { border: none; padding: 0; margin: 0; }
     .tablewrap { max-height: none; overflow: visible; border: none; }
-    table { width: 100% !important; font-size: 10px; page-break-inside: auto; }
-    tr { page-break-inside: avoid; page-break-after: auto; }
-    th, td { padding: 4px 6px; border: 1px solid #000; }
+    
+    .print-header { display: block !important; text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+    .print-header h2 { margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #000; }
+    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; margin-top: 5px; }
+
+    table { width: 100% !important; font-size: 9px; border-collapse: collapse; }
+    th, td { border: 1px solid #000 !important; padding: 4px 5px; color: #000 !important; }
+    th { background: #071b38 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr { page-break-inside: avoid; }
   }
 </style>
 </head>
@@ -62,7 +69,7 @@
 
 <div id="loading">
   <div class="spinner"></div>
-  <div id="loadingText">Processing Bulk Excel Data in 1 Second...</div>
+  <div id="loadingText">Processing Data...</div>
 </div>
 
 <div class="container">
@@ -70,43 +77,82 @@
     <h1>📊 Global UDISE & Student Pending Report Portal</h1>
     <div class="btn-group">
       <a href="portal/main.html" class="btn btn-gray">🏠 Back to Login</a>
-      <button class="btn btn-purple" onclick="window.print()">🖨️ Print Report</button>
-      <button class="btn btn-orange" onclick="downloadTemplate()">📥 Download Template</button>
-      <button class="btn btn-blue" onclick="exportAutofitExcel()">📤 Export Autofit Excel</button>
+      <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print / PDF</button>
+      <button class="btn btn-orange" onclick="downloadTemplate()">📥 Template</button>
+      <button class="btn btn-blue" onclick="exportAutofitExcel()">📤 Export Excel</button>
     </div>
   </header>
+
+  <!-- Hidden Print Header (Automatically populated with Hindi title & date/time) -->
+  <div class="print-header" id="printHeaderDiv">
+    <h2 id="printReportTitle">विकास खंड स्रोत केंद्र शाहपुर - समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
+    <div class="print-meta">
+      <span id="printFilterInfo">फिल्टर: सभी स्कूल एवं कक्षाएं</span>
+      <span id="printDateTime">दिनांक एवं समय: </span>
+    </div>
+  </div>
 
   <!-- Bulk Upload Section -->
   <div class="upload-section">
     <div>
-      <b style="font-size:14px; color:#071b38;">📁 Roz ka Updated Data Bulk mein Upload Karein:</b>
-      <div style="font-size:11px; color:#64748b;">Yahan apni roz ki updated Excel (.xlsx, .xls) ya CSV file select karein—data turant load ho jayega!</div>
+      <b style="font-size:13px; color:#071b38;">📁 Excel / CSV Data Upload Karein:</b>
+      <div style="font-size:11px; color:#64748b;">अपनी अपडेटेड एक्सेल फाइल यहाँ अपलोड करें—डेटा तुरंत लोड हो जाएगा!</div>
     </div>
-    <input type="file" id="bulkExcelInput" accept=".xlsx, .xls, .csv" onchange="handleBulkExcelUpload(event)" style="font-size:13px; font-weight:bold;">
+    <input type="file" id="bulkExcelInput" accept=".xlsx, .xls, .csv" onchange="handleBulkExcelUpload(event)" style="font-size:12px; font-weight:bold;">
   </div>
 
   <!-- Filters Bar -->
   <div class="filters-grid">
     <div class="filter-group">
-      <label>Search Student / School / UDISE / PEN</label>
+      <label>Search (छात्र/स्कूल/यूडाइस/PEN)</label>
       <input type="text" id="searchInput" placeholder="Type to search..." oninput="applyFilters()">
     </div>
     <div class="filter-group">
-      <label>Filter by JSK (Sankul)</label>
+      <label>JSK (संकुल) फिल्टर</label>
       <select id="jskFilter" onchange="applyFilters()">
-        <option value="ALL">-- All JSK (Sankul) --</option>
+        <option value="ALL">-- सभी JSK --</option>
       </select>
     </div>
     <div class="filter-group">
-      <label>Filter by School</label>
+      <label>स्कूल फिल्टर</label>
       <select id="schoolFilter" onchange="applyFilters()">
-        <option value="ALL">-- All Schools --</option>
+        <option value="ALL">-- सभी स्कूल --</option>
       </select>
     </div>
     <div class="filter-group">
-      <label>Filter by Class</label>
+      <label>कक्षा फिल्टर</label>
       <select id="classFilter" onchange="applyFilters()">
-        <option value="ALL">-- All Classes --</option>
+        <option value="ALL">-- सभी कक्षाएं --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>One Click से अपार</label>
+      <select id="f1Filter" onchange="applyFilters()">
+        <option value="ALL">-- सभी --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>SO3 फार्म जमा करें</label>
+      <select id="f2Filter" onchange="applyFilters()">
+        <option value="ALL">-- सभी --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>आधार मैच (किंतु Verified नहीं)</label>
+      <select id="f3Filter" onchange="applyFilters()">
+        <option value="ALL">-- सभी --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>आधार बनाया जाना हैं</label>
+      <select id="f4Filter" onchange="applyFilters()">
+        <option value="ALL">-- सभी --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>आधार मिसमैच (Verified नहीं)</label>
+      <select id="f5Filter" onchange="applyFilters()">
+        <option value="ALL">-- सभी --</option>
       </select>
     </div>
   </div>
@@ -118,11 +164,11 @@
       <div class="stat-value" id="statTotal">0</div>
     </div>
     <div class="stat-box green">
-      <div class="stat-title">Total Schools Covered</div>
+      <div class="stat-title">Total Schools</div>
       <div class="stat-value" id="statSchools">0</div>
     </div>
     <div class="stat-box orange">
-      <div class="stat-title">Total JSKs (Sankul)</div>
+      <div class="stat-title">Total JSKs</div>
       <div class="stat-value" id="statJsks">0</div>
     </div>
     <div class="stat-box red">
@@ -134,7 +180,7 @@
   <!-- Data Table Display -->
   <div class="table-card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0;font-size:15px;color:#071b38;">Automatic Generated Report Table</h3>
+      <h3 style="margin:0;font-size:14px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
       <span id="recordCountLabel" style="font-size:12px;font-weight:bold;color:#1d4ed8;">Showing 0 rows</span>
     </div>
     <div class="tablewrap">
@@ -148,15 +194,15 @@
             <th>Student PEN</th>
             <th>Student Name</th>
             <th>JSK (Sankul)</th>
-            <th>One Click Appar</th>
-            <th>SO3 Form</th>
-            <th>Aadhar Match / Unverified</th>
-            <th>Aadhar Pending</th>
-            <th>Aadhar Mismatch</th>
+            <th>One Click से अपार</th>
+            <th>SO3 फार्म जमा करें</th>
+            <th>आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है</th>
+            <th>आधार बनाया जाना हैं</th>
+            <th>आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">Please upload your Excel/CSV file above to view the report instantly.</td></tr>
+          <tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">कृपया ऊपर दिए गए विकल्प से अपनी एक्सेल फाइल अपलोड करें।</td></tr>
         </tbody>
       </table>
     </div>
@@ -164,7 +210,6 @@
 </div>
 
 <script>
-// Npoint API fallback ya primary URL agar aap npoint use karna chahein
 const NPOINT_API_URL = "https://api.npoint.io/f90acbc40bae16ad5c65";
 
 let globalData = [];
@@ -192,11 +237,10 @@ function downloadTemplate(){
   XLSX.writeFile(wb, "Global_Report_Template.xlsx");
 }
 
-// 1 Second mein Bulk Excel/CSV Process karne ka function
 function handleBulkExcelUpload(event){
   let file = event.target.files[0];
   if(!file) return;
-  showLoader(true, "Processing Bulk Data in 1 Second...");
+  showLoader(true, "एक्सेल डेटा प्रोसेस हो रहा है...");
   
   let reader = new FileReader();
   reader.onload = function(e){
@@ -252,7 +296,6 @@ function handleBulkExcelUpload(event){
   reader.readAsArrayBuffer(file);
 }
 
-// Optional: Agar npoint se bhi data lena ho toh background mein fetch karega
 async function fetchNpointData(){
   try {
     let response = await fetch(NPOINT_API_URL);
@@ -271,29 +314,39 @@ function populateDropdowns(){
   let jskSet = new Set();
   let schoolSet = new Set();
   let classSet = new Set();
+  let f1Set = new Set();
+  let f2Set = new Set();
+  let f3Set = new Set();
+  let f4Set = new Set();
+  let f5Set = new Set();
   
   globalData.forEach(item => {
     if(item.jsk) jskSet.add(item.jsk);
     if(item.schoolName) schoolSet.add(item.schoolName);
     if(item.studentClass) classSet.add(item.studentClass);
+    if(item.col1) f1Set.add(item.col1);
+    if(item.col2) f2Set.add(item.col2);
+    if(item.col3) f3Set.add(item.col3);
+    if(item.col4) f4Set.add(item.col4);
+    if(item.col5) f5Set.add(item.col5);
   });
   
-  let jskSel = document.getElementById('jskFilter');
-  jskSel.innerHTML = '<option value="ALL">-- All JSK (Sankul) --</option>';
-  Array.from(jskSet).sort().forEach(j => {
-    jskSel.innerHTML += `<option value="${j}">${j}</option>`;
-  });
-  
-  let schSel = document.getElementById('schoolFilter');
-  schSel.innerHTML = '<option value="ALL">-- All Schools --</option>';
-  Array.from(schoolSet).sort().forEach(s => {
-    schSel.innerHTML += `<option value="${s}">${s}</option>`;
-  });
+  fillSelect('jskFilter', jskSet);
+  fillSelect('schoolFilter', schoolSet);
+  fillSelect('classFilter', classSet);
+  fillSelect('f1Filter', f1Set);
+  fillSelect('f2Filter', f2Set);
+  fillSelect('f3Filter', f3Set);
+  fillSelect('f4Filter', f4Set);
+  fillSelect('f5Filter', f5Set);
+}
 
-  let clsSel = document.getElementById('classFilter');
-  clsSel.innerHTML = '<option value="ALL">-- All Classes --</option>';
-  Array.from(classSet).sort().forEach(c => {
-    clsSel.innerHTML += `<option value="${c}">${c}</option>`;
+function fillSelect(elementId, setObj){
+  let sel = document.getElementById(elementId);
+  let defaultText = sel.options[0].text;
+  sel.innerHTML = `<option value="ALL">${defaultText}</option>`;
+  Array.from(setObj).sort().forEach(val => {
+    sel.innerHTML += `<option value="${val}">${val}</option>`;
   });
 }
 
@@ -302,6 +355,11 @@ function applyFilters(){
   let jsk = document.getElementById('jskFilter').value;
   let school = document.getElementById('schoolFilter').value;
   let cls = document.getElementById('classFilter').value;
+  let f1 = document.getElementById('f1Filter').value;
+  let f2 = document.getElementById('f2Filter').value;
+  let f3 = document.getElementById('f3Filter').value;
+  let f4 = document.getElementById('f4Filter').value;
+  let f5 = document.getElementById('f5Filter').value;
   
   filteredData = globalData.filter(item => {
     let matchSearch = search === '' || 
@@ -313,8 +371,13 @@ function applyFilters(){
     let matchJsk = jsk === 'ALL' || item.jsk === jsk;
     let matchSchool = school === 'ALL' || item.schoolName === school;
     let matchClass = cls === 'ALL' || item.studentClass === cls;
+    let matchF1 = f1 === 'ALL' || item.col1 === f1;
+    let matchF2 = f2 === 'ALL' || item.col2 === f2;
+    let matchF3 = f3 === 'ALL' || item.col3 === f3;
+    let matchF4 = f4 === 'ALL' || item.col4 === f4;
+    let matchF5 = f5 === 'ALL' || item.col5 === f5;
     
-    return matchSearch && matchJsk && matchSchool && matchClass;
+    return matchSearch && matchJsk && matchSchool && matchClass && matchF1 && matchF2 && matchF3 && matchF4 && matchF5;
   });
   
   updateDashboard();
@@ -329,7 +392,7 @@ function updateDashboard(){
   
   let tbody = document.getElementById('tableBody');
   if(filteredData.length === 0){
-    tbody.innerHTML = `<tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">No records found. Upload Excel file above.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">कोई रिकॉर्ड नहीं मिला। कृपया डेटा अपलोड करें।</td></tr>`;
     return;
   }
   
@@ -353,10 +416,27 @@ function updateDashboard(){
   tbody.innerHTML = html;
 }
 
-// Auto-fit Columns export Excel function
+// Print setup with current date, time and Hindi Title
+function triggerPrint(){
+  let now = new Date();
+  let dateStr = now.toLocaleDateString('hi-IN');
+  let timeStr = now.toLocaleTimeString('hi-IN');
+  
+  let jskVal = document.getElementById('jskFilter').value;
+  let schVal = document.getElementById('schoolFilter').value;
+  let clsVal = document.getElementById('classFilter').value;
+  
+  let filterText = `संकुल (JSK): ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
+  
+  document.getElementById('printDateTime').innerText = `दिनांक: ${dateStr} | समय: ${timeStr}`;
+  document.getElementById('printFilterInfo').innerText = filterText;
+  
+  window.print();
+}
+
 function exportAutofitExcel(){
   if(filteredData.length === 0){
-    alert("No data available to export!");
+    alert("एक्सपोर्ट करने के लिए कोई डेटा उपलब्ध नहीं है!");
     return;
   }
   let exportRows = filteredData.map((item, idx) => ({
@@ -367,16 +447,14 @@ function exportAutofitExcel(){
     "Student PEN": item.pen,
     "Student Name": item.studentName,
     "JSK": item.jsk,
-    "One Click Appar": item.col1,
-    "SO3 Form": item.col2,
-    "Aadhar Match/Unverified": item.col3,
-    "Aadhar Pending": item.col4,
-    "Aadhar Mismatch": item.col5
+    "One Click से अपार": item.col1,
+    "SO3 फार्म जमा करें": item.col2,
+    "आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है": item.col3,
+    "आधार बनाया जाना हैं": item.col4,
+    "आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है": item.col5
   }));
   
   let ws = XLSX.utils.json_to_sheet(exportRows);
-  
-  // Auto-fit column width calculation logic
   let maxLenList = [];
   exportRows.forEach(row => {
     Object.keys(row).forEach((key, colIdx) => {
@@ -384,7 +462,7 @@ function exportAutofitExcel(){
       maxLenList[colIdx] = Math.max(maxLenList[colIdx] || key.length, val.length);
     });
   });
-  ws['!cols'] = maxLenList.map(len => ({ wch: len + 3 })); // Extra padding for safety
+  ws['!cols'] = maxLenList.map(len => ({ wch: len + 3 }));
   
   let wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Global_Report");
