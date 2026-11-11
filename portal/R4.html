@@ -159,7 +159,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-      
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -613,7 +613,6 @@
         return;
       }
 
-      // STRICT CHECK: Bina data bhare ya freeze kiye koi school finalise nahi kar sakta!
       let staffList = saved.staff || [];
       if (!isCurrentlyFinalized) {
         if (staffList.length === 0) {
@@ -1319,6 +1318,7 @@
           gComplete += schoolComplete;
           gTeacherPending += schoolTeacherPending;
 
+          // STRICT CHECK: Agar school finalized nahi hai, toh admin action button 'Pending' (Red) rahega aur click par error dega
           let adminActionTd = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#16a34a' : '#dc2626'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Finalized' : 'Pending'}</button></td>` : '';
 
           html += `<tr>
@@ -1480,14 +1480,14 @@
     async adminEnableSchool(udise) {
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[], "isFinalized":false}');
       
-      // STRICT ADMIN CHECK: Bina data bhare admin bhi finalise/enable nahi kar payega!
-      let staffList = saved.staff || [];
-      if (!saved.isFinalized && staffList.length === 0) {
-        alert("Action Denied: This school has not entered any staff data yet. It cannot be finalized.");
+      // STRICT RULE: Agar school ne khud data finalise nahi kiya hai, toh admin bhi ise click karke finalise nahi kar sakta!
+      if (!saved.isFinalized) {
+        alert("Action Denied: This school has not finalized their data yet. Admin cannot finalize on behalf of the school before they complete it.");
         return;
       }
 
-      saved.isFinalized = !saved.isFinalized;
+      // Agar school pehle se finalized hai, tabhi admin click karke use unfinalise (enable) kar sakta hai
+      saved.isFinalized = false;
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
 
       let activeSess = localStorage.getItem("brc_active_session") || "2026-27";
@@ -1500,7 +1500,7 @@
       } catch(e) {}
 
       this.renderReports();
-      alert("School status updated successfully.");
+      alert("School status updated to Pending (Enabled for editing).");
     },
 
     async openTrashBin() {
