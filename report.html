@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BRC Shahpur - Global UDISE & Student Pending Report Portal</title>
-<!-- SheetJS for Exporting Filtered Excel -->
+<!-- SheetJS for High-Speed Excel Processing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *{box-sizing:border-box}
@@ -17,8 +17,10 @@
   .btn-blue{background:#1d4ed8}
   .btn-orange{background:#d97706}
   .btn-gray{background:#475569}
+  .btn-purple{background:#9333ea}
   
-  .info-card{background:#fff;border:1px solid #cbd5e1;padding:15px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+  /* Bulk Upload & Drop Zone Styling */
+  .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:20px;border-radius:8px;margin-top:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;background:#f8fafc}
   
   .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:15px;background:#fff;padding:15px;border-radius:8px;border:1px solid #cbd5e1}
   .filter-group label{display:block;font-size:11px;font-weight:bold;color:#475569;margin-bottom:4px}
@@ -34,21 +36,33 @@
 
   .table-card{background:#fff;border-radius:8px;margin-top:15px;padding:15px;border:1px solid #cbd5e1}
   .tablewrap{width:100%;overflow-x:auto;max-height:550px;border:1px solid #cbd5e1;border-radius:6px}
-  table{width:100%;border-collapse:collapse;font-size:12px;min-width:1100px}
-  th,td{border:1px solid #cbd5e1;padding:8px 10px;text-align:center;white-space:nowrap}
+  table{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto;}
+  th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:center;white-space:nowrap}
   th{background:#071b38;color:#fff;position:sticky;top:0;z-index:10}
   tr:nth-child(even){background:#f8fafc}
   
-  #loading{display:flex;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;justify-content:center;align-items:center;color:#fff;font-size:18px;font-weight:bold;flex-direction:column;gap:15px}
+  #loading{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;justify-content:center;align-items:center;color:#fff;font-size:18px;font-weight:bold;flex-direction:column;gap:15px}
   .spinner{border:5px solid #f3f3f3;border-top:5px solid #f4b400;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite}
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+  /* Print Styles for Autofit Table */
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    header, .upload-section, .filters-grid, .stats-grid, .btn-group { display: none !important; }
+    .container { box-shadow: none; padding: 0; max-width: 100%; }
+    .table-card { border: none; padding: 0; margin: 0; }
+    .tablewrap { max-height: none; overflow: visible; border: none; }
+    table { width: 100% !important; font-size: 10px; page-break-inside: auto; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
+    th, td { padding: 4px 6px; border: 1px solid #000; }
+  }
 </style>
 </head>
 <body>
 
 <div id="loading">
   <div class="spinner"></div>
-  <div id="loadingText">Fetching Live Data from npoint.io...</div>
+  <div id="loadingText">Processing Bulk Excel Data in 1 Second...</div>
 </div>
 
 <div class="container">
@@ -56,20 +70,19 @@
     <h1>📊 Global UDISE & Student Pending Report Portal</h1>
     <div class="btn-group">
       <a href="portal/main.html" class="btn btn-gray">🏠 Back to Login</a>
-      <button class="btn btn-orange" onclick="fetchNpointData()">🔄 Refresh Data</button>
-      <button class="btn btn-blue" onclick="exportFilteredExcel()">📤 Export Filtered Excel</button>
+      <button class="btn btn-purple" onclick="window.print()">🖨️ Print Report</button>
+      <button class="btn btn-orange" onclick="downloadTemplate()">📥 Download Template</button>
+      <button class="btn btn-blue" onclick="exportAutofitExcel()">📤 Export Autofit Excel</button>
     </div>
   </header>
 
-  <!-- Status Bar -->
-  <div class="info-card">
+  <!-- Bulk Upload Section -->
+  <div class="upload-section">
     <div>
-      <b style="font-size:13px; color:#071b38;">Live Data Source: npoint.io Connected (Server-less & Fast)</b>
-      <div style="font-size:11px; color:#16a34a; font-weight:bold;" id="statusText">Status: Loading records automatically...</div>
+      <b style="font-size:14px; color:#071b38;">📁 Roz ka Updated Data Bulk mein Upload Karein:</b>
+      <div style="font-size:11px; color:#64748b;">Yahan apni roz ki updated Excel (.xlsx, .xls) ya CSV file select karein—data turant load ho jayega!</div>
     </div>
-    <div style="font-size:12px; color:#475569; font-weight:bold;">
-      Publicly Accessible (No Login Required)
-    </div>
+    <input type="file" id="bulkExcelInput" accept=".xlsx, .xls, .csv" onchange="handleBulkExcelUpload(event)" style="font-size:13px; font-weight:bold;">
   </div>
 
   <!-- Filters Bar -->
@@ -143,7 +156,7 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">Loading data from npoint.io...</td></tr>
+          <tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">Please upload your Excel/CSV file above to view the report instantly.</td></tr>
         </tbody>
       </table>
     </div>
@@ -151,7 +164,7 @@
 </div>
 
 <script>
-// YAHAN APNI npoint.io KI API LINK DALNA HAI
+// Npoint API fallback ya primary URL agar aap npoint use karna chahein
 const NPOINT_API_URL = "https://api.npoint.io/f90acbc40bae16ad5c65";
 
 let globalData = [];
@@ -162,27 +175,96 @@ function showLoader(show, text){
   if(text) document.getElementById('loadingText').innerText = text;
 }
 
+function downloadTemplate(){
+  let headers = [
+    "sn", "School Name", "UDISE Code", "Class", "Student PEN", 
+    "Student Name", "JSk", "One Click से अपार", "SO3 फार्म जमा करें", 
+    "आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है", 
+    "आधार बनाया जाना हैं", "आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है"
+  ];
+  let sample = [
+    1, "PS HANDIPANI", "23351002901", "I", "23259463320", 
+    "AYAANSH LAVISKAR", "Bhoura", "--", "Name Mismatch", "--", "--", "--"
+  ];
+  let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
+  let wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Template");
+  XLSX.writeFile(wb, "Global_Report_Template.xlsx");
+}
+
+// 1 Second mein Bulk Excel/CSV Process karne ka function
+function handleBulkExcelUpload(event){
+  let file = event.target.files[0];
+  if(!file) return;
+  showLoader(true, "Processing Bulk Data in 1 Second...");
+  
+  let reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      let data = new Uint8Array(e.target.result);
+      let workbook = XLSX.read(data, {type: 'array'});
+      let firstSheetName = workbook.SheetNames[0];
+      let worksheet = workbook.Sheets[firstSheetName];
+      let rows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+      
+      let headerIdx = 0;
+      for(let i=0; i<Math.min(rows.length, 12); i++){
+        let rowStr = JSON.stringify(rows[i]).toLowerCase();
+        if(rowStr.includes('school name') || rowStr.includes('udise') || rowStr.includes('student name')){
+          headerIdx = i;
+          break;
+        }
+      }
+      
+      globalData = [];
+      for(let i = headerIdx + 1; i < rows.length; i++){
+        let r = rows[i];
+        if(!r || r.length === 0) continue;
+        
+        let record = {
+          sn: r[0] || (i - headerIdx),
+          schoolName: String(r[1] || '').trim(),
+          udise: String(r[2] || '').trim(),
+          studentClass: String(r[3] || '').trim(),
+          pen: String(r[4] || '').trim(),
+          studentName: String(r[5] || '').trim(),
+          jsk: String(r[6] || 'Bhoura').trim(),
+          col1: String(r[7] || '--').trim(),
+          col2: String(r[8] || '--').trim(),
+          col3: String(r[9] || '--').trim(),
+          col4: String(r[10] || '--').trim(),
+          col5: String(r[11] || '--').trim()
+        };
+        
+        if(record.schoolName && record.schoolName.toLowerCase() !== 'school name'){
+          globalData.push(record);
+        }
+      }
+      
+      populateDropdowns();
+      applyFilters();
+      showLoader(false);
+    } catch(err) {
+      showLoader(false);
+      alert("Error reading Excel file: " + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// Optional: Agar npoint se bhi data lena ho toh background mein fetch karega
 async function fetchNpointData(){
-  showLoader(true, "Fetching Live Data from npoint.io...");
   try {
     let response = await fetch(NPOINT_API_URL);
-    if(!response.ok) throw new Error("Failed to connect to npoint.io");
-    let json = await response.json();
-    
-    globalData = Array.isArray(json) ? json : (json.data || json.records || []);
-    
-    document.getElementById('statusText').innerText = `Status: Successfully loaded ${globalData.length} records live from npoint.io`;
-    document.getElementById('statusText').style.color = "#16a34a";
-    
-    populateDropdowns();
-    applyFilters();
-    showLoader(false);
-  } catch(err) {
-    showLoader(false);
-    document.getElementById('statusText').innerText = `Status Error: ${err.message}. Please check your npoint URL.`;
-    document.getElementById('statusText').style.color = "#dc2626";
-    document.getElementById('tableBody').innerHTML = `<tr><td colspan="12" style="padding:40px;color:#dc2626;font-weight:bold;">Error loading data from npoint.io. Please verify your API URL in script.</td></tr>`;
-  }
+    if(response.ok){
+      let json = await response.json();
+      if(Array.isArray(json) && json.length > 0 && globalData.length === 0){
+        globalData = json;
+        populateDropdowns();
+        applyFilters();
+      }
+    }
+  } catch(e){}
 }
 
 function populateDropdowns(){
@@ -247,7 +329,7 @@ function updateDashboard(){
   
   let tbody = document.getElementById('tableBody');
   if(filteredData.length === 0){
-    tbody.innerHTML = `<tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">No matching records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">No records found. Upload Excel file above.</td></tr>`;
     return;
   }
   
@@ -261,17 +343,18 @@ function updateDashboard(){
       <td><b>${item.pen || ''}</b></td>
       <td style="text-align:left;font-weight:bold">${item.studentName || ''}</td>
       <td>${item.jsk || ''}</td>
-      <td>${item.oneClickAppar || '--'}</td>
-      <td>${item.so3Form || '--'}</td>
-      <td>${item.aadharUnverified || '--'}</td>
-      <td>${item.aadharPending || '--'}</td>
-      <td>${item.aadharMismatch || '--'}</td>
+      <td>${item.col1 || '--'}</td>
+      <td>${item.col2 || '--'}</td>
+      <td>${item.col3 || '--'}</td>
+      <td>${item.col4 || '--'}</td>
+      <td>${item.col5 || '--'}</td>
     </tr>`;
   });
   tbody.innerHTML = html;
 }
 
-function exportFilteredExcel(){
+// Auto-fit Columns export Excel function
+function exportAutofitExcel(){
   if(filteredData.length === 0){
     alert("No data available to export!");
     return;
@@ -284,17 +367,28 @@ function exportFilteredExcel(){
     "Student PEN": item.pen,
     "Student Name": item.studentName,
     "JSK": item.jsk,
-    "One Click Appar": item.oneClickAppar,
-    "SO3 Form": item.so3Form,
-    "Aadhar Match/Unverified": item.aadharUnverified,
-    "Aadhar Pending": item.aadharPending,
-    "Aadhar Mismatch": item.aadharMismatch
+    "One Click Appar": item.col1,
+    "SO3 Form": item.col2,
+    "Aadhar Match/Unverified": item.col3,
+    "Aadhar Pending": item.col4,
+    "Aadhar Mismatch": item.col5
   }));
   
   let ws = XLSX.utils.json_to_sheet(exportRows);
+  
+  // Auto-fit column width calculation logic
+  let maxLenList = [];
+  exportRows.forEach(row => {
+    Object.keys(row).forEach((key, colIdx) => {
+      let val = String(row[key] || '');
+      maxLenList[colIdx] = Math.max(maxLenList[colIdx] || key.length, val.length);
+    });
+  });
+  ws['!cols'] = maxLenList.map(len => ({ wch: len + 3 })); // Extra padding for safety
+  
   let wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Global_Report");
-  XLSX.writeFile(wb, "Global_Student_Filtered_Report.xlsx");
+  XLSX.writeFile(wb, "Global_Student_Autofit_Report.xlsx");
 }
 
 window.addEventListener('DOMContentLoaded', () => {
