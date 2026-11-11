@@ -310,11 +310,11 @@ function updateDateTimeMeta(){
     let f4 = document.getElementById('f4Filter') ? document.getElementById('f4Filter').value : 'ALL';
     let f5 = document.getElementById('f5Filter') ? document.getElementById('f5Filter').value : 'ALL';
     
-    if(f1 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - One Click से अपार (${f1})`;
-    else if(f2 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - SO3 फार्म जमा करें (${f2})`;
-    else if(f3 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - आधार मैच किंतु Verified नहीं (${f3})`;
-    else if(f4 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - आधार बनाया जाना हैं (${f4})`;
-    else if(f5 !== 'ALL') titleStr = `विस्तृत रिपोर्ट - आधार मिसमैच (${f5})`;
+    if(f1 !== 'ALL') titleStr = One Click से अपार (${f1})`;
+    else if(f2 !== 'ALL') titleStr =  SO3 फार्म जमा करें (${f2})`;
+    else if(f3 !== 'ALL') titleStr =  आधार मैच किंतु Verified नहीं (${f3})`;
+    else if(f4 !== 'ALL') titleStr =  आधार बनाया जाना हैं (${f4})`;
+    else if(f5 !== 'ALL') titleStr =  आधार मिसमैच (${f5})`;
   }
 
   document.getElementById('pageTitle').innerText = titleStr;
