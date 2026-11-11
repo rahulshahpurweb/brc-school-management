@@ -301,7 +301,11 @@ function updateDateTimeMeta(){
     let catSelect = document.getElementById('matrixCategorySelect');
     if(catSelect && catSelect.selectedIndex >= 0){
       let selectedOptText = catSelect.options[catSelect.selectedIndex].text;
-      titleStr = `संकुलवार मैट्रिक्स रिपोर्ट - ${selectedOptText}`;
+      if(catSelect.value === 'ALL'){
+        titleStr = `संकुलवार मैट्रिक्स रिपोर्ट - सभी पेंडेंसी एवं सत्यापन रिकॉर्ड`;
+      } else {
+        titleStr = `${selectedOptText}`;
+      }
     }
   } else {
     let f1 = document.getElementById('f1Filter') ? document.getElementById('f1Filter').value : 'ALL';
@@ -310,11 +314,11 @@ function updateDateTimeMeta(){
     let f4 = document.getElementById('f4Filter') ? document.getElementById('f4Filter').value : 'ALL';
     let f5 = document.getElementById('f5Filter') ? document.getElementById('f5Filter').value : 'ALL';
     
-    if(f1 !== 'ALL') titleStr = One Click से अपार (${f1})`;
-    else if(f2 !== 'ALL') titleStr =  SO3 फार्म जमा करें (${f2})`;
-    else if(f3 !== 'ALL') titleStr =  आधार मैच किंतु Verified नहीं (${f3})`;
-    else if(f4 !== 'ALL') titleStr =  आधार बनाया जाना हैं (${f4})`;
-    else if(f5 !== 'ALL') titleStr =  आधार मिसमैच (${f5})`;
+    if(f1 !== 'ALL') titleStr = `One Click से अपार (${f1})`;
+    else if(f2 !== 'ALL') titleStr = `SO3 फार्म जमा करें (${f2})`;
+    else if(f3 !== 'ALL') titleStr = `आधार मैच किंतु Verified नहीं (${f3})`;
+    else if(f4 !== 'ALL') titleStr = `आधार बनाया जाना हैं (${f4})`;
+    else if(f5 !== 'ALL') titleStr = `आधार मिसमैच (${f5})`;
   }
 
   document.getElementById('pageTitle').innerText = titleStr;
@@ -324,7 +328,7 @@ function updateDateTimeMeta(){
   let schVal = document.getElementById('schoolFilter') ? document.getElementById('schoolFilter').value : 'ALL';
   let clsVal = document.getElementById('classFilter').value ? document.getElementById('classFilter').value : 'ALL';
   
-  let filterText = (currentView === 'matrix') ? `रिपोर्ट मोड: संकुलवार मैट्रिक्स सारांश` : `संकुल: ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
+  let filterText = (currentView === 'matrix') ? `संकुलवार मैट्रिक्स सारांश रिपोर्ट` : `संकुल: ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
   
   if(document.getElementById('printDateTime')) {
     document.getElementById('printDateTime').innerText = `दिनांक: ${dateStr} | समय: ${timeStr}`;
