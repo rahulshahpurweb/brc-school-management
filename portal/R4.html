@@ -159,7 +159,6 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-        
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -1229,7 +1228,7 @@
 
           if (!hasStaff) {
             if (genderFilter === "ALL" && classFilter === "ALL") {
-              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Pending</td><td colspan="17" style="color:#64748b;">No staff data entered yet</td></tr>`;
+              html += `<tr><td>${idx++}</td><td style="text-align:left;">${s.name}</td><td>${s.udise}</td><td>${jsk}</td><td style="color:#dc2626; font-weight:bold;">Unfinalized</td><td colspan="17" style="color:#64748b;">No staff data entered yet</td></tr>`;
             }
           } else {
             saved.staff.forEach(st => {
@@ -1309,7 +1308,7 @@
           }
 
           let schoolTeacherPending = schoolTotal - schoolComplete;
-          let statusStr = isFinalized ? "Finalized" : "Pending";
+          let statusStr = isFinalized ? "Finalized" : "Unfinalized";
           totalSchCount++;
 
           grandTotalStaff += schoolTotal;
@@ -1318,8 +1317,7 @@
           gComplete += schoolComplete;
           gTeacherPending += schoolTeacherPending;
 
-          // STRICT CHECK: Agar school finalized nahi hai, toh admin action button 'Pending' (Red) rahega aur click par error dega
-          let adminActionTd = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#16a34a' : '#dc2626'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Finalized' : 'Pending'}</button></td>` : '';
+          let adminActionTd = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#16a34a' : '#dc2626'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Finalized' : 'Unfinalized'}</button></td>` : '';
 
           html += `<tr>
             <td>${idx++}</td>
@@ -1480,13 +1478,12 @@
     async adminEnableSchool(udise) {
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[], "isFinalized":false}');
       
-      // STRICT RULE: Agar school ne khud data finalise nahi kiya hai, toh admin bhi ise click karke finalise nahi kar sakta!
+      // STRICT CHECK: Jab tak school khud finalise nahi karega, admin is par click karke kuch nahi kar sakta!
       if (!saved.isFinalized) {
-        alert("Action Denied: This school has not finalized their data yet. Admin cannot finalize on behalf of the school before they complete it.");
+        alert("Action Denied: This school has not finalized their data yet. Admin cannot finalize on behalf of the school.");
         return;
       }
 
-      // Agar school pehle se finalized hai, tabhi admin click karke use unfinalise (enable) kar sakta hai
       saved.isFinalized = false;
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
 
@@ -1500,7 +1497,7 @@
       } catch(e) {}
 
       this.renderReports();
-      alert("School status updated to Pending (Enabled for editing).");
+      alert("School status updated to Unfinalized (Enabled for editing).");
     },
 
     async openTrashBin() {
