@@ -159,7 +159,7 @@
       </div>
 
       <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
-
+        <button type="button" id="btnSaveData" onclick="R4App.saveData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Save Staff Data</button>
         <button type="button" id="btnFinalizeSchool" onclick="R4App.toggleFinalizeSchool()" style="background:#dc2626; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">Finalize</button>
       </div>
     </div>
@@ -602,7 +602,7 @@
         return;
       }
 
-      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[]}');
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[], "isFinalized":false}');
       let isCurrentlyFinalized = saved.isFinalized === true;
 
       let info = this.getUserRoleInfo();
@@ -680,7 +680,7 @@
       this.updateSelectedTags(container, selector, defaultText);
     },
 
-        calculateAgeOnFly(dobInput) {
+    calculateAgeOnFly(dobInput) {
       let val = dobInput.value;
       let card = dobInput.closest('.teacher-card');
       let ageDisplay = card.querySelector('.t-age-display');
@@ -711,7 +711,6 @@
         months += 12;
       }
 
-      // Check age limit: 18 to 62 years
       if (years < 18 || years > 62) {
         dobInput.classList.add('error');
         if (errDiv) {
@@ -723,7 +722,6 @@
         dobInput.classList.remove('error');
         if (errDiv) errDiv.style.display = 'none';
         
-        // Saal aur Mahine dono display karne ke liye
         let ageString = years + " Years";
         if (months > 0) {
           ageString += " " + months + " Months";
@@ -731,7 +729,6 @@
         if (ageDisplay) ageDisplay.value = ageString;
       }
     },
-    
 
     validateFieldLive(input, type) {
       let val = input.value.trim();
@@ -945,7 +942,6 @@
       this.updateSelectedTags(cardElem.querySelectorAll('.custom-dropdown')[0].querySelector('.dropdown-list-container'), '.t-class-chk', 'Select Classes');
       this.updateSelectedTags(cardElem.querySelectorAll('.custom-dropdown')[1].querySelector('.dropdown-list-container'), '.t-subj-chk', 'Select Subjects');
 
-      // Trigger initial age calc if DOB exists
       let dobField = card.querySelector('.t-dob');
       if (dobField && dobField.value) {
         this.calculateAgeOnFly(dobField);
@@ -1093,7 +1089,7 @@
       });
 
       let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"isFinalized":false}');
-      let payload = { udise: udise, staff: staff, isFinalized: saved.isFinalized || false };
+      let payload = { udise: udise, staff: staff, isFinalized: saved.isFinalized === true };
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(payload));
 
       try {
@@ -1311,7 +1307,7 @@
           }
 
           let schoolTeacherPending = schoolTotal - schoolComplete;
-          let statusStr = isFinalized ? "Finalized" : "Incomplete";
+          let statusStr = isFinalized ? "Finalized" : "Pending";
           totalSchCount++;
 
           grandTotalStaff += schoolTotal;
@@ -1320,7 +1316,7 @@
           gComplete += schoolComplete;
           gTeacherPending += schoolTeacherPending;
 
-          let adminActionTd = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#dc2626' : '#16a34a'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Enable' : 'Finalized'}</button></td>` : '';
+          let adminActionTd = info.isAdmin ? `<td><button onclick="R4App.adminEnableSchool('${s.udise}')" style="background:${isFinalized ? '#16a34a' : '#dc2626'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">${isFinalized ? 'Finalized' : 'Pending'}</button></td>` : '';
 
           html += `<tr>
             <td>${idx++}</td>
@@ -1479,7 +1475,7 @@
     },
 
     async adminEnableSchool(udise) {
-      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[]}');
+      let saved = JSON.parse(localStorage.getItem("brc_teacher_" + udise) || '{"staff":[], "isFinalized":false}');
       saved.isFinalized = !saved.isFinalized;
       localStorage.setItem("brc_teacher_" + udise, JSON.stringify(saved));
 
