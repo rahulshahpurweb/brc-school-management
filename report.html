@@ -8,44 +8,50 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;color:#1e293b;padding:8px}
-  .container{width:100%;max-width:1450px;margin:0 auto;background:#f4f7fb;border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b2854;color:#1e293b;padding:4px}
+  .container{width:100%;max-width:1450px;margin:0 auto;background:#f4f7fb;border-radius:10px;padding:8px;box-shadow:0 5px 20px rgba(0,0,0,0.3)}
   
   /* Attractive Colorful Header */
-  header{background:linear-gradient(135deg,#1d4ed8,#071b38,#9333ea);color:white;padding:12px 15px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:4px solid #f4b400;box-shadow:0 4px 15px rgba(29,78,216,0.3)}
-  h1{margin:0;font-size:16px;color:#ffd21c;text-shadow:0 2px 4px rgba(0,0,0,0.3);font-weight:800}
+  header{background:linear-gradient(135deg,#1d4ed8,#071b38,#9333ea);color:white;padding:10px 12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:3px solid #f4b400;box-shadow:0 3px 10px rgba(29,78,216,0.3)}
+  h1{margin:0;font-size:14px;color:#ffd21c;text-shadow:0 1px 3px rgba(0,0,0,0.3);font-weight:800}
   
-  .btn-group{display:flex;gap:8px;flex-wrap:wrap}
-  .btn{background:#16a34a;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+  .btn-group{display:flex;gap:6px;flex-wrap:wrap}
+  .btn{background:#16a34a;color:#fff;border:none;padding:5px 8px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:3px;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
   .btn-blue{background:#1d4ed8}
   .btn-orange{background:#d97706}
   .btn-gray{background:#475569}
   .btn-purple{background:#9333ea}
   
-  .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:12px;border-radius:8px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#f8fafc}
+  .upload-section{background:#fff;border:2px dashed #1d4ed8;padding:8px;border-radius:6px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;background:#f8fafc}
   
-  .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px;background:#fff;padding:12px;border-radius:8px;border:1px solid #cbd5e1}
-  .filter-group label{display:block;font-size:10px;font-weight:bold;color:#475569;margin-bottom:3px}
-  .filter-group select, .filter-group input{width:100%;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-weight:500;background:#fff}
+  .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;margin-top:8px;background:#fff;padding:8px;border-radius:6px;border:1px solid #cbd5e1}
+  .filter-group label{display:block;font-size:9px;font-weight:bold;color:#475569;margin-bottom:2px}
+  .filter-group select, .filter-group input{width:100%;padding:5px;border:1px solid #cbd5e1;border-radius:5px;font-size:11px;font-weight:500;background:#fff}
   
-  .view-tabs{display:flex;gap:8px;margin-top:12px;background:#1e293b;padding:8px;border-radius:8px;overflow-x:auto}
-  .tab-btn{background:#334155;color:#fff;border:none;padding:7px 14px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px;white-space:nowrap}
+  .view-tabs{display:flex;gap:6px;margin-top:8px;background:#1e293b;padding:6px;border-radius:6px;overflow-x:auto}
+  .tab-btn{background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:11px;white-space:nowrap}
   .tab-btn.active{background:#1d4ed8}
 
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
-  .stat-box{background:#fff;padding:12px;border-radius:8px;border-left:4px solid #1d4ed8;box-shadow:0 2px 5px rgba(0,0,0,0.05)}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-top:8px}
+  .stat-box{background:#fff;padding:8px;border-radius:6px;border-left:3px solid #1d4ed8;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
   .stat-box.green{border-left-color:#16a34a}
   .stat-box.orange{border-left-color:#d97706}
   .stat-box.red{border-left-color:#dc2626}
-  .stat-title{font-size:10px;color:#64748b;font-weight:bold;text-transform:uppercase}
-  .stat-value{font-size:18px;font-weight:800;color:#071b38;margin-top:4px}
+  .stat-title{font-size:9px;color:#64748b;font-weight:bold;text-transform:uppercase}
+  .stat-value{font-size:15px;font-weight:800;color:#071b38;margin-top:2px}
 
-  .table-card{background:#fff;border-radius:8px;margin-top:12px;padding:12px;border:1px solid #cbd5e1}
-  .tablewrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:550px;border:1px solid #cbd5e1;border-radius:6px}
+  .table-card{background:#fff;border-radius:6px;margin-top:8px;padding:8px;border:1px solid #cbd5e1}
+  .tablewrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:550px;border:1px solid #cbd5e1;border-radius:5px}
+  
+  /* Extremely Compact Matrix Table Styles to Fit Mobile Screen Without Scrolling */
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 9px; table-layout: fixed; }
+  .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 1px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .matrix-table th { background: #071b38; color: #fff; vertical-align: middle; font-size: 8px; }
+  .matrix-table tr:nth-child(even){ background: #f8fafc; }
+
   table{width:100%;border-collapse:collapse;font-size:10px}
   th,td{border:1px solid #cbd5e1;padding:6px 6px;text-align:center;white-space:nowrap}
   th{background:#071b38;color:#fff;position:sticky;top:0;z-index:10;vertical-align:middle}
-  tr:nth-child(even){background:#f8fafc}
   
   #loading{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;justify-content:center;align-items:center;color:#fff;font-size:16px;font-weight:bold;flex-direction:column;gap:15px}
   .spinner{border:5px solid #f3f3f3;border-top:5px solid #f4b400;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite}
@@ -64,19 +70,19 @@
     .print-header { 
       display: block !important; 
       text-align: center; 
-      margin-bottom: 12px; 
+      margin-bottom: 10px; 
       background: linear-gradient(135deg, #1d4ed8, #9333ea) !important;
       color: #fff !important;
-      padding: 12px 15px;
+      padding: 10px 12px;
       border-radius: 6px;
       -webkit-print-color-adjust: exact; 
       print-color-adjust: exact; 
     }
-    .print-header h2 { margin: 0 0 6px 0; font-size: 16px !important; font-weight: 900; color: #ffd21c !important; }
-    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 11px !important; font-weight: bold; margin-top: 6px; color: #f8fafc !important; }
+    .print-header h2 { margin: 0 0 4px 0; font-size: 14px !important; font-weight: 900; color: #ffd21c !important; }
+    .print-header .print-meta { display: flex; justify-content: space-between; font-size: 10px !important; font-weight: bold; margin-top: 4px; color: #f8fafc !important; }
 
     table { width: 100% !important; font-size: 8px; border-collapse: collapse; }
-    th, td { border: 1px solid #000 !important; padding: 4px 4px; color: #000 !important; }
+    th, td { border: 1px solid #000 !important; padding: 3px 3px; color: #000 !important; }
     th { background: #071b38 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     tr { page-break-inside: avoid; }
   }
@@ -89,6 +95,9 @@
     .filters-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
     .filter-group label { font-size: 11px; }
     .filter-group select, .filter-group input { padding: 7px; font-size: 12px; }
+    .matrix-table { font-size: 11px; }
+    .matrix-table th, .matrix-table td { padding: 6px 4px; }
+    .matrix-table th { font-size: 10px; }
     table { font-size: 11px; }
     th, td { padding: 8px 10px; }
   }
@@ -130,8 +139,8 @@
   <!-- Bulk Upload Section -->
   <div class="upload-section">
     <div>
-      <b style="font-size:12px; color:#071b38;">📁 Excel / CSV Data Upload Karein:</b>
-      <div style="font-size:10px; color:#64748b;">अपनी अपडेटेड एक्सेल फाइल यहाँ अपलोड करें—डेटा तुरंत लोड हो जाएगा!</div>
+      <b style="font-size:11px; color:#071b38;">📁 Excel / CSV Data Upload Karein:</b>
+      <div style="font-size:9px; color:#64748b;">अपनी अपडेटेड एक्सेल फाइल यहाँ अपलोड करें—डेटा तुरंत लोड हो जाएगा!</div>
     </div>
     <input type="file" id="bulkExcelInput" accept=".xlsx, .xls, .csv" onchange="handleBulkExcelUpload(event)" style="font-size:11px; font-weight:bold;">
   </div>
@@ -195,8 +204,8 @@
   <!-- Matrix Controls (Only for Matrix View) -->
   <div class="filters-grid matrix-controls" id="matrixControls" style="display: none; background: #e2e8f0; border: 2px solid #1d4ed8;">
     <div class="filter-group" style="grid-column: 1 / -1;">
-      <label style="font-size: 12px; color: #1d4ed8; font-weight: 900;">📊 JSK Matrix Report Category Select Karein:</label>
-      <select id="matrixCategorySelect" onchange="renderMatrixReport()" style="font-size: 13px; font-weight: bold; background: #fff; padding: 8px; border: 2px solid #1d4ed8;">
+      <label style="font-size: 11px; color: #1d4ed8; font-weight: 900;">📊 JSK Matrix Report Category Select Karein:</label>
+      <select id="matrixCategorySelect" onchange="renderMatrixReport()" style="font-size: 12px; font-weight: bold; background: #fff; padding: 6px; border: 2px solid #1d4ed8;">
         <option value="ALL">All (सभी पेंडेंसी एवं सत्यापन रिकॉर्ड)</option>
         <option value="col1">1. One Click से अपार</option>
         <option value="col2">2. SO3 फार्म जमा करें</option>
@@ -229,9 +238,9 @@
 
   <!-- Data Table Display Container -->
   <div class="table-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:5px;">
-      <h3 id="tableHeadingTitle" style="margin:0;font-size:13px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
-      <span id="recordCountLabel" style="font-size:11px;font-weight:bold;color:#1d4ed8;">Showing 0 rows</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px;">
+      <h3 id="tableHeadingTitle" style="margin:0;font-size:12px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
+      <span id="recordCountLabel" style="font-size:10px;font-weight:bold;color:#1d4ed8;">Showing 0 rows</span>
     </div>
     
     <!-- Detailed Table Wrapper -->
@@ -254,7 +263,7 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="12" style="padding:30px;color:#64748b;font-weight:bold;">कृपया ऊपर दिए गए विकल्प से अपनी एक्सेल फाइल अपलोड करें।</td></tr>
+          <tr><td colspan="12" style="padding:20px;color:#64748b;font-weight:bold;">कृपया ऊपर दिए गए विकल्प से अपनी एक्सेल फाइल अपलोड करें।</td></tr>
         </tbody>
       </table>
     </div>
@@ -497,7 +506,7 @@ function updateDashboard(){
 
   let tbody = document.getElementById('tableBody');
   if(filteredData.length === 0){
-    tbody.innerHTML = `<tr><td colspan="12" style="padding:30px;color:#64748b;font-weight:bold;">कोई रिकॉर्ड नहीं मिला। कृपया डेटा अपलोड करें।</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="padding:20px;color:#64748b;font-weight:bold;">कोई रिकॉर्ड नहीं मिला। कृपया डेटा अपलोड करें।</td></tr>`;
     return;
   }
   
@@ -546,34 +555,34 @@ function renderMatrixReport(){
   }
 
   let wrapper = document.getElementById('matrixTableWrapper');
-  let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:10px;">
+  let tableHtml = `<table class="matrix-table">
     <thead>
-      <tr style="background:#071b38; color:#fff;">
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:6px;">JSK</th>
-        <th colspan="3" style="border:1px solid #cbd5e1; padding:5px;">Pre-Primary</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8; padding-left:12px; padding-right:12px;">Pre-Pri Total</th>
-        <th colspan="8" style="border:1px solid #cbd5e1; padding:5px;">Primary & Middle</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8; padding-left:12px; padding-right:12px;">1 to 8 Total</th>
-        <th colspan="4" style="border:1px solid #cbd5e1; padding:5px;">High & Higher Sec</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#1d4ed8; padding-left:12px; padding-right:12px;">9 to 12 Total</th>
-        <th rowspan="2" style="border:1px solid #cbd5e1; padding:5px; background:#b91c1c; padding-left:14px; padding-right:14px;">Grand Total</th>
+      <tr>
+        <th rowspan="2">JSK</th>
+        <th colspan="3">Pre-Primary</th>
+        <th rowspan="2" style="background:#1d4ed8; padding-left:6px; padding-right:6px;">Pre-Pri Total</th>
+        <th colspan="8">Primary & Middle</th>
+        <th rowspan="2" style="background:#1d4ed8; padding-left:6px; padding-right:6px;">1 to 8 Total</th>
+        <th colspan="4">High & Higher Sec</th>
+        <th rowspan="2" style="background:#1d4ed8; padding-left:6px; padding-right:6px;">9 to 12 Total</th>
+        <th rowspan="2" style="background:#b91c1c; padding-left:8px; padding-right:8px;">Grand Total</th>
       </tr>
-      <tr style="background:#071b38; color:#fff;">
-        <th style="border:1px solid #cbd5e1; padding:5px;">Nursery</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">LKG/KG1</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">UKG/KG2</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">I</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">II</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">III</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">IV</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">V</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">VI</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">VII</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">VIII</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">IX</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">X</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">XI</th>
-        <th style="border:1px solid #cbd5e1; padding:5px;">XII</th>
+      <tr>
+        <th>Nursery</th>
+        <th>LKG/KG1</th>
+        <th>UKG/KG2</th>
+        <th>I</th>
+        <th>II</th>
+        <th>III</th>
+        <th>IV</th>
+        <th>V</th>
+        <th>VI</th>
+        <th>VII</th>
+        <th>VIII</th>
+        <th>IX</th>
+        <th>X</th>
+        <th>XI</th>
+        <th>XII</th>
       </tr>
     </thead>
     <tbody>`;
@@ -610,11 +619,11 @@ function renderMatrixReport(){
     classCols.forEach(c => grandTotals[c] += counts[c]);
 
     tableHtml += `<tr>
-      <td style="font-weight:bold; text-align:left; background:#f8fafc; padding-left:10px; padding-right:10px;">${jskName}</td>
+      <td style="font-weight:bold; text-align:left; background:#f8fafc; padding-left:6px; padding-right:6px;">${jskName}</td>
       <td>${counts["Nursery/KG"] || 0}</td>
       <td>${counts["LKG/KG1/Pre-School"] || 0}</td>
       <td>${counts["UKG/KG2/Pre-Primary"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:12px; padding-right:12px;">${prePriTot}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:6px; padding-right:6px;">${prePriTot}</td>
       <td>${counts["I"] || 0}</td>
       <td>${counts["II"] || 0}</td>
       <td>${counts["III"] || 0}</td>
@@ -623,30 +632,30 @@ function renderMatrixReport(){
       <td>${counts["VI"] || 0}</td>
       <td>${counts["VII"] || 0}</td>
       <td>${counts["VIII"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:12px; padding-right:12px;">${t1to8}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:6px; padding-right:6px;">${t1to8}</td>
       <td>${counts["IX"] || 0}</td>
       <td>${counts["X"] || 0}</td>
       <td>${counts["XI"] || 0}</td>
       <td>${counts["XII"] || 0}</td>
-      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:12px; padding-right:12px;">${t9to12}</td>
-      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c; padding-left:14px; padding-right:14px;">${rowTotal}</td>
+      <td style="font-weight:bold; background:#eff6ff; color:#1d4ed8; padding-left:6px; padding-right:6px;">${t9to12}</td>
+      <td style="font-weight:bold; background:#fef2f2; color:#b91c1c; padding-left:8px; padding-right:8px;">${rowTotal}</td>
     </tr>`;
   });
 
   tableHtml += `<tr style="background:#e2e8f0; font-weight:bold;">
-    <td style="text-align:left; background:#071b38; color:#fff; padding-left:10px; padding-right:10px;">Grand Total</td>`;
+    <td style="text-align:left; background:#071b38; color:#fff; padding-left:6px; padding-right:6px;">Grand Total</td>`;
   
   classCols.forEach(c => {
     tableHtml += `<td style="background:#071b38; color:#fff;">${grandTotals[c]}</td>`;
     if(c === "UKG/KG2/Pre-Primary") {
-      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:12px; padding-right:12px;">${grandPrePriTot}</td>`;
+      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:6px; padding-right:6px;">${grandPrePriTot}</td>`;
     }
     if(c === "VIII") {
-      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:12px; padding-right:12px;">${grand1to8Tot}</td>`;
+      tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:6px; padding-right:6px;">${grand1to8Tot}</td>`;
     }
   });
-  tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:12px; padding-right:12px;">${grand9to12Tot}</td>
-    <td style="background:#b91c1c; color:#fff; font-size:12px; padding-left:14px; padding-right:14px;">${grandOverall}</td>
+  tableHtml += `<td style="background:#1d4ed8; color:#fff; padding-left:6px; padding-right:6px;">${grand9to12Tot}</td>
+    <td style="background:#b91c1c; color:#fff; font-size:10px; padding-left:8px; padding-right:8px;">${grandOverall}</td>
   </tr>`;
 
   tableHtml += `</tbody></table>`;
