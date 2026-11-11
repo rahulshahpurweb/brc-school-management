@@ -215,13 +215,15 @@
     </div>
   </div>
 
-  <!-- Data Table Display Card -->
+  <!-- Data Table Display Container (Separated cleanly for Detail vs Matrix) -->
   <div class="table-card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
       <h3 id="tableHeadingTitle" style="margin:0;font-size:14px;color:#071b38;">छात्र रिपोर्ट एवं पेंडेंसी विवरण तालिका</h3>
       <span id="recordCountLabel" style="font-size:12px;font-weight:bold;color:#1d4ed8;">Showing 0 rows</span>
     </div>
-    <div class="tablewrap" id="tableWrapperDiv">
+    
+    <!-- Detailed Table Wrapper -->
+    <div class="tablewrap" id="detailTableWrapper">
       <table id="reportTable">
         <thead>
           <tr>
@@ -243,6 +245,11 @@
           <tr><td colspan="12" style="padding:40px;color:#64748b;font-weight:bold;">कृपया ऊपर दिए गए विकल्प से अपनी एक्सेल फाइल अपलोड करें।</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Matrix Summary Table Wrapper (Initially Hidden) -->
+    <div class="tablewrap" id="matrixTableWrapper" style="display: none;">
+      <!-- Matrix table will be injected here dynamically -->
     </div>
   </div>
 </div>
@@ -398,11 +405,21 @@ function switchView(mode){
     document.getElementById('filtersBar').style.display = 'none';
     document.getElementById('matrixControls').style.display = 'grid';
     document.getElementById('statsGrid').style.display = 'none';
+    
+    // Hide detail table wrapper, show matrix table wrapper
+    document.getElementById('detailTableWrapper').style.display = 'none';
+    document.getElementById('matrixTableWrapper').style.display = 'block';
+    
     renderMatrixReport();
   } else {
     document.getElementById('filtersBar').style.display = 'grid';
     document.getElementById('matrixControls').style.display = 'none';
     document.getElementById('statsGrid').style.display = 'grid';
+    
+    // Show detail table wrapper, hide matrix table wrapper
+    document.getElementById('detailTableWrapper').style.display = 'block';
+    document.getElementById('matrixTableWrapper').style.display = 'none';
+    
     applyFilters();
   }
 }
@@ -509,7 +526,6 @@ function renderMatrixReport(){
   globalData.forEach(item => { if(item.jsk) jskSet.add(item.jsk); });
   let jsks = Array.from(jskSet).sort();
 
-  // Updated class columns to match both "Nursery/KG" and standard naming variants
   let classCols = [
     "Nursery/KG", "LKG/KG1/Pre-School", "UKG/KG2/Pre-Primary", 
     "I", "II", "III", "IV", "V", "VI", "VII", "VIII", 
@@ -523,7 +539,7 @@ function renderMatrixReport(){
     return true;
   }
 
-  let wrapper = document.getElementById('tableWrapperDiv');
+  let wrapper = document.getElementById('matrixTableWrapper');
   let tableHtml = `<table style="width:100%; border-collapse:collapse; font-size:11px;">
     <thead>
       <tr style="background:#071b38; color:#fff;">
