@@ -6,7 +6,7 @@
 <title>BRC Shahpur - UDISE & Student Pending Report Portal</title>
 <!-- SheetJS for Exporting Filtered Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- html2canvas for Auto-Fit Image Download -->
+<!-- html2canvas for Image Download -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   *{box-sizing:border-box}
@@ -46,7 +46,7 @@
   .table-card{background:#fff;border-radius:6px;margin-top:8px;padding:8px;border:1px solid #cbd5e1}
   .tablewrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:550px;border:1px solid #cbd5e1;border-radius:5px}
   
-  /* Extremely Compact Matrix Table Styles */
+  /* Compact Matrix Table Styles */
   .matrix-table { width: 100%; border-collapse: collapse; font-size: 9px; table-layout: fixed; }
   .matrix-table th, .matrix-table td { border: 1px solid #cbd5e1; padding: 4px 1px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .matrix-table th { background: #071b38; color: #fff; vertical-align: middle; font-size: 8px; }
@@ -60,7 +60,7 @@
   .spinner{border:5px solid #f3f3f3;border-top:5px solid #f4b400;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite}
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
-  /* Print & PDF Header Styling */
+  /* Print & Image Header Styling */
   .print-header { display: none; }
 
   @media print {
@@ -81,7 +81,7 @@
       -webkit-print-color-adjust: exact; 
       print-color-adjust: exact; 
     }
-    .print-header h2 { margin: 0 0 4px 0; font-size: 14px !important; font-weight: 900; color: #ffd21c !important; }
+    .print-header h2 { margin: 0 0 4px 0; font-size: 14px !important; font-weight: 900; color: #fff !important; }
     .print-header .print-meta { display: flex; justify-content: space-between; font-size: 10px !important; font-weight: bold; margin-top: 4px; color: #f8fafc !important; }
 
     table { width: 100% !important; font-size: 8px; border-collapse: collapse; }
@@ -118,7 +118,7 @@
     <h1>✨ UDISE & Student Pending Report Portal</h1>
     <div class="btn-group">
       <a href="portal/main.html" class="btn btn-gray">🏠 Back</a>
-      <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print</button>
+      <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print / PDF</button>
       <button class="btn btn-teal" onclick="downloadReportImage()">📷 Download Image</button>
       <button class="btn btn-orange" onclick="downloadTemplate()">📥 Template</button>
       <button class="btn btn-blue" onclick="exportExcel()">📤 Excel</button>
@@ -131,17 +131,17 @@
     <button class="tab-btn" id="tabMatrix" onclick="switchView('matrix')">📊 JSK-wise Matrix Summary Report</button>
   </div>
 
-  <!-- Print Header (Appears in Image and Print) -->
-  <div class="print-header" id="printHeaderDiv" style="display: block; margin-top: 10px;">
-    <h2 id="printTitleText" style="font-size: 15px; color: #ffd21c; margin: 0 0 5px 0; text-align: center;">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
-    <div class="print-meta" style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; color: #f8fafc;">
+  <!-- Print/Image Header (Hidden on screen, shown in print & image capture) -->
+  <div class="print-header" id="printHeaderDiv">
+    <h2 id="printTitleText">समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट</h2>
+    <div class="print-meta">
       <span id="printFilterInfo">फिल्टर: सभी स्कूल एवं कक्षाएं</span>
       <span id="printDateTime">दिनांक एवं समय: </span>
     </div>
   </div>
 
-  <!-- Bulk Upload Section -->
-  <div class="upload-section">
+  <!-- Bulk Upload Section (Hidden in print and image) -->
+  <div class="upload-section" id="uploadSectionDiv">
     <div>
       <b style="font-size:11px; color:#071b38;">📁 Excel / CSV Data Upload Karein:</b>
       <div style="font-size:9px; color:#64748b;">अपनी अपडेटेड एक्सेल फाइल यहाँ अपलोड करें—डेटा तुरंत लोड हो जाएगा!</div>
@@ -296,11 +296,34 @@ function updateDateTimeMeta(){
   let dateStr = now.toLocaleDateString('hi-IN');
   let timeStr = now.toLocaleTimeString('hi-IN');
   
+  let titleStr = "समग्र छात्र पेंडेंसी एवं आधार सत्यापन रिपोर्ट";
+  if(currentView === 'matrix'){
+    let catSelect = document.getElementById('matrixCategorySelect');
+    if(catSelect && catSelect.selectedIndex >= 0){
+      let selectedOptText = catSelect.options[catSelect.selectedIndex].text;
+      titleStr = `संकुलवार मैट्रिक्स रिपोर्ट: ${selectedOptText}`;
+    }
+  } else {
+    let f1 = document.getElementById('f1Filter') ? document.getElementById('f1Filter').value : 'ALL';
+    let f2 = document.getElementById('f2Filter') ? document.getElementById('f2Filter').value : 'ALL';
+    let f3 = document.getElementById('f3Filter') ? document.getElementById('f3Filter').value : 'ALL';
+    let f4 = document.getElementById('f4Filter') ? document.getElementById('f4Filter').value : 'ALL';
+    let f5 = document.getElementById('f5Filter') ? document.getElementById('f5Filter').value : 'ALL';
+    
+    if(f1 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: One Click से अपार (${f1})`;
+    else if(f2 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: SO3 फार्म जमा करें (${f2})`;
+    else if(f3 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: आधार मैच किंतु Verified नहीं (${f3})`;
+    else if(f4 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: आधार बनाया जाना हैं (${f4})`;
+    else if(f5 !== 'ALL') titleStr = `विस्तृत रिपोर्ट: आधार मिसमैच (${f5})`;
+  }
+
+  document.getElementById('printTitleText').innerText = titleStr;
+  
   let jskVal = document.getElementById('jskFilter') ? document.getElementById('jskFilter').value : 'ALL';
   let schVal = document.getElementById('schoolFilter') ? document.getElementById('schoolFilter').value : 'ALL';
-  let clsVal = document.getElementById('classFilter') ? document.getElementById('classFilter').value : 'ALL';
+  let clsVal = document.getElementById('classFilter').value ? document.getElementById('classFilter').value : 'ALL';
   
-  let filterText = (currentView === 'matrix') ? `रिपोर्ट मोड: संकुलवार मैट्रिक्स सारांश (JSK Matrix Summary)` : `संकुल: ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
+  let filterText = (currentView === 'matrix') ? `रिपोर्ट मोड: संकुलवार मैट्रिक्स सारांश` : `संकुल: ${jskVal} | स्कूल: ${schVal} | कक्षा: ${clsVal}`;
   
   if(document.getElementById('printDateTime')) {
     document.getElementById('printDateTime').innerText = `दिनांक: ${dateStr} | समय: ${timeStr}`;
@@ -559,7 +582,6 @@ function renderMatrixReport(){
   let cat = document.getElementById('matrixCategorySelect').value;
   let categoryText = document.getElementById('matrixCategorySelect').options[document.getElementById('matrixCategorySelect').selectedIndex].text;
   
-  document.getElementById('printTitleText').innerText = `जनशिक्षा केन्द्रवार छात्रों की संख्यात्मक जानकारी: ${categoryText}`;
   document.getElementById('tableHeadingTitle').innerText = `JSK-wise Matrix Summary (${categoryText})`;
 
   let jskSet = new Set();
@@ -690,29 +712,45 @@ function renderMatrixReport(){
 
 function triggerPrint(){
   updateDateTimeMeta();
+  let printHeader = document.getElementById('printHeaderDiv');
+  let uploadSec = document.getElementById('uploadSectionDiv');
+  
+  printHeader.style.display = 'block';
+  uploadSec.style.display = 'none';
+  
   window.print();
+  uploadSec.style.display = '';
 }
 
-// Download Report as Image Function (Auto-Fit)
+// Download Report as Image Function with Clean Dynamic Title & Hidden Upload Box
 function downloadReportImage(){
   updateDateTimeMeta();
   showLoader(true, "Generating Auto-Fit Image...");
   
-  let element = document.getElementById('printableArea');
-  
-  // Temporarily hide buttons for clean image
+  let printHeader = document.getElementById('printHeaderDiv');
+  let uploadSec = document.getElementById('uploadSectionDiv');
   let btnGroups = document.querySelectorAll('.btn-group, .view-tabs');
+  
+  printHeader.style.display = 'block';
+  uploadSec.style.display = 'none';
   btnGroups.forEach(el => el.style.display = 'none');
   
+  let element = document.getElementById('printableArea');
+  
   html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+    printHeader.style.display = 'none';
+    uploadSec.style.display = '';
     btnGroups.forEach(el => el.style.display = '');
     showLoader(false);
     
+    let fileName = (currentView === 'matrix') ? 'JSK_Matrix_Report.png' : 'Detailed_Student_Report.png';
     let link = document.createElement('a');
-    link.download = 'BRC_Report_Summary.png';
+    link.download = fileName;
     link.href = canvas.toDataURL('image/png');
     link.click();
   }).catch(err => {
+    printHeader.style.display = 'none';
+    uploadSec.style.display = '';
     btnGroups.forEach(el => el.style.display = '');
     showLoader(false);
     alert("Error generating image: " + err.message);
