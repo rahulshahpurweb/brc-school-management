@@ -114,6 +114,7 @@ body{
   cursor: pointer;
   text-decoration: none;
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative; /* Badge ke liye zaroori hai */
 }
 .hex-card:hover {
   transform: translateY(-3px);
@@ -127,6 +128,26 @@ body{
 .hex-card.employee { background: linear-gradient(135deg, #4ade80, #16a34a); }
 .hex-card.scheme { background: linear-gradient(135deg, #f43f5e, #be123c); }
 .hex-card.transport { background: linear-gradient(135deg, #fbbf24, #d97706); color: #1e293b; }
+
+/* Blinking NEW Badge Animation */
+.new-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #dc2626;
+  color: white;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+  animation: pulseBlink 1s infinite alternate;
+}
+@keyframes pulseBlink {
+  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 4px rgba(220,38,38,0.8); }
+  100% { transform: scale(1.15); opacity: 0.85; box-shadow: 0 0 12px rgba(220,38,38,1); }
+}
 
 /* Bottom Action Buttons Bar */
 .ederp-footer-links {
@@ -353,23 +374,26 @@ body{
     <div class="honeycomb-section">
       <div class="honeycomb-title">समस्त एजूकेशन पोर्टल लिंक</div>
       <div class="modules-hex-grid">
-        <a href="https://rahulshahpurweb.github.io/brc-school-management/report.html" target="_blank" class="hex-card school">Udise Appar Pending Reports</a>
-        <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card udise">Udise+ Login</a>
-        <a href="https://mdmhp.nic.in/Home/Login" target="_blank" class="hex-card scheme">Mdmhp IVRS</a>
-        <a href="https://www.pmposhan.mp.gov.in/Login/Pages/sLogin.aspx" target="_blank" class="hex-card">Pm_Poshan_Mp</a>
-        <a href="https://pmposhan-mis.education.gov.in/mdm_production/login.aspx" target="_blank" class="hex-card transport">pmposhan_mis</a>
-        <a href="https://sederp.educationportal3.in/" target="_blank" class="hex-card student">Education_3.0  </a>
-        <a href="https://cmhelpline.mp.gov.in/MIS/Default.aspx" target="_blank" class="hex-card employee">CM_Helpline</a>
-        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card">Reports & Dashboard</a>
+        <a href="https://rahulshahpurweb.github.io/brc-school-management/report.html" target="_blank" class="hex-card school">
+          <span>🏫</span>Udise Appar Pending Reports
+          <div class="new-badge">NEW</div>
+        </a>
+        <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card udise"><span>📋</span>Udise+ Login</a>
+        <a href="https://mdmhp.nic.in/Home/Login" target="_blank" class="hex-card scheme"><span>🚲</span>Mdmhp IVRS</a>
+        <a href="https://www.pmposhan.mp.gov.in/Login/Pages/sLogin.aspx" target="_blank" class="hex-card"><span>👨‍🎓</span>Pm_Poshan_Mp</a>
+        <a href="https://pmposhan-mis.education.gov.in/mdm_production/login.aspx" target="_blank" class="hex-card transport"><span>🚌</span>pmposhan_mis</a>
+        <a href="https://sederp.educationportal3.in/" target="_blank" class="hex-card student"><span>👥</span>Education_3.0</a>
+        <a href="https://cmhelpline.mp.gov.in/MIS/Default.aspx" target="_blank" class="hex-card employee"><span>👩‍🏫</span>CM_Helpline</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card"><span>📈</span>Reports & Dashboard</a>
       </div>
     </div>
 
     <div class="ederp-footer-links">
       <a href="javascript:void(0)" onclick="openForgotPasswordModal()" class="ederp-btn">Forgot Password</a>
-      <a href="https://www.educationportal.mp.gov.in/AtithiShikshak/" target="_blank" class="ederp-btn atithi">0</a>
-      <a href="https://www.mponline.gov.in/" target="_blank" class="ederp-btn outsource">1</a>
-      <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="ederp-btn shikshak">2</a>
-      <a href="modules.html" class="ederp-btn" style="background:#0284c7;">3</a>
+      <a href="https://www.educationportal.mp.gov.in/AtithiShikshak/" target="_blank" class="ederp-btn atithi">अतिथि शिक्षक पोर्टल</a>
+      <a href="https://www.mponline.gov.in/" target="_blank" class="ederp-btn outsource">प्रोजेक्ट आउटसोर्स प्रबंधन</a>
+      <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="ederp-btn shikshak">हमारे-शिक्षक ऐप</a>
+      <a href="modules.html" class="ederp-btn" style="background:#0284c7;">अन्य मॉड्यूल्स हब</a>
     </div>
   </div>
 
