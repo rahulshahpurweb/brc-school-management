@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BRC Shahpur - Master Portal</title>
+<title>स्कूल शिक्षा विभाग, मध्य प्रदेश - BRC Shahpur Portal</title>
 
 <!-- Flash Prevention Script -->
 <script>
@@ -19,12 +19,149 @@
 body{
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #0b2854;
+  background: #f4f7fb;
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding-top: env(safe-area-inset-top, 5px);
+}
+
+/* EDERP Top Orange Banner */
+.ederp-banner {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white;
+  text-align: center;
+  padding: 10px 12px;
+  border-bottom: 3px solid #c2410c;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 101;
+}
+.ederp-banner h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.ederp-banner p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+/* Main Split Layout Container for Login */
+.ederp-main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  background: #fff;
+  width: 100%;
+  height: calc(100vh - 48px);
+}
+
+/* Left Side: Honeycomb / Modules Section */
+.ederp-left-content {
+  flex: 1.3;
+  background: #fffefb;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 2px solid #e2e8f0;
+}
+
+.honeycomb-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+}
+.honeycomb-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #082a63;
+  margin-bottom: 15px;
+  text-align: center;
+}
+.modules-hex-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
+  gap: 10px;
+  max-width: 650px;
+  width: 100%;
+}
+.hex-card {
+  background: linear-gradient(135deg, #38bdf8, #0284c7);
+  color: white;
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hex-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(2,132,199,0.3);
+}
+.hex-card span { font-size: 18px; }
+
+.hex-card.school { background: linear-gradient(135deg, #fb7185, #e11d48); }
+.hex-card.student { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+.hex-card.user { background: linear-gradient(135deg, #facc15, #ca8a04); color: #1e293b; }
+.hex-card.employee { background: linear-gradient(135deg, #4ade80, #16a34a); }
+.hex-card.scheme { background: linear-gradient(135deg, #f43f5e, #be123c); }
+.hex-card.transport { background: linear-gradient(135deg, #fbbf24, #d97706); color: #1e293b; }
+
+/* Bottom Action Buttons Bar */
+.ederp-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 15px;
+  border-top: 2px dashed #cbd5e1;
+  margin-top: 15px;
+}
+.ederp-btn {
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: opacity 0.2s;
+}
+.ederp-btn.atithi { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+.ederp-btn.outsource { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+.ederp-btn.shikshak { background: linear-gradient(135deg, #f97316, #c2410c); }
+.ederp-btn:hover { opacity: 0.9; }
+
+/* Right Side: User Login Box Section */
+.ederp-right-login {
+  flex: 0.8;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border-left: 1px solid #cbd5e1;
 }
 
 .master-header{
@@ -39,26 +176,9 @@ body{
   height: 48px;
   z-index: 100;
 }
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.menu-toggle {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-}
-.brand-title{
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: .2px;
-}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.menu-toggle { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; }
+.brand-title{ font-size: 14px; font-weight: 800; letter-spacing: .2px; }
 
 .side-drawer {
   position: fixed;
@@ -74,31 +194,10 @@ body{
   flex-direction: column;
   border-right: 2px solid #f4b400;
 }
-.side-drawer.open {
-  left: 0;
-}
-.drawer-header {
-  background: #041022;
-  padding: 15px;
-  color: white;
-  border-bottom: 2px solid #f4b400;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.drawer-header h3 {
-  margin: 0;
-  font-size: 15px;
-  color: #ffd21c;
-  font-weight: 900;
-}
-.drawer-close {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
-}
+.side-drawer.open { left: 0; }
+.drawer-header { background: #041022; padding: 15px; color: white; border-bottom: 2px solid #f4b400; display: flex; align-items: center; justify-content: space-between; }
+.drawer-header h3 { margin: 0; font-size: 15px; color: #ffd21c; font-weight: 900; }
+.drawer-close { background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer; }
 
 .drawer-links {
   flex: 1;
@@ -149,24 +248,24 @@ body{
   display: none;
   backdrop-filter: blur(3px);
 }
-.drawer-backdrop.open {
-  display: block;
-}
+.drawer-backdrop.open { display: block; }
 
 .frame-container{
   flex: 1;
   width: 100%;
   background: #f4f7fb;
+  display: none;
 }
 #moduleFrame{width:100%;height:100%;border:0}
 
-#authOverlay{position:fixed;inset:0;background:rgba(8,42,99,0.95);backdrop-filter:blur(6px);z-index:99999;display:none;align-items:center;justify-content:center;padding:15px}
-.auth-card{background:#ffffff;border-radius:18px;max-width:390px;width:100%;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,0.3);text-align:center}
-.auth-card h2{margin-top:0;color:#082a63}
-.auth-card p{color:#64748b;font-size:13px;margin-bottom:16px}
-.auth-input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px;font-size:15px;margin-bottom:12px;box-sizing:border-box}
-.auth-btn{width:100%;height:46px;background:#1769df;color:#fff;border:0;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;margin-bottom:10px}
-.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+/* Original Auth Overlay (Hidden by default, controlled by script) */
+#authOverlay{position:fixed;inset:0;background:transparent;z-index:99999;display:none;align-items:center;justify-content:center;pointer-events:none;}
+.auth-card{background:#ffffff;border-radius:16px;max-width:360px;width:100%;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);border:1px solid #e2e8f0;text-align:center;pointer-events:auto;}
+.auth-card h2{margin:10px 0 5px 0;color:#082a63;font-size:20px;font-weight:900}
+.auth-card p{color:#64748b;font-size:12px;margin-bottom:20px}
+.auth-input{width:100%;height:44px;border:1px solid #cbd5e1;border-radius:8px;padding:0 12px;font-size:14px;margin-bottom:12px;box-sizing:border-box;background:#fdfdfd}
+.auth-btn{width:100%;height:44px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:0;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 10px rgba(124,58,237,0.3)}
+.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:6px;font-size:11px;margin-bottom:12px;display:none}
 
 #maintenanceOverlay {
   position: fixed;
@@ -195,6 +294,12 @@ body{
 </head>
 <body>
 
+<!-- EDERP Top Orange Banner -->
+<div class="ederp-banner">
+  <h1>स्कूल शिक्षा विभाग, मध्य प्रदेश</h1>
+  <p>एजुकेशन पोर्टल 3.0 • BRC शाहपुर मास्टर डैशबोर्ड</p>
+</div>
+
 <div id="maintenanceOverlay">
   <div class="maint-card">
     <h1>Portal Under Maintenance</h1>
@@ -202,21 +307,52 @@ body{
   </div>
 </div>
 
-<div id="authOverlay">
-  <div class="auth-card">
-    <h2>BRC_Login</h2>
-    <p>BRC, JSKs, SCHOOLs Cloud Login</p>
-    <div id="authErr" class="auth-err">Please enter a valid User ID and Password!</div>
-    <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
-    <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
-    
-    <div style="text-align:right; margin-bottom:12px;">
-      <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:12px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
+<!-- Main EDERP Layout Wrapper (Visible when logged out) -->
+<div class="ederp-main-wrapper" id="ederpLayout">
+  <!-- Left Side: Honeycomb Modules & Quick links -->
+  <div class="ederp-left-content">
+    <div class="honeycomb-section">
+      <div class="honeycomb-title">एजुकेशन पोर्टल 3.0 ई.आर.पी. मॉड्यूल्स</div>
+      <div class="modules-hex-grid">
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card school"><span>🏫</span>School Directory</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card"><span>📋</span>School Mgmt</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card scheme"><span>🚲</span>Scheme Mgmt</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card student"><span>👨‍🎓</span>Student Directory</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card transport"><span>🚌</span>Transport Mgmt</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card user"><span>👥</span>User Mgmt</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card employee"><span>👩‍🏫</span>Employee Directory</a>
+        <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="hex-card"><span>📈</span>Reports & Dashboard</a>
+      </div>
     </div>
 
-    <button class="auth-btn" onclick="checkAuth()">Login</button>
-    <div style="text-align:center; margin-top:10px;">
-      <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">SNA Account Check</a>
+    <div class="ederp-footer-links">
+      <a href="javascript:void(0)" onclick="openForgotPasswordModal()" class="ederp-btn">Forgot Password</a>
+      <a href="https://www.educationportal.mp.gov.in/AtithiShikshak/" target="_blank" class="ederp-btn atithi">अतिथि शिक्षक पोर्टल</a>
+      <a href="https://www.mponline.gov.in/" target="_blank" class="ederp-btn outsource">प्रोजेक्ट आउटसोर्स प्रबंधन</a>
+      <a href="https://www.educationportal.mp.gov.in/" target="_blank" class="ederp-btn shikshak">हमारे-शिक्षक ऐप</a>
+      <a href="modules.html" class="ederp-btn" style="background:#0284c7;">अन्य मॉड्यूल्स हब</a>
+    </div>
+  </div>
+
+  <!-- Right Side: Target for Login Form container -->
+  <div class="ederp-right-login" id="rightLoginSlot">
+    <!-- Original Login Card injected / placed here -->
+    <div class="auth-card">
+      <div style="font-size:32px; margin-bottom:2px;">🏛️</div>
+      <h2>BRC_Login</h2>
+      <p>BRC, JSKs, SCHOOLs Cloud Login</p>
+      <div id="authErr" class="auth-err">Please enter a valid User ID and Password!</div>
+      <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
+      <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
+      
+      <div style="text-align:right; margin-bottom:12px;">
+        <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:12px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
+      </div>
+
+      <button class="auth-btn" onclick="checkAuth()">Login</button>
+      <div style="text-align:center; margin-top:8px;">
+        <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">SNA Account Check</a>
+      </div>
     </div>
   </div>
 </div>
@@ -271,7 +407,6 @@ body{
       <span>🔍</span> SNA Account Check
     </a>
      
-    
     <div id="adminControlsSection" style="display:none;">
       <div class="drawer-section-title">Admin Controls</div>
 
@@ -292,14 +427,17 @@ body{
   </div>
 </div>
 
-<header class="master-header">
+<header class="master-header" id="masterHeaderBar" style="display:none;">
   <div class="header-left">
     <button class="menu-toggle" onclick="toggleDrawer()">☰</button>
     <div class="brand-title">BRC Shahpur Portal</div>
   </div>
+  <div>
+    <button onclick="logoutSession()" style="background:#dc2626; color:#fff; border:0; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">Logout</button>
+  </div>
 </header>
 
-<div class="frame-container">
+<div class="frame-container" id="frameContainer">
   <iframe id="moduleFrame" src="R2.html"></iframe>
 </div>
 
@@ -326,7 +464,6 @@ async function checkGlobalMaintenance() {
   let isLoggedIn = sessionStorage.getItem("brc_logged_in") === "true"; 
   let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
   
-  // Admin controls visibility check
   let adminSec = document.getElementById("adminControlsSection");
   if (adminSec) {
     if (user.role === 'admin' || user.name === 'BRC Admin' || String(user.role).toLowerCase() === 'admin') {
@@ -338,12 +475,17 @@ async function checkGlobalMaintenance() {
 
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
-    document.getElementById("authOverlay").style.display = "flex";
+    document.getElementById("ederpLayout").style.display = "flex";
+    document.getElementById("masterHeaderBar").style.display = "none";
+    document.getElementById("frameContainer").style.display = "none";
     updateMaintUI(isMaintenance);
     return;
   }
 
-  document.getElementById("authOverlay").style.display = "none";
+  // If logged in
+  document.getElementById("ederpLayout").style.display = "none";
+  document.getElementById("masterHeaderBar").style.display = "flex";
+  document.getElementById("frameContainer").style.display = "flex";
 
   if (user.role === "admin") {
     document.getElementById("maintenanceOverlay").style.display = "none";
@@ -519,7 +661,7 @@ async function checkAuth(){
             udise: dbRole === 'school' ? inputVal : '', 
             name: matchedUser.name || matchedUser.Name || inputVal 
           }));
-          document.getElementById("authOverlay").style.display = "none";
+          document.getElementById("ederpLayout").style.display = "none";
           document.getElementById("maintenanceOverlay").style.display = "none";
           location.reload();
           return;
@@ -537,7 +679,7 @@ async function checkAuth(){
   if (inputVal === "admin" && passVal === ADMIN_PASS) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
-    document.getElementById("authOverlay").style.display = "none";
+    document.getElementById("ederpLayout").style.display = "none";
     location.reload();
     return;
   }
@@ -545,7 +687,7 @@ async function checkAuth(){
   if (inputVal === "jsk_login" && (passVal === "jskpassword" || passVal === "brc@123")) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'jsk', name: 'JSK Coordinator' }));
-    document.getElementById("authOverlay").style.display = "none";
+    document.getElementById("ederpLayout").style.display = "none";
     location.reload();
     return;
   }
@@ -558,11 +700,6 @@ function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
   localStorage.removeItem("brc_current_user");
-  
-  let authOverlay = document.getElementById("authOverlay");
-  let maintOverlay = document.getElementById("maintenanceOverlay");
-  if(authOverlay) authOverlay.style.display = "flex";
-  if(maintOverlay) maintOverlay.style.display = "none";
   
   location.reload();
 }
