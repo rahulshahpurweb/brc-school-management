@@ -9,23 +9,22 @@
 <!-- Flash Prevention Script -->
 <script>
   if (sessionStorage.getItem("brc_logged_in") !== "true") {
-    document.write('<style>#authOverlay{display:flex !important;}</style>');
+    document.write('<style>#ederpLayout{display:flex !important;} #masterHeaderBar{display:none !important;} #frameContainer{display:none !important;}</style>');
   } else {
-    document.write('<style>#authOverlay{display:none !important;}</style>');
+    document.write('<style>#ederpLayout{display:none !important;} #masterHeaderBar{display:flex !important;} #frameContainer{display:block !important;}</style>');
   }
 </script>
 
 <style>
 *{box-sizing:border-box}
-body{
+html, body{
   margin: 0;
+  padding: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background: #f4f7fb;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-top: env(safe-area-inset-top, 5px);
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 /* EDERP Top Blue Banner */
@@ -37,7 +36,6 @@ body{
   border-bottom: 3px solid #f4b400;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  z-index: 101;
 }
 .ederp-banner h1 {
   margin: 0;
@@ -55,12 +53,11 @@ body{
 
 /* Main Split Layout Container for Login */
 .ederp-main-wrapper {
-  flex: 1;
   display: flex;
   flex-direction: row;
-  overflow: hidden;
-  background: #fff;
   width: 100%;
+  min-height: calc(100vh - 48px);
+  background: #fff;
 }
 
 /* Left Side: Honeycomb / Modules Section */
@@ -68,7 +65,6 @@ body{
   flex: 1.3;
   background: #fffefb;
   padding: 20px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -193,9 +189,8 @@ body{
   align-items: center;
   justify-content: space-between;
   border-bottom: 2px solid #f4b400;
-  flex-shrink: 0;
   height: 48px;
-  z-index: 100;
+  width: 100%;
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .menu-toggle { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; }
@@ -271,14 +266,18 @@ body{
 }
 .drawer-backdrop.open { display: block; }
 
+/* Frame Container Fix for Mobile / Desktop */
 .frame-container{
-  flex: 1;
   width: 100%;
   height: calc(100vh - 48px);
   background: #f4f7fb;
   display: none;
 }
-#moduleFrame{width:100%;height:100%;border:0}
+#moduleFrame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
 
 /* Auth Card Styles */
 .auth-card{
@@ -321,27 +320,20 @@ body{
 .maint-card h1 { color: #f4b400; font-size: 22px; margin-bottom: 10px; }
 .maint-card p { color: #e2e8f0; font-size: 14px; line-height: 1.5; margin: 0; }
 
-/* MOBILE RESPONSIVE FIX (MEDIA QUERY) */
+/* MOBILE RESPONSIVE FIX */
 @media (max-width: 768px) {
-  body {
-    overflow-y: auto !important;
-    height: auto !important;
-  }
   .ederp-main-wrapper {
     flex-direction: column !important;
-    overflow-y: visible !important;
     height: auto !important;
   }
   .ederp-left-content {
     flex: none !important;
     width: 100% !important;
-    height: auto !important;
     padding: 15px !important;
   }
   .ederp-right-login {
     flex: none !important;
     width: 100% !important;
-    height: auto !important;
     padding: 20px 15px !important;
     border-left: none !important;
     border-top: 3px solid #cbd5e1;
@@ -547,7 +539,7 @@ async function checkGlobalMaintenance() {
   document.getElementById("ederpLayout").style.display = "none";
   document.getElementById("topBanner").style.display = "none";
   document.getElementById("masterHeaderBar").style.display = "flex";
-  document.getElementById("frameContainer").style.display = "flex";
+  document.getElementById("frameContainer").style.display = "block";
 
   if (user.role === "admin") {
     document.getElementById("maintenanceOverlay").style.display = "none";
@@ -739,7 +731,7 @@ async function checkAuth(){
     console.log("Cloud check error:", e);
   }
 
-  if (inputVal === "admin" && passPass === ADMIN_PASS || (inputVal === "admin" && passVal === ADMIN_PASS)) {
+  if (inputVal === "admin" && passVal === ADMIN_PASS) {
     sessionStorage.setItem("brc_logged_in", "true");
     localStorage.setItem("brc_logged_user", JSON.stringify({ role: 'admin', name: 'BRC Admin' }));
     document.getElementById("ederpLayout").style.display = "none";
