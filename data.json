@@ -1,4 +1,3 @@
-
 Skip to content
 JSON love logo 2024 v2
 JSON Love
@@ -56196,3 +56195,24 @@ Output
         "आधारहैकिंतुयूडाईसपरनाममिसमैचहैंऔरआधारVerifiedनहींहै": "Aadhar Update कराये एवं So3 जमा करें"
     }
 ]
+How to use our EXCEL to JSON tool?
+At moment, it’s very simple since it just creates an array of objects based on data rows in an Excel file. If your Excel is more complex it may not work for you yet.
+
+Select the Excel or CSV file you want to convert to JSON in input file field.
+Press “Upload” button.
+Results will be placed in the output field. Then you can copy data extracted from Excel and use it wherever you like.
+NB: Please double-check the output before using the results. Also check for encoding problems in umlaut letters, Cyrillic and other non-Latin alphabets.
+
+About the tool
+Excel and CSV files can easily be expressed as a JSON array of objects where each object represents a row in the original table. Stakeholders can manage their data in Excel and developers can easily convert that data into JSON which is much more usable in app development. This online tool helps to save time if it’s a one-off task so a developer does not have to manually type things over or setup some library to do that conversion programmatically. We will generate JSON from excel for you!
+
+JSON Tools
+About
+Articles
+Contact
+Privacy Policy
+🚀 I use Hostinger to host my sites like this one. Get 20% off when signing up with my referral link. 
+
+Copyright © 2026 JSON Love | Powered by Astra WordPress Theme
+
+Scroll to Top
