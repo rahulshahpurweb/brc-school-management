@@ -6,7 +6,7 @@
 <title>BRC Shahpur</title>
 <link rel="icon" type="image/png" href="brc-logo.png">
 
-<!-- Flash Prevention Script -->
+<!-- Instant Flash Prevention Script -->
 <script>
   if (sessionStorage.getItem("brc_logged_in") !== "true") {
     document.write('<style>#ederpLayout{display:flex !important;} #masterHeaderBar{display:none !important;} #frameContainer{display:none !important;}</style>');
@@ -24,7 +24,7 @@ html, body{
   background: #f4f7fb;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* EDERP Top Blue Banner */
@@ -32,21 +32,22 @@ html, body{
   background: linear-gradient(135deg, #071b38, #1d4ed8);
   color: white;
   text-align: center;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-bottom: 3px solid #f4b400;
   flex-shrink: 0;
+  height: 48px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .ederp-banner h1 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .ederp-banner p {
   margin: 2px 0 0 0;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   opacity: 0.95;
 }
@@ -56,19 +57,22 @@ html, body{
   display: flex;
   flex-direction: row;
   width: 100%;
-  min-height: calc(100vh - 48px);
+  height: calc(100vh - 48px);
   background: #fff;
+  overflow: hidden;
 }
 
 /* Left Side: Honeycomb / Modules Section */
 .ederp-left-content {
   flex: 1.3;
   background: #fffefb;
-  padding: 20px;
+  padding: 15px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   border-right: 2px solid #e2e8f0;
+  height: 100%;
 }
 
 .honeycomb-section {
@@ -79,26 +83,26 @@ html, body{
   padding: 5px 0;
 }
 .honeycomb-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
   color: #082a63;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   text-align: center;
 }
 .modules-hex-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(90px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(80px, 1fr));
+  gap: 8px;
   max-width: 650px;
   width: 100%;
 }
 .hex-card {
   background: linear-gradient(135deg, #38bdf8, #0284c7);
   color: white;
-  border-radius: 12px;
-  padding: 12px 8px;
+  border-radius: 10px;
+  padding: 10px 6px;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   box-shadow: 0 3px 6px rgba(0,0,0,0.1);
   display: flex;
@@ -115,7 +119,7 @@ html, body{
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(2,132,199,0.3);
 }
-.hex-card span { font-size: 18px; }
+.hex-card span { font-size: 16px; }
 
 .hex-card.school { background: linear-gradient(135deg, #fb7185, #e11d48); }
 .hex-card.student { background: linear-gradient(135deg, #38bdf8, #0284c7); }
@@ -127,48 +131,46 @@ html, body{
 /* Blinking NEW Badge Animation */
 .new-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -5px;
+  right: -5px;
   background: #dc2626;
   color: white;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
-  padding: 2px 6px;
-  border-radius: 10px;
+  padding: 2px 5px;
+  border-radius: 8px;
   border: 2px solid #fff;
-  box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.8);
   animation: pulseBlink 1s infinite alternate;
 }
 @keyframes pulseBlink {
-  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 4px rgba(220,38,38,0.8); }
-  100% { transform: scale(1.15); opacity: 0.85; box-shadow: 0 0 12px rgba(220,38,38,1); }
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.15); opacity: 0.85; }
 }
 
 /* Bottom Action Buttons Bar */
 .ederp-footer-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  padding-top: 15px;
+  padding-top: 10px;
   border-top: 2px dashed #cbd5e1;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 .ederp-btn {
   background: linear-gradient(135deg, #1e3a8a, #0f172a);
   color: #fff;
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-decoration: none;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  transition: opacity 0.2s;
 }
 .ederp-btn.atithi { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
 .ederp-btn.outsource { background: linear-gradient(135deg, #14b8a6, #0d9488); }
 .ederp-btn.shikshak { background: linear-gradient(135deg, #f97316, #c2410c); }
-.ederp-btn:hover { opacity: 0.9; }
 
 /* Right Side: User Login Box Section */
 .ederp-right-login {
@@ -177,8 +179,9 @@ html, body{
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 15px;
   border-left: 1px solid #cbd5e1;
+  height: 100%;
 }
 
 .master-header{
@@ -191,6 +194,7 @@ html, body{
   border-bottom: 2px solid #f4b400;
   height: 48px;
   width: 100%;
+  flex-shrink: 0;
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .menu-toggle { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 0; display: flex; align-items: center; }
@@ -266,7 +270,7 @@ html, body{
 }
 .drawer-backdrop.open { display: block; }
 
-/* Frame Container Fix for Mobile / Desktop */
+/* Frame Container Fix */
 .frame-container{
   width: 100%;
   height: calc(100vh - 48px);
@@ -282,19 +286,19 @@ html, body{
 /* Auth Card Styles */
 .auth-card{
   background:#ffffff;
-  border-radius:16px;
-  max-width:360px;
+  border-radius:14px;
+  max-width:340px;
   width:100%;
-  padding:24px;
+  padding:20px;
   box-shadow:0 10px 30px rgba(0,0,0,0.08);
   border:1px solid #e2e8f0;
   text-align:center;
 }
-.auth-card h2{margin:10px 0 5px 0;color:#082a63;font-size:20px;font-weight:900}
-.auth-card p{color:#64748b;font-size:12px;margin-bottom:20px}
-.auth-input{width:100%;height:44px;border:1px solid #cbd5e1;border-radius:8px;padding:0 12px;font-size:14px;margin-bottom:12px;box-sizing:border-box;background:#fdfdfd}
-.auth-btn{width:100%;height:44px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:0;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 10px rgba(124,58,237,0.3)}
-.auth-err{color:#dc2626;background:#fee2e2;padding:8px;border-radius:6px;font-size:11px;margin-bottom:12px;display:none}
+.auth-card h2{margin:8px 0 4px 0;color:#082a63;font-size:18px;font-weight:900}
+.auth-card p{color:#64748b;font-size:11px;margin-bottom:15px}
+.auth-input{width:100%;height:40px;border:1px solid #cbd5e1;border-radius:8px;padding:0 10px;font-size:13px;margin-bottom:10px;box-sizing:border-box;background:#fdfdfd}
+.auth-btn{width:100%;height:40px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:0;border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer;margin-bottom:8px;box-shadow:0 4px 10px rgba(124,58,237,0.3)}
+.auth-err{color:#dc2626;background:#fee2e2;padding:6px;border-radius:6px;font-size:10px;margin-bottom:10px;display:none}
 
 #maintenanceOverlay {
   position: fixed;
@@ -322,19 +326,30 @@ html, body{
 
 /* MOBILE RESPONSIVE FIX */
 @media (max-width: 768px) {
+  html, body {
+    overflow: auto !important;
+    height: auto !important;
+  }
+  .ederp-banner {
+    height: auto !important;
+    padding: 8px !important;
+  }
   .ederp-main-wrapper {
     flex-direction: column !important;
     height: auto !important;
+    min-height: calc(100vh - 48px);
   }
   .ederp-left-content {
     flex: none !important;
     width: 100% !important;
-    padding: 15px !important;
+    height: auto !important;
+    padding: 12px !important;
   }
   .ederp-right-login {
     flex: none !important;
     width: 100% !important;
-    padding: 20px 15px !important;
+    height: auto !important;
+    padding: 20px 12px !important;
     border-left: none !important;
     border-top: 3px solid #cbd5e1;
   }
@@ -366,15 +381,17 @@ html, body{
     <div class="honeycomb-section">
       <div class="honeycomb-title">समस्त एजूकेशन पोर्टल लिंक</div>
       <div class="modules-hex-grid">
-        <a href="https://rahulshahpurweb.github.io/brc-school-management/report.html" target="_blank" class="hex-card school">Udise Appar Pending Reports<div class="new-badge">NEW</div>
+        <a href="https://rahulshahpurweb.github.io/brc-school-management/report.html" target="_blank" class="hex-card school">
+          <span>🏫</span>Udise Appar Pending Reports
+          <div class="new-badge">NEW</div>
         </a>
-        <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card udise">Udise+ Login</a>
-        <a href="https://mdmhp.nic.in/Home/Login" target="_blank" class="hex-card scheme">MDM IVRS MSG</a>
-        <a href="https://www.pmposhan.mp.gov.in/Login/Pages/sLogin.aspx" target="_blank" class="hex-card">PMPOSHAM COOKS</a>
-        <a href="https://pmposhan-mis.education.gov.in/mdm_production/login.aspx" target="_blank" class="hex-card transport">PMPOSHAN MIS LOGIN</a>
-        <a href="https://sederp.educationportal3.in/" target="_blank" class="hex-card student">Education_3.0</a>
-        <a href="https://cmhelpline.mp.gov.in/MIS/Default.aspx" target="_blank" class="hex-card employee">CM_Helpline</a>
-        <a href="https://www.rskmp.in/" target="_blank" class="hex-card">RSKMP PORTAL</a>
+        <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card udise"><span>📋</span>Udise+ Login</a>
+        <a href="https://mdmhp.nic.in/Home/Login" target="_blank" class="hex-card scheme"><span>🚲</span>MDM IVRS MSG</a>
+        <a href="https://www.pmposhan.mp.gov.in/Login/Pages/sLogin.aspx" target="_blank" class="hex-card"><span>👨‍🎓</span>PMPOSHAM COOKS</a>
+        <a href="https://pmposhan-mis.education.gov.in/mdm_production/login.aspx" target="_blank" class="hex-card transport"><span>🚌</span>PMPOSHAN MIS</a>
+        <a href="https://sederp.educationportal3.in/" target="_blank" class="hex-card student"><span>👥</span>Education_3.0</a>
+        <a href="https://cmhelpline.mp.gov.in/MIS/Default.aspx" target="_blank" class="hex-card employee"><span>👩‍🏫</span>CM_Helpline</a>
+        <a href="https://www.rskmp.in/" target="_blank" class="hex-card"><span>📈</span>RSKMP PORTAL</a>
       </div>
     </div>
 
@@ -384,24 +401,23 @@ html, body{
       <a href="modules.html" class="ederp-btn" style="background:#0284c7;">अन्य मॉड्यूल्स हब</a>
     </div>
   </div>
-</div>
 
-  <!-- Right Side: Target for Login Form container -->
+  <!-- Right Side: Target for Login Form container (Properly closed inside wrapper) -->
   <div class="ederp-right-login" id="rightLoginSlot">
     <div class="auth-card">
-      <div style="font-size:32px; margin-bottom:2px;">🏛️</div>
+      <div style="font-size:28px; margin-bottom:2px;">🏛️</div>
       <h2>User_Login</h2>
       <div id="authErr" class="auth-err">Please enter a valid User ID and Password!</div>
       <input type="text" id="authUserInput" class="auth-input" placeholder="Enter User ID / UDISE Code" onkeydown="if(event.key==='Enter')checkAuth()">
       <input type="password" id="authPass" class="auth-input" placeholder="Password (Required)" onkeydown="if(event.key==='Enter')checkAuth()">
       
-      <div style="text-align:right; margin-bottom:12px;">
-        <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:12px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
+      <div style="text-align:right; margin-bottom:10px;">
+        <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:11px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
       </div>
 
       <button class="auth-btn" onclick="checkAuth()">Login</button>
-      <div style="text-align:center; margin-top:8px;">
-        <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:13px;">SNA Account Check</a>
+      <div style="text-align:center; margin-top:6px;">
+        <a href="../index.html" style="color:#10b981; font-weight:bold; text-decoration:none; font-size:12px;">SNA Account Check</a>
       </div>
     </div>
   </div>
