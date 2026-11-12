@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title> BRC Shahpur</title>
+<title>BRC Shahpur</title>
 <link rel="icon" type="image/png" href="brc-logo.png">
+
 <!-- Flash Prevention Script -->
 <script>
   if (sessionStorage.getItem("brc_logged_in") !== "true") {
@@ -27,7 +28,7 @@ body{
   padding-top: env(safe-area-inset-top, 5px);
 }
 
-/* EDERP Top Orange Banner */
+/* EDERP Top Blue Banner */
 .ederp-banner {
   background: linear-gradient(135deg, #071b38, #1d4ed8);
   color: white;
@@ -40,14 +41,14 @@ body{
 }
 .ederp-banner h1 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .ederp-banner p {
   margin: 2px 0 0 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   opacity: 0.95;
 }
@@ -80,7 +81,7 @@ body{
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 0;
+  padding: 5px 0;
 }
 .honeycomb-title {
   font-size: 15px;
@@ -258,9 +259,17 @@ body{
 }
 #moduleFrame{width:100%;height:100%;border:0}
 
-/* Original Auth Overlay (Hidden by default, controlled by script) */
-#authOverlay{position:fixed;inset:0;background:transparent;z-index:99999;display:none;align-items:center;justify-content:center;pointer-events:none;}
-.auth-card{background:#ffffff;border-radius:16px;max-width:360px;width:100%;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);border:1px solid #e2e8f0;text-align:center;pointer-events:auto;}
+/* Auth Card Styles */
+.auth-card{
+  background:#ffffff;
+  border-radius:16px;
+  max-width:360px;
+  width:100%;
+  padding:24px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  border:1px solid #e2e8f0;
+  text-align:center;
+}
 .auth-card h2{margin:10px 0 5px 0;color:#082a63;font-size:20px;font-weight:900}
 .auth-card p{color:#64748b;font-size:12px;margin-bottom:20px}
 .auth-input{width:100%;height:44px;border:1px solid #cbd5e1;border-radius:8px;padding:0 12px;font-size:14px;margin-bottom:12px;box-sizing:border-box;background:#fdfdfd}
@@ -290,11 +299,41 @@ body{
 }
 .maint-card h1 { color: #f4b400; font-size: 22px; margin-bottom: 10px; }
 .maint-card p { color: #e2e8f0; font-size: 14px; line-height: 1.5; margin: 0; }
+
+/* MOBILE RESPONSIVE FIX (MEDIA QUERY) */
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  .ederp-main-wrapper {
+    flex-direction: column !important;
+    overflow-y: visible !important;
+    height: auto !important;
+  }
+  .ederp-left-content {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 15px !important;
+  }
+  .ederp-right-login {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 20px 15px !important;
+    border-left: none !important;
+    border-top: 3px solid #cbd5e1;
+  }
+  .modules-hex-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
 </style>
 </head>
 <body>
 
-<!-- EDERP Top Orange Banner -->
+<!-- EDERP Top Blue Banner -->
 <div class="ederp-banner">
   <h1>स्कूल शिक्षा विभाग,जिला बैतूल(M.P.)</h1>
   <p>BRC SHAHPUR PORTAL</p>
@@ -312,7 +351,7 @@ body{
   <!-- Left Side: Honeycomb Modules & Quick links -->
   <div class="ederp-left-content">
     <div class="honeycomb-section">
-      <div class="honeycomb-title"> समस्‍त एजूूकेशन पोर्टल लिंक </div>
+      <div class="honeycomb-title">समस्त एजूकेशन पोर्टल लिंक</div>
       <div class="modules-hex-grid">
         <a href="https://rahulshahpurweb.github.io/brc-school-management/report.html" target="_blank" class="hex-card school"><span>🏫</span>Udise Appar Pending Reports</a>
         <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card"><span>📋</span>Udise+ Login</a>
@@ -336,7 +375,6 @@ body{
 
   <!-- Right Side: Target for Login Form container -->
   <div class="ederp-right-login" id="rightLoginSlot">
-    <!-- Original Login Card injected / placed here -->
     <div class="auth-card">
       <div style="font-size:32px; margin-bottom:2px;">🏛️</div>
       <h2>BRC_Login</h2>
@@ -482,7 +520,6 @@ async function checkGlobalMaintenance() {
     return;
   }
 
-  // If logged in
   document.getElementById("ederpLayout").style.display = "none";
   document.getElementById("masterHeaderBar").style.display = "flex";
   document.getElementById("frameContainer").style.display = "flex";
@@ -700,7 +737,6 @@ function logoutSession(){
   sessionStorage.removeItem("brc_logged_in");
   localStorage.removeItem("brc_logged_user");
   localStorage.removeItem("brc_current_user");
-  
   location.reload();
 }
 
