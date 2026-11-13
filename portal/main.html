@@ -168,9 +168,6 @@ html, body{
   text-decoration: none;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-.ederp-btn.atithi { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
-.ederp-btn.outsource { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-.ederp-btn.shikshak { background: linear-gradient(135deg, #f97316, #c2410c); }
 
 /* Right Side: User Login Box Section */
 .ederp-right-login {
@@ -324,63 +321,25 @@ html, body{
 .maint-card h1 { color: #f4b400; font-size: 22px; margin-bottom: 10px; }
 .maint-card p { color: #e2e8f0; font-size: 14px; line-height: 1.5; margin: 0; }
 
-/* MOBILE RESPONSIVE FIX */
-@media (max-width: 768px) {
-  html, body {
-    overflow: auto !important;
-    height: auto !important;
-  }
-  .ederp-banner {
-    height: auto !important;
-    padding: 8px !important;
-  }
-  .ederp-main-wrapper {
-    flex-direction: column !important;
-    height: auto !important;
-    min-height: calc(100vh - 48px);
-  }
-  .ederp-left-content {
-    flex: none !important;
-    width: 100% !important;
-    height: auto !important;
-    padding: 12px !important;
-  }
-  .ederp-right-login {
-    flex: none !important;
-    width: 100% !important;
-    height: auto !important;
-    padding: 20px 12px !important;
-    border-left: none !important;
-    border-top: 3px solid #cbd5e1;
-  }
-  .modules-hex-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-  /* ब्लिंक और पल्स इफ़ेक्ट */
+/* ब्लिंक और पल्स इफ़ेक्ट */
 @keyframes boxBlink {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  50% {
-    opacity: 0.75;
-    transform: scale(1.02); /* हल्का सा बड़ा होगा */
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); /* चमक पैदा होगी */
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
+  0% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  50% { opacity: 0.75; transform: scale(1.02); box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); }
+  100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
 }
-
-/* आपके कोड वाली 'udise' क्लास पर एनीमेशन सेट करना */
 .hex-card.udise {
   animation: boxBlink 1.2s infinite ease-in-out;
 }
-  
+
+/* MOBILE RESPONSIVE FIX */
+@media (max-width: 768px) {
+  html, body { overflow: auto !important; height: auto !important; }
+  .ederp-banner { height: auto !important; padding: 8px !important; }
+  .ederp-main-wrapper { flex-direction: column !important; height: auto !important; min-height: calc(100vh - 48px); }
+  .ederp-left-content { flex: none !important; width: 100% !important; height: auto !important; padding: 12px !important; }
+  .ederp-right-login { flex: none !important; width: 100% !important; height: auto !important; padding: 20px 12px !important; border-left: none !important; border-top: 3px solid #cbd5e1; }
+  .modules-hex-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
 </style>
 </head>
 <body>
@@ -398,41 +357,48 @@ html, body{
   </div>
 </div>
 
-<!-- Main EDERP Layout Wrapper (Visible when logged out) -->
+<!-- Main EDERP Layout Wrapper -->
 <div class="ederp-main-wrapper" id="ederpLayout">
   <!-- Left Side: Honeycomb Modules & Quick links -->
   <div class="ederp-left-content">
+    
+    <!-- Scrolling Marquee Notification (Placed correctly outside grid) -->
+    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; color: #92400e; padding: 6px 10px; font-size: 11px; font-weight: bold; overflow: hidden; white-space: nowrap; margin-bottom: 10px;">
+      <marquee behavior="scroll" direction="left" scrollamount="5">
+        🔔 सूचना: पोर्टल पर किसी भी प्रकार की तकनीकी समस्या या डेटा पेंडेंसी आने पर कृपया नीचे दिए गए सपोर्ट बॉक्स में अपनी समस्या लिखकर भेजें!
+      </marquee>
+    </div>
+
     <div class="honeycomb-section">
       <div class="honeycomb-title">समस्त एजूकेशन पोर्टल लिंक</div>
       <div class="modules-hex-grid">
-        
-        <!-- Scrolling Marquee Notification -->
-<div style="background: #fef3c7; border-bottom: 2px solid #f59e0b; color: #92400e; padding: 6px 10px; font-size: 11px; font-weight: bold; overflow: hidden; white-space: nowrap;">
-  <marquee behavior="scroll" direction="left" scrollamount="5">
-    🔔 सूचना: पोर्टल पर किसी भी प्रकार की तकनीकी समस्या या डेटा पेंडेंसी आने पर कृपया नीचे दिए गए सपोर्ट बॉक्स में अपनी समस्या लिखकर भेजें!
-  </marquee>
-</div>
-        
-        <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card udise">Udise+ Login</a>
-        <a href="https://mdmhp.nic.in/Home/Login" target="_blank" class="hex-card scheme">MDM IVRS MSG</a>
-        <a href="https://www.pmposhan.mp.gov.in/Login/Pages/sLogin.aspx" target="_blank" class="hex-card">PMPOSHAM COOKS</a>
-        <a href="https://pmposhan-mis.education.gov.in/mdm_production/login.aspx" target="_blank" class="hex-card transport">PMPOSHAN MIS</a>
-        <a href="https://sederp.educationportal3.in/" target="_blank" class="hex-card student">Education_3.0</a>
-        <a href="https://cmhelpline.mp.gov.in/MIS/Default.aspx" target="_blank" class="hex-card employee">CM_Helpline</a>
-        <a href="https://www.rskmp.in/" target="_blank" class="hex-card">RSKMP PORTAL</a>
-        <a href="https://www.shikshamp.in/#/login" target="_blank" class="hex-card">SHIKSHA MP PORTAL</a>
-        <a href="modules.html" class="hex-card" style="background:#0284c7;">अन्य मॉड्यूल्स हब</a>
+        <a href="https://udiseplus.gov.in/#/en/page/oldlink/123" target="_blank" class="hex-card udise"><span>📋</span>Udise+ Login</a>
+        <a href="https://mdmhp.nic.in/Home/Login" target="_blank" class="hex-card scheme"><span>🚲</span>MDM IVRS MSG</a>
+        <a href="https://www.pmposhan.mp.gov.in/Login/Pages/sLogin.aspx" target="_blank" class="hex-card"><span>👨‍🎓</span>PMPOSHAM COOKS</a>
+        <a href="https://pmposhan-mis.education.gov.in/mdm_production/login.aspx" target="_blank" class="hex-card transport"><span>🚌</span>PMPOSHAN MIS</a>
+        <a href="https://sederp.educationportal3.in/" target="_blank" class="hex-card student"><span>👥</span>Education_3.0</a>
+        <a href="https://cmhelpline.mp.gov.in/MIS/Default.aspx" target="_blank" class="hex-card employee"><span>👩‍🏫</span>CM_Helpline</a>
+        <a href="https://www.rskmp.in/" target="_blank" class="hex-card"><span>📈</span>RSKMP PORTAL</a>
+        <a href="https://www.shikshamp.in/#/login" target="_blank" class="hex-card"><span>🏛️</span>SHIKSHA MP PORTAL</a>
+        <a href="modules.html" class="hex-card" style="background:#0284c7; grid-column: span 2;"><span>📂</span>अन्य मॉड्यूल्स हब</a>
+        <a href="report.html" target="_blank" class="hex-card school" style="grid-column: span 2;">
+          <span>🏫</span>Udise Appar Pending Reports
+          <div class="new-badge">NEW</div>
+        </a>
       </div>
     </div>
 
-    <div class="ederp-footer-links">
-      <a href="report.html" target="_blank" class="hex-card school">
-          <span>🏫</span>Udise Appar Pending Reports
-          <div class="new-badge">NEW</div></a>
+    <!-- Help Desk / Feedback Box Inside Left Content -->
+    <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-top: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: left;">
+      <h4 style="margin: 0 0 4px 0; color: #082a63; font-size: 11px; font-weight: 900;">💬 समस्या या सुझाव दर्ज करें (Help Desk)</h4>
+      <input type="text" id="probUserUdise" placeholder="स्कूल UDISE / User ID लिखें" style="width: 100%; height: 30px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 0 8px; font-size: 10px; margin-bottom: 6px; background: #fdfdfd;">
+      <textarea id="probDesc" placeholder="समस्या का विवरण यहाँ लिखें..." style="width: 100%; height: 45px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 8px; font-size: 10px; margin-bottom: 6px; resize: none; background: #fdfdfd;"></textarea>
+      <button onclick="submitProblem()" id="probSubmitBtn" style="width: 100%; height: 30px; background: #16a34a; color: #fff; border: none; border-radius: 5px; font-weight: bold; font-size: 10px; cursor: pointer;">समस्या भेजें</button>
     </div>
+
   </div>
 
-  <!-- Right Side: Target for Login Form container (Properly closed inside wrapper) -->
+  <!-- Right Side: Target for Login Form container -->
   <div class="ederp-right-login" id="rightLoginSlot">
     <div class="auth-card">
       <div style="font-size:28px; margin-bottom:2px;">🏛️</div>
@@ -443,8 +409,6 @@ html, body{
       
       <div style="text-align:right; margin-bottom:10px;">
         <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#d97706; font-size:11px; font-weight:bold; text-decoration:none;">Forgot Password?</a>
-        
-      <!--<a href="javascript:void(0)" onclick="openForgotPasswordModal()" class="ederp-btn">Forgot Password</a>-->
       </div>
 
       <button class="auth-btn" onclick="checkAuth()">Login</button>
@@ -796,6 +760,44 @@ async function checkAuth(){
 
   err.innerText = "Invalid User ID or Password! Please check your credentials.";
   err.style.display = "block";
+}
+
+async function submitProblem() {
+  let udise = document.getElementById("probUserUdise").value.trim();
+  let desc = document.getElementById("probDesc").value.trim();
+  let btn = document.getElementById("probSubmitBtn");
+  
+  if(!udise || !desc) {
+    alert("कृपया अपनी UDISE आईडी और समस्या का विवरण दोनों भरें!");
+    return;
+  }
+  
+  btn.innerText = "भेजा जा रहा है...";
+  btn.disabled = true;
+  
+  try {
+    let res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "submitFeedback",
+        udise: udise,
+        description: desc
+      })
+    });
+    let result = await res.json();
+    if(result.status === "success") {
+      alert("धन्यवाद! आपकी समस्या सफलतापूर्वक दर्ज कर ली गई है।");
+      document.getElementById("probUserUdise").value = "";
+      document.getElementById("probDesc").value = "";
+    } else {
+      alert("समस्या दर्ज करने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+    }
+  } catch(e) {
+    alert("नेटवर्क त्रुटि: कृपया अपना कनेक्शन जांचें।");
+  }
+  
+  btn.innerText = "समस्या भेजें";
+  btn.disabled = false;
 }
 
 function logoutSession(){
