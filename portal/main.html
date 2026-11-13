@@ -516,10 +516,10 @@ html, body{
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 const ADMIN_PASS = "brc@shahpur";
 
-// Live Active Users simulation counter (using BroadcastChannel or LocalStorage heartbeat)
+// Live Active Users simulation counter
 function initLiveActiveCounter() {
   let channelId = "brc_shahpur_active_users";
-  let userId = 'user_' + Math.random().toString(36.substr(2, 9));
+  let userId = 'user_' + Math.random().toString(36).substr(2, 9);
   
   try {
     let bc = new BroadcastChannel(channelId);
@@ -537,7 +537,6 @@ function initLiveActiveCounter() {
       document.getElementById('liveActiveCount').innerText = activeUsers.size;
     };
 
-    // Broadcast presence
     setInterval(() => {
       bc.postMessage({ type: 'ping', userId: userId });
     }, 3000);
@@ -546,7 +545,6 @@ function initLiveActiveCounter() {
       bc.postMessage({ type: 'leave', userId: userId });
     });
   } catch(e) {
-    // Fallback if BroadcastChannel is restricted
     document.getElementById('liveActiveCount').innerText = Math.floor(Math.random() * 3) + 1;
   }
 }
@@ -805,7 +803,7 @@ async function checkAuth(){
   err.style.display = "block";
 }
 
-// Help Desk Feedback submission with optional screenshot
+// Help Desk Feedback submission with optional screenshot and timeout protection
 async function submitProblemWithImage() {
   let udise = document.getElementById("probUserUdise").value.trim();
   let desc = document.getElementById("probDesc").value.trim();
@@ -825,6 +823,12 @@ async function submitProblemWithImage() {
   
   if(fileInput.files && fileInput.files[0]) {
     let file = fileInput.files[0];
+    if(file.size > 2 * 1024 * 1024) { // 2MB limit check
+      alert("कृपया 2MB से छोटी साइज का स्क्रीनशॉट चुनें!");
+      btn.innerText = "समस्या व स्क्रीनशॉट भेजें";
+      btn.disabled = false;
+      return;
+    }
     imageName = file.name;
     try {
       base64Image = await toBase64(file);
@@ -844,17 +848,41 @@ async function submitProblemWithImage() {
         imageName: imageName
       })
     });
+    
     let result = await res.json();
     if(result.status === "success") {
-      alert("धन्यवाद! आपकी समस्या और स्क्रीनशॉट सफलतापूर्वक दर्ज कर लिया गया है।");
+      alert("धन्यवाद! आपकी समस्या सफलतापूर्वक दर्ज कर ली गई है।");
       document.getElementById("probUserUdise").value = "";
       document.getElementById("probDesc").value = "";
       fileInput.value = "";
     } else {
-      alert("समस्या दर्ज करने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+      alert("सर्वर एरर: " + (result.message || "पुनः प्रयास करें।"));
     }
   } catch(e) {
-    alert("नेटवर्क त्रुटि: कृपया अपना कनेक्शन जांचें।");
+    // Fallback without image if fetch fails due to payload size
+    try {
+      let resFallback = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "submitFeedback",
+          udise: udise,
+          description: desc,
+          imageBytes: "",
+          imageName: ""
+        })
+      });
+      let resultFallback = await resFallback.json();
+      if(resultFallback.status === "success") {
+        alert("समस्या दर्ज हो गई (फोटो अपलोड नहीं हो सका)। धन्यवाद!");
+        document.getElementById("probUserUdise").value = "";
+        document.getElementById("probDesc").value = "";
+        fileInput.value = "";
+      } else {
+        alert("नेटवर्क त्रुटि: कृपया पुनः प्रयास करें।");
+      }
+    } catch(err2) {
+      alert("नेटवर्क त्रुटि: कृपया अपना कनेक्शन जांचें।");
+    }
   }
   
   btn.innerText = "समस्या व स्क्रीनशॉट भेजें";
