@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title id="pageTitle"यू डाइस अपार संबंधित समस्त पेंडिंग रिपोर्ट</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title id="pageTitle">यू डाइस अपार संबंधित समस्त पेंडिंग रिपोर्ट</title>
 <!-- SheetJS for Exporting Filtered Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- html2canvas for Image Download -->
@@ -117,10 +117,9 @@
   <header>
     <h1>✨ UDISE Plus Student Pending Reports </h1>
     <div class="btn-group">
-      <a href="portal/main.html" class="btn btn-gray">🏠 Back</a>
+      <a href="main.html" class="btn btn-gray">🏠 Back</a>
       <button class="btn btn-purple" onclick="triggerPrint()">🖨️ Print / PDF</button>
       <button class="btn btn-teal" onclick="downloadReportImage()">📷 Download Image</button>
-      <!-- <button class="btn btn-orange" onclick="downloadTemplate()">📥 Template</button> -->
       <button class="btn btn-blue" onclick="exportExcel()">📤 Excel</button>
     </div>
   </header>
@@ -279,12 +278,11 @@
 </div>
 
 <script>
-
 const NPOINT_API_URL = "https://raw.githubusercontent.com/rahulshahpurweb/brc-school-management/main/data.json";
 
 let globalData = [];
 let filteredData = [];
-let currentView = 'detail'; // 'detail' or 'matrix'
+let currentView = 'detail';
 
 function showLoader(show, text){
   document.getElementById('loading').style.display = show ? 'flex' : 'none';
@@ -336,23 +334,6 @@ function updateDateTimeMeta(){
   if(document.getElementById('printFilterInfo')) {
     document.getElementById('printFilterInfo').innerText = filterText;
   }
-}
-
-function downloadTemplate(){
-  let headers = [
-    "sn", "School Name", "UDISE Code", "Class", "Student PEN", 
-    "Student Name", "JSk", "One Click से अपार", "SO3 फार्म जमा करें", 
-    "आधार उपलब्‍ध है और यूडाईस पर छात्र का नाम आधार से मैच करता हैं किंतु आधार Verified नहीं है", 
-    "आधार बनाया जाना हैं", "आधार उपलब्‍ध तो है किंतु आधार Verified नहीं है एवं यूडाईस पर नाम भी मिसमैच हैं"
-  ];
-  let sample = [
-    1, "PS HANDIPANI", "23351002901", "I", "23259463320", 
-    "AYAANSH LAVISKAR", "Bhoura", "--", "Name Mismatch", "--", "--", "--"
-  ];
-  let ws = XLSX.utils.aoa_to_sheet([headers, sample]);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Template");
-  XLSX.writeFile(wb, "Global_Report_Template.xlsx");
 }
 
 function handleBulkExcelUpload(event){
@@ -727,7 +708,6 @@ function triggerPrint(){
   uploadSec.style.display = '';
 }
 
-// Download Report as Image Function with Clean Dynamic Title & Hidden Upload Box
 function downloadReportImage(){
   updateDateTimeMeta();
   showLoader(true, "Generating Auto-Fit Image...");
