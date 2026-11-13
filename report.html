@@ -342,8 +342,8 @@ function downloadTemplate(){
   let headers = [
     "sn", "School Name", "UDISE Code", "Class", "Student PEN", 
     "Student Name", "JSk", "One Click से अपार", "SO3 फार्म जमा करें", 
-    "आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है", 
-    "आधार बनाया जाना हैं", "आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है"
+    "आधार उपलब्‍ध है और यूडाईस पर छात्र का नाम आधार से मैच करता हैं किंतु आधार Verified नहीं है", 
+    "आधार बनाया जाना हैं", "आधार उपलब्‍ध तो है किंतु आधार Verified नहीं है एवं यूडाईस पर नाम भी मिसमैच हैं"
   ];
   let sample = [
     1, "PS HANDIPANI", "23351002901", "I", "23259463320", 
@@ -783,9 +783,9 @@ function exportExcel(){
     "JSK": item.jsk,
     "One Click से अपार": item.col1,
     "SO3 फार्म जमा करें": item.col2,
-    "आधार है और यूडाईस पर नाम मैच करता हैं किंतु आधार Verified नहीं है": item.col3,
+    "आधार उपलब्‍ध है और यूडाईस पर छात्र का नाम आधार से मैच करता हैं किंतु आधार Verified नहीं है": item.col3,
     "आधार बनाया जाना हैं": item.col4,
-    "आधार है किंतु यूडाईस पर नाम मिसमैच हैं और आधार Verified नहीं है": item.col5
+    "आधार उपलब्‍ध तो है किंतु आधार Verified नहीं है एवं यूडाईस पर नाम भी मिसमैच हैं": item.col5
   }));
   
   let ws = XLSX.utils.json_to_sheet(exportRows);
