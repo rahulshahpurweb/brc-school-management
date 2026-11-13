@@ -365,7 +365,7 @@ html, body{
     <!-- Scrolling Marquee Notification -->
     <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; color: #92400e; padding: 6px 10px; font-size: 11px; font-weight: bold; overflow: hidden; white-space: nowrap; margin-bottom: 10px;">
       <marquee behavior="scroll" direction="left" scrollamount="5">
-        🔔 सूचना: पोर्टल पर किसी भी प्रकार की तकनीकी समस्या या डेटा पेंडेंसी आने पर कृपया नीचे दिए गए सपोर्ट बॉक्स में अपनी समस्या और स्क्रीनशॉट भेजें!
+        🔔 सूचना: पोर्टल पर किसी भी प्रकार की तकनीकी समस्या या डेटा पेंडेंसी आने पर कृपया नीचे दिए गए सपोर्ट बॉक्स में अपनी समस्या लिखकर भेजें!
       </marquee>
     </div>
 
@@ -388,19 +388,13 @@ html, body{
       </div>
     </div>
 
-    <!-- Help Desk / Feedback Box with Screenshot Upload -->
+    <!-- Help Desk / Feedback Box (Clean Text Only) -->
     <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-top: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: left;">
       <h4 style="margin: 0 0 4px 0; color: #082a63; font-size: 11px; font-weight: 900;">💬 समस्या या सुझाव दर्ज करें (Help Desk)</h4>
       <input type="text" id="probUserUdise" placeholder="स्कूल UDISE / User ID लिखें" style="width: 100%; height: 30px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 0 8px; font-size: 10px; margin-bottom: 6px; background: #fdfdfd;">
-      <textarea id="probDesc" placeholder="समस्या का विवरण यहाँ लिखें..." style="width: 100%; height: 45px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 8px; font-size: 10px; margin-bottom: 6px; resize: none; background: #fdfdfd;"></textarea>
+      <textarea id="probDesc" placeholder="समस्या का विवरण यहाँ लिखें..." style="width: 100%; height: 50px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 8px; font-size: 10px; margin-bottom: 6px; resize: none; background: #fdfdfd;"></textarea>
       
-      <!-- Screenshot Upload Input -->
-      <div style="margin-bottom: 6px;">
-        <label style="font-size: 9px; font-weight: bold; color: #475569; display: block; margin-bottom: 2px;">📷 स्क्रीनशॉट / फोटो चुनें (Optional):</label>
-        <input type="file" id="probImageFile" accept="image/*" style="font-size: 9px; width: 100%;">
-      </div>
-
-      <button onclick="submitProblemWithImage()" id="probSubmitBtn" style="width: 100%; height: 30px; background: #16a34a; color: #fff; border: none; border-radius: 5px; font-weight: bold; font-size: 10px; cursor: pointer;">समस्या व स्क्रीनशॉट भेजें</button>
+      <button onclick="submitProblem()" id="probSubmitBtn" style="width: 100%; height: 30px; background: #16a34a; color: #fff; border: none; border-radius: 5px; font-weight: bold; font-size: 10px; cursor: pointer;">समस्या भेजें</button>
     </div>
 
   </div>
@@ -803,11 +797,10 @@ async function checkAuth(){
   err.style.display = "block";
 }
 
-// Help Desk Feedback submission with optional screenshot and timeout protection
-async function submitProblemWithImage() {
+// Help Desk Feedback submission (Fast & Reliable Text Only)
+async function submitProblem() {
   let udise = document.getElementById("probUserUdise").value.trim();
   let desc = document.getElementById("probDesc").value.trim();
-  let fileInput = document.getElementById("probImageFile");
   let btn = document.getElementById("probSubmitBtn");
   
   if(!udise || !desc) {
@@ -818,34 +811,13 @@ async function submitProblemWithImage() {
   btn.innerText = "भेजा जा रहा है...";
   btn.disabled = true;
   
-  let base64Image = "";
-  let imageName = "";
-  
-  if(fileInput.files && fileInput.files[0]) {
-    let file = fileInput.files[0];
-    if(file.size > 2 * 1024 * 1024) { // 2MB limit check
-      alert("कृपया 2MB से छोटी साइज का स्क्रीनशॉट चुनें!");
-      btn.innerText = "समस्या व स्क्रीनशॉट भेजें";
-      btn.disabled = false;
-      return;
-    }
-    imageName = file.name;
-    try {
-      base64Image = await toBase64(file);
-    } catch(err) {
-      console.log("Image read error:", err);
-    }
-  }
-  
   try {
     let res = await fetch(WEB_APP_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "submitFeedback",
         udise: udise,
-        description: desc,
-        imageBytes: base64Image,
-        imageName: imageName
+        description: desc
       })
     });
     
@@ -854,48 +826,15 @@ async function submitProblemWithImage() {
       alert("धन्यवाद! आपकी समस्या सफलतापूर्वक दर्ज कर ली गई है।");
       document.getElementById("probUserUdise").value = "";
       document.getElementById("probDesc").value = "";
-      fileInput.value = "";
     } else {
       alert("सर्वर एरर: " + (result.message || "पुनः प्रयास करें।"));
     }
   } catch(e) {
-    // Fallback without image if fetch fails due to payload size
-    try {
-      let resFallback = await fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "submitFeedback",
-          udise: udise,
-          description: desc,
-          imageBytes: "",
-          imageName: ""
-        })
-      });
-      let resultFallback = await resFallback.json();
-      if(resultFallback.status === "success") {
-        alert("समस्या दर्ज हो गई (फोटो अपलोड नहीं हो सका)। धन्यवाद!");
-        document.getElementById("probUserUdise").value = "";
-        document.getElementById("probDesc").value = "";
-        fileInput.value = "";
-      } else {
-        alert("नेटवर्क त्रुटि: कृपया पुनः प्रयास करें।");
-      }
-    } catch(err2) {
-      alert("नेटवर्क त्रुटि: कृपया अपना कनेक्शन जांचें।");
-    }
+    alert("नेटवर्क त्रुटि: कृपया अपना कनेक्शन जांचें।");
   }
   
-  btn.innerText = "समस्या व स्क्रीनशॉट भेजें";
+  btn.innerText = "समस्या भेजें";
   btn.disabled = false;
-}
-
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
 }
 
 function logoutSession(){
