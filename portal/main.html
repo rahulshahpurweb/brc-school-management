@@ -357,6 +357,30 @@ html, body{
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+  /* ब्लिंक और पल्स इफ़ेक्ट */
+@keyframes boxBlink {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.02); /* हल्का सा बड़ा होगा */
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); /* चमक पैदा होगी */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* आपके कोड वाली 'udise' क्लास पर एनीमेशन सेट करना */
+.hex-card.udise {
+  animation: boxBlink 1.2s infinite ease-in-out;
+}
+  
 </style>
 </head>
 <body>
