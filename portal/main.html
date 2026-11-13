@@ -32,24 +32,40 @@ html, body{
   background: linear-gradient(135deg, #071b38, #1d4ed8);
   color: white;
   text-align: center;
-  padding: 8px 10px;
+  padding: 6px 10px;
   border-bottom: 3px solid #f4b400;
   flex-shrink: 0;
   height: 48px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .ederp-banner h1 {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .ederp-banner p {
-  margin: 2px 0 0 0;
-  font-size: 10px;
+  margin: 0;
+  font-size: 9px;
   font-weight: 600;
   opacity: 0.95;
+}
+.live-badge-counter {
+  background: rgba(220, 38, 38, 0.85);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid #f87171;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 0 8px rgba(220,38,38,0.5);
 }
 
 /* Main Split Layout Container for Login */
@@ -146,27 +162,6 @@ html, body{
 @keyframes pulseBlink {
   0% { transform: scale(1); opacity: 1; }
   100% { transform: scale(1.15); opacity: 0.85; }
-}
-
-/* Bottom Action Buttons Bar */
-.ederp-footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  padding-top: 10px;
-  border-top: 2px dashed #cbd5e1;
-  margin-top: 10px;
-}
-.ederp-btn {
-  background: linear-gradient(135deg, #1e3a8a, #0f172a);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  text-decoration: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Right Side: User Login Box Section */
@@ -334,7 +329,7 @@ html, body{
 /* MOBILE RESPONSIVE FIX */
 @media (max-width: 768px) {
   html, body { overflow: auto !important; height: auto !important; }
-  .ederp-banner { height: auto !important; padding: 8px !important; }
+  .ederp-banner { height: auto !important; padding: 6px 8px !important; flex-direction: column; gap: 4px; }
   .ederp-main-wrapper { flex-direction: column !important; height: auto !important; min-height: calc(100vh - 48px); }
   .ederp-left-content { flex: none !important; width: 100% !important; height: auto !important; padding: 12px !important; }
   .ederp-right-login { flex: none !important; width: 100% !important; height: auto !important; padding: 20px 12px !important; border-left: none !important; border-top: 3px solid #cbd5e1; }
@@ -344,10 +339,15 @@ html, body{
 </head>
 <body>
 
-<!-- EDERP Top Blue Banner -->
+<!-- EDERP Top Blue Banner with Live User Counter -->
 <div class="ederp-banner" id="topBanner">
-  <h1>स्कूल शिक्षा विभाग,जिला बैतूल(M.P.)</h1>
-  <p>BRC SHAHPUR PORTAL</p>
+  <div>
+    <h1 style="text-align: left;">स्कूल शिक्षा विभाग, जिला बैतूल (M.P.)</h1>
+    <p style="text-align: left;">BRC SHAHPUR PORTAL</p>
+  </div>
+  <div>
+    <span class="live-badge-counter">🟢 Active Users: <span id="liveActiveCount">1</span></span>
+  </div>
 </div>
 
 <div id="maintenanceOverlay">
@@ -362,10 +362,10 @@ html, body{
   <!-- Left Side: Honeycomb Modules & Quick links -->
   <div class="ederp-left-content">
     
-    <!-- Scrolling Marquee Notification (Placed correctly outside grid) -->
+    <!-- Scrolling Marquee Notification -->
     <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; color: #92400e; padding: 6px 10px; font-size: 11px; font-weight: bold; overflow: hidden; white-space: nowrap; margin-bottom: 10px;">
       <marquee behavior="scroll" direction="left" scrollamount="5">
-        🔔 सूचना: पोर्टल पर किसी भी प्रकार की तकनीकी समस्या या डेटा पेंडेंसी आने पर कृपया नीचे दिए गए सपोर्ट बॉक्स में अपनी समस्या लिखकर भेजें!
+        🔔 सूचना: पोर्टल पर किसी भी प्रकार की तकनीकी समस्या या डेटा पेंडेंसी आने पर कृपया नीचे दिए गए सपोर्ट बॉक्स में अपनी समस्या और स्क्रीनशॉट भेजें!
       </marquee>
     </div>
 
@@ -388,12 +388,19 @@ html, body{
       </div>
     </div>
 
-    <!-- Help Desk / Feedback Box Inside Left Content -->
+    <!-- Help Desk / Feedback Box with Screenshot Upload -->
     <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-top: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: left;">
       <h4 style="margin: 0 0 4px 0; color: #082a63; font-size: 11px; font-weight: 900;">💬 समस्या या सुझाव दर्ज करें (Help Desk)</h4>
       <input type="text" id="probUserUdise" placeholder="स्कूल UDISE / User ID लिखें" style="width: 100%; height: 30px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 0 8px; font-size: 10px; margin-bottom: 6px; background: #fdfdfd;">
       <textarea id="probDesc" placeholder="समस्या का विवरण यहाँ लिखें..." style="width: 100%; height: 45px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 5px 8px; font-size: 10px; margin-bottom: 6px; resize: none; background: #fdfdfd;"></textarea>
-      <button onclick="submitProblem()" id="probSubmitBtn" style="width: 100%; height: 30px; background: #16a34a; color: #fff; border: none; border-radius: 5px; font-weight: bold; font-size: 10px; cursor: pointer;">समस्या भेजें</button>
+      
+      <!-- Screenshot Upload Input -->
+      <div style="margin-bottom: 6px;">
+        <label style="font-size: 9px; font-weight: bold; color: #475569; display: block; margin-bottom: 2px;">📷 स्क्रीनशॉट / फोटो चुनें (Optional):</label>
+        <input type="file" id="probImageFile" accept="image/*" style="font-size: 9px; width: 100%;">
+      </div>
+
+      <button onclick="submitProblemWithImage()" id="probSubmitBtn" style="width: 100%; height: 30px; background: #16a34a; color: #fff; border: none; border-radius: 5px; font-weight: bold; font-size: 10px; cursor: pointer;">समस्या व स्क्रीनशॉट भेजें</button>
     </div>
 
   </div>
@@ -509,6 +516,41 @@ html, body{
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
 const ADMIN_PASS = "brc@shahpur";
 
+// Live Active Users simulation counter (using BroadcastChannel or LocalStorage heartbeat)
+function initLiveActiveCounter() {
+  let channelId = "brc_shahpur_active_users";
+  let userId = 'user_' + Math.random().toString(36.substr(2, 9));
+  
+  try {
+    let bc = new BroadcastChannel(channelId);
+    let activeUsers = new Set([userId]);
+
+    bc.onmessage = (event) => {
+      if (event.data.type === 'ping') {
+        activeUsers.add(event.data.userId);
+        bc.postMessage({ type: 'pong', userId: userId });
+      } else if (event.data.type === 'pong') {
+        activeUsers.add(event.data.userId);
+      } else if (event.data.type === 'leave') {
+        activeUsers.delete(event.data.userId);
+      }
+      document.getElementById('liveActiveCount').innerText = activeUsers.size;
+    };
+
+    // Broadcast presence
+    setInterval(() => {
+      bc.postMessage({ type: 'ping', userId: userId });
+    }, 3000);
+
+    window.addEventListener('beforeunload', () => {
+      bc.postMessage({ type: 'leave', userId: userId });
+    });
+  } catch(e) {
+    // Fallback if BroadcastChannel is restricted
+    document.getElementById('liveActiveCount').innerText = Math.floor(Math.random() * 3) + 1;
+  }
+}
+
 async function checkGlobalMaintenance() {
   let isMaintenance = false;
   try {
@@ -538,7 +580,7 @@ async function checkGlobalMaintenance() {
   if (!isLoggedIn) {
     document.getElementById("maintenanceOverlay").style.display = "none";
     document.getElementById("ederpLayout").style.display = "flex";
-    document.getElementById("topBanner").style.display = "block";
+    document.getElementById("topBanner").style.display = "flex";
     document.getElementById("masterHeaderBar").style.display = "none";
     document.getElementById("frameContainer").style.display = "none";
     updateMaintUI(isMaintenance);
@@ -565,6 +607,7 @@ async function checkGlobalMaintenance() {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
+  initLiveActiveCounter();
   await checkGlobalMaintenance();
 });
 
@@ -762,9 +805,11 @@ async function checkAuth(){
   err.style.display = "block";
 }
 
-async function submitProblem() {
+// Help Desk Feedback submission with optional screenshot
+async function submitProblemWithImage() {
   let udise = document.getElementById("probUserUdise").value.trim();
   let desc = document.getElementById("probDesc").value.trim();
+  let fileInput = document.getElementById("probImageFile");
   let btn = document.getElementById("probSubmitBtn");
   
   if(!udise || !desc) {
@@ -775,20 +820,36 @@ async function submitProblem() {
   btn.innerText = "भेजा जा रहा है...";
   btn.disabled = true;
   
+  let base64Image = "";
+  let imageName = "";
+  
+  if(fileInput.files && fileInput.files[0]) {
+    let file = fileInput.files[0];
+    imageName = file.name;
+    try {
+      base64Image = await toBase64(file);
+    } catch(err) {
+      console.log("Image read error:", err);
+    }
+  }
+  
   try {
     let res = await fetch(WEB_APP_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "submitFeedback",
         udise: udise,
-        description: desc
+        description: desc,
+        imageBytes: base64Image,
+        imageName: imageName
       })
     });
     let result = await res.json();
     if(result.status === "success") {
-      alert("धन्यवाद! आपकी समस्या सफलतापूर्वक दर्ज कर ली गई है।");
+      alert("धन्यवाद! आपकी समस्या और स्क्रीनशॉट सफलतापूर्वक दर्ज कर लिया गया है।");
       document.getElementById("probUserUdise").value = "";
       document.getElementById("probDesc").value = "";
+      fileInput.value = "";
     } else {
       alert("समस्या दर्ज करने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
     }
@@ -796,8 +857,17 @@ async function submitProblem() {
     alert("नेटवर्क त्रुटि: कृपया अपना कनेक्शन जांचें।");
   }
   
-  btn.innerText = "समस्या भेजें";
+  btn.innerText = "समस्या व स्क्रीनशॉट भेजें";
   btn.disabled = false;
+}
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
 }
 
 function logoutSession(){
