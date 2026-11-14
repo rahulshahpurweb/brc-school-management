@@ -2,14 +2,13 @@ import { SessionManager } from './session-manager.js';
 import { SchoolRecords } from './school-records.js';
 import { CompilationModule } from './compilation.js';
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
-
 export const ExcelHandler = {
   downloadTemplate() {
     try {
+      // Permission Check for JSK / Role
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       if (user.role === 'jsk' && window.FeaturePermissions && !FeaturePermissions.isAllowed('r2_jsk_template_download')) {
-        alert("Admin dwara JSK ke liye Template Download की अनुमति नहीं दी गई है!");
+        alert("Admin dwara JSK ke liye Template Download ki anumati nahi di gayi hai!");
         return;
       }
 
@@ -44,18 +43,19 @@ export const ExcelHandler = {
       let workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Enrollment_Template");
       XLSX.writeFile(workbook, "BRC_Shahpur_Enrollment_Template.xlsx");
-      alert("Enrollment Template download शुरू हो गया है!");
+      alert("Enrollment Template download shuru ho gaya hai!");
     } catch (err) {
       console.error("Template Download Error:", err);
-      alert("Template download करने में एरर आई।");
+      alert("Template download karne mein error aayi.");
     }
   },
 
-  async uploadExcel(event) {
+  uploadExcel(event) {
+    // Permission Check for JSK / Role
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'jsk' && window.FeaturePermissions && !FeaturePermissions.isAllowed('r2_jsk_upload_excel')) {
-      alert("Admin dwara JSK ke liye Excel Upload की अनुमति नहीं दी गई है!");
-      event.target.value = ""; 
+      alert("Admin dwara JSK ke liye Excel Upload ki anumati nahi di gayi hai!");
+      event.target.value = ""; // Reset file input
       return;
     }
 
@@ -63,7 +63,7 @@ export const ExcelHandler = {
     if (!file) return;
 
     let reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = function(e) {
       try {
         let data = new Uint8Array(e.target.result);
         let workbook = XLSX.read(data, { type: 'array' });
@@ -72,17 +72,18 @@ export const ExcelHandler = {
         
         let rows = XLSX.utils.sheet_to_json(worksheet, { defval: 0 });
         if (!rows || rows.length === 0) {
-          alert("Excel file खाली है या गलत फॉर्मेट है!");
+          alert("Excel file khali hai ya galat format hai!");
           return;
         }
 
         let schools = SessionManager.getData();
         if (!schools || schools.length === 0) {
-          alert("Master schools data load नहीं हुआ है!");
+          alert("Master schools data load nahi hua hai!");
           return;
         }
 
         let updatedCount = 0;
+        let totalSumCheck = 0;
 
         rows.forEach((r) => {
           try {
@@ -119,6 +120,8 @@ export const ExcelHandler = {
                   let genB = parseInt(r[`${c} Gen Boys`] ?? 0) || 0;
                   let genG = parseInt(r[`${c} Gen Girls`] ?? 0) || 0;
 
+                  totalSumCheck += (scB + scG + stB + stG + obcB + obcG + genB + genG);
+
                   targetSchool.classes[c] = { scB, scG, stB, stG, obcB, obcG, genB, genG };
                 });
               }
@@ -129,32 +132,18 @@ export const ExcelHandler = {
         });
 
         if (updatedCount === 0) {
-          alert("Excel file में कोई भी मैच करता हुआ UDISE Code नहीं मिला!");
+          alert("Excel file mein koi bhi match karta hua UDISE Code nahi mila!");
           return;
         }
 
-        alert(`${updatedCount} स्कूलों का डेटा प्रोसेस हो रहा है, कृपया गूगल शीट पर सिंक होने तक प्रतीक्षा करें...`);
-        
-        let activeSession = (typeof currentCloudSession !== 'undefined') ? currentCloudSession : "2026-27";
-        let payload = { action: "saveData", session: activeSession, data: schools };
-
-        try {
-          await fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-          });
-          console.log("Excel bulk data synced successfully to Google Sheet!");
-        } catch (syncErr) {
-          console.error("Direct Cloud Sync Error:", syncErr);
-        }
-
+        SessionManager.saveData(schools);
         SessionManager.updateStats();
 
-        alert(`Excel file से ${updatedCount} schools का data सफलतापर्वक गूगल शीट पर सेव हो गया है!`);
+        alert(`Excel file se ${updatedCount} schools ka data safaltapurvak save ho gaya hai! Refresh ho raha hai...`);
         location.reload();
       } catch (err) {
         console.error("Excel Upload Error:", err);
-        alert("Excel file read करने में एरर आई: " + err.message);
+        alert("Excel file read karne mein error aayi: " + err.message);
       }
     };
     reader.readAsArrayBuffer(file);
@@ -181,9 +170,9 @@ export const ExcelHandler = {
       let workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "BRC_Data");
       XLSX.writeFile(workbook, "BRC_Shahpur_Report.xlsx");
-      alert("Excel report download शुरू हो गई है!");
+      alert("Excel report download shuru ho gayi hai!");
     } catch (err) {
-      alert("Excel export करने में एरर आई।");
+      alert("Excel export karne mein error aayi.");
     }
   }
 };
