@@ -134,15 +134,25 @@ export const SessionManager = {
     this.triggerAllRenders();
     alert("Data saved successfully!");  
 
+    // फेच (fetch) को पूरी तरह हटाकर डायरेक्ट फॉर्म सबमिट का अचूक तरीका
     let payload = { session: activeSession, data: cloudMemoryData };  
     try {
-      await fetch(WEB_APP_URL, {  
-        method: "POST",  
-        mode: "no-cors",  
-        headers: { "Content-Type": "text/plain;charset=utf-8" },  
-        body: JSON.stringify(payload)  
-      });
-      console.log("Cloud synced successfully");
+      let form = document.createElement("form");
+      form.method = "POST";
+      form.action = WEB_APP_URL;
+      form.target = "_blank";
+
+      let input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "payload";
+      input.value = JSON.stringify(payload);
+      
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+
+      console.log("Cloud synced successfully via form submit");
     } catch(err) {  
       console.error("Cloud Sync Error:", err);  
     }
