@@ -2,10 +2,11 @@ import { SessionManager } from './session-manager.js';
 import { SchoolRecords } from './school-records.js';
 import { CompilationModule } from './compilation.js';
 
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec";
+
 export const ExcelHandler = {
   downloadTemplate() {
     try {
-      // Permission Check for JSK / Role
       let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
       if (user.role === 'jsk' && window.FeaturePermissions && !FeaturePermissions.isAllowed('r2_jsk_template_download')) {
         alert("Admin dwara JSK ke liye Template Download की अनुमति नहीं दी गई है!");
@@ -51,7 +52,6 @@ export const ExcelHandler = {
   },
 
   async uploadExcel(event) {
-    // Permission Check for JSK / Role
     let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
     if (user.role === 'jsk' && window.FeaturePermissions && !FeaturePermissions.isAllowed('r2_jsk_upload_excel')) {
       alert("Admin dwara JSK ke liye Excel Upload की अनुमति नहीं दी गई है!");
@@ -133,10 +133,28 @@ export const ExcelHandler = {
           return;
         }
 
-        // --- यहाँ मुख्य सुधार किया गया है: डेटा क्लाउड पर सेव होने का इंतजार करें ---
-        alert(`${updatedCount} स्कूलों का डेटा प्रोसेस हो रहा है, कृपया क्लाउड सिंक होने तक प्रतीक्षा करें...`);
+        alert(`${updatedCount} स्कूलों का डेटा प्रोसेस हो रहा है, कृपया गूगल शीट पर सिंक होने तक प्रतीक्षा करें...`);
         
-        await SessionManager.saveData(schools);
+        // लोकल मेमोरी में अपडेट करें
+        if (typeof cloudMemoryData !== 'undefined') {
+          cloudMemoryData = schools;
+        }
+
+        // --- सीधे गूगल शीट बैकNएंड को POST रिक्वेस्ट भेजें (बिना no-cors के) ---
+        let activeSession = (typeof currentCloudSession !== 'undefined') ? currentCloudSession : "2026-27";
+        let payload = { action: "saveData", session: activeSession, data: schools };
+
+        try {
+          await fetch(WEB_APP_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+          console.log("Excel bulk data synced successfully to Google Sheet!");
+        } catch (syncErr) {
+          console.error("Direct Cloud Sync Error:", syncErr);
+        }
+
         SessionManager.updateStats();
 
         alert(`Excel file से ${updatedCount} schools का data सफलतापर्वक गूगल शीट पर सेव हो गया है!`);
