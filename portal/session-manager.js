@@ -142,7 +142,7 @@ export const SessionManager = {
         headers: { "Content-Type": "text/plain;charset=utf-8" },  
         body: JSON.stringify(payload)  
       });
-      console.log("Cloud synced successfully via fetch");
+      console.log("Cloud synced successfully");
     } catch(err) {  
       console.error("Cloud Sync Error:", err);  
     }
