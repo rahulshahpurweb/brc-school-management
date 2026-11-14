@@ -166,7 +166,6 @@ export const SessionManager = {
       Object.keys(classesObj).forEach(cName => {  
         let c = classesObj[cName] || {};  
         
-        // Calculate category-wise individual sums for boys and girls
         let bSum = (parseInt(c.scB) || 0) + (parseInt(c.stB) || 0) + (parseInt(c.obcB) || 0) + (parseInt(c.genB) || 0);
         let gSum = (parseInt(c.scG) || 0) + (parseInt(c.stG) || 0) + (parseInt(c.obcG) || 0) + (parseInt(c.genG) || 0);
         let sum = bSum + gSum;
@@ -192,7 +191,6 @@ export const SessionManager = {
     if(statFilled) statFilled.innerText = filled;  
     if(statPending) statPending.innerText = totalSchools - filled;
     
-    // Update dashboard statistics breakdown for boys and girls
     if(statBoysGirls) {
       statBoysGirls.innerText = `Boys: ${totalBoys} | Girls: ${totalGirls}`;
     }
@@ -215,10 +213,4 @@ export const SessionManager = {
       if(schoolListTab) schoolListTab.style.display = "none";  
     }  
     else if(role === "school") {  
-      let compilationTab = document.querySelector("[data-target='compilation']") || document.getElementById("compilationSection");  
-      if(compilationTab) compilationTab.style.display = "none";  
-    }
-  }
-};
-
-window.SessionManager = SessionManager;
+      let compilationTab = document.querySelector("[data-target='compilation']") || document.
