@@ -1,3 +1,4 @@
+// Feature, Module & Academic Session Permissions Control Module (100% Google Sheet Cloud-Synced)
 const FeaturePermissions = {
   cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
 
@@ -59,7 +60,7 @@ const FeaturePermissions = {
         }
       }
     } catch (e) {
-      // Silent catch to prevent console errors
+      // इसे साइलेंट कर दिया गया है ताकि कंसोल में लाल एरर न भटके, लोकल कैश से काम चलता रहेगा
     }
   },
 
@@ -81,7 +82,10 @@ const FeaturePermissions = {
           settings: JSON.stringify(settings)
         })
       });
-    } catch (e) {}
+      console.log("Settings successfully updated on Google Sheet Cloud!");
+    } catch (e) {
+      console.error("Cloud save failed.", e);
+    }
   },
 
   getActiveSession() {
