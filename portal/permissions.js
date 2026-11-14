@@ -60,7 +60,7 @@ const FeaturePermissions = {
         }
       }
     } catch (e) {
-      console.error("Cloud fetch error, falling back to local cache.", e);
+      // इसे साइलेंट कर दिया गया है ताकि कंसोल में लाल एरर न भटके, लोकल कैश से काम चलता रहेगा
     }
   },
 
