@@ -1,6 +1,6 @@
 // Feature, Module & Academic Session Permissions Control Module (100% Google Sheet Cloud-Synced)
 const FeaturePermissions = {
-  cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec", 
+  cloudApiUrl: "https://api.npoint.io/7c280aaadade1e14b43f",
 
   getDefaults() {
     return {
