@@ -41,7 +41,7 @@ export const SessionManager = {
     await this.getActiveSession();
     this.renderDropdown();
     
-    // Fetch live data directly from the cloud
+    // Fetch live data directly from the cloud with correct action parameter
     await this.fetchCloudDataDirectly();
     this.updateStats();
     this.applyRoleAccess();
@@ -50,7 +50,7 @@ export const SessionManager = {
   async fetchCloudDataDirectly() {
     let activeSession = currentCloudSession;
     try {  
-      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
+      let response = await fetch(`${WEB_APP_URL}?action=getAllData&session=${activeSession}`);  
       let cloudData = await response.json();  
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
         cloudMemoryData = cloudData;  
@@ -72,7 +72,6 @@ export const SessionManager = {
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
     if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
     
-    // Refresh the data entry form or school dropdown if present on the page
     if(typeof window.loadSchoolData === 'function') {
       window.loadSchoolData();
     }
@@ -140,7 +139,7 @@ export const SessionManager = {
     this.triggerAllRenders();
     alert("Data saved successfully!");  
 
-    // Added action: "saveData" so Google Apps Script routes it correctly
+    // Optimized Payload for Row-by-Row Cloud Sync
     let payload = { action: "saveData", session: activeSession, data: cloudMemoryData };  
     try {
       await fetch(WEB_APP_URL, {  
