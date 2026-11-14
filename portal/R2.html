@@ -1,524 +1,634 @@
 <!doctype html>
-<html lang="hi">  
-<head>  
-<meta charset="utf-8">  
-<meta name="viewport" content="width=device-width,initial-scale=1">  
-<title>True Modular Portal - BRC Shahpur</title>  
-<link rel="stylesheet" href="r2-styles.css">  
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>  
-<script src="permissions.js"></script>  
-<style>  
-  /* Anti-Flicker */
-  body { visibility: hidden; }
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRC Shahpur - Enrollment Module (R2)</title>
+<link rel="stylesheet" href="r2-styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="permissions.js"></script>
+<style>
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f4f7fb; color: #172033; }
+  .module-header { background: #071b38; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4b400; flex-wrap: wrap; gap: 10px; }
+  .module-title { font-size: 16px; font-weight: bold; color: #ffd21c; }
+  
+  .menu-container { position: relative; display: inline-block; }
+  .menu-btn { background: #0b2854; color: #fff; border: 1px solid #ffd21c; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .dropdown-content { display: none; position: absolute; right: 0; background-color: #ffffff; min-width: 220px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 100; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
+  .dropdown-content button, .dropdown-content label { color: #071b38; padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 13px; box-sizing: border-box; }
+  .dropdown-content button:hover, .dropdown-content label:hover { background-color: #f1f5f9; color: #1d4ed8; }
+  .show { display: block; }
 
-  .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:1000; }  
-  .modal-box { background:#fff; padding:25px; border-radius:12px; width:90%; max-width:450px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }  
-  .modal-box h3 { margin-top:0; color:#1d4ed8; }  
-  .modal-box input[type="text"], .modal-box input[type="password"] { width:100%; padding:10px; margin:8px 0 15px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; }  
-  .modal-box button { width:100%; padding:10px; background:#1d4ed8; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer; }  
-  .modal-box button.secondary { background:#64748b; margin-top:8px; }  
-
-  /* Compact Nav Bar */
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #071b38;
-    padding: 8px 12px;
-    border-bottom: 2px solid #f4b400;
-    position: relative;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .nav-title {
-    color: #ffd21c;
-    font-size: 13px;
-    font-weight: bold;
-  }
-  .nav-action-group {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .action-btn-sm {
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .internal-menu-btn { background: #1769df; }
-  .excel-btn { background: #16a34a; }
-  .print-btn { background: #d97706; }
-
-  /* Internal Dropdown Menu List */
-  .internal-dropdown {
-    position: absolute;
-    top: 48px;
-    right: 10px;
-    background: #071b38;
-    border: 2px solid #f4b400;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    width: 220px;
-    display: none;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-    z-index: 999;
-  }
-  .internal-dropdown.open {
-    display: flex;
-  }
-  .internal-dropdown button, .internal-dropdown label {
-    background: rgba(255,255,255,0.08);
-    color: #e2e8f0;
-    border: 1px solid rgba(255,255,255,0.15);
-    padding: 9px;
-    border-radius: 6px;
-    text-align: left;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .internal-dropdown button:hover, .internal-dropdown label:hover {
-    background: #ffd21c;
-    color: #082a63;
-  }
-
-  /* Full Screen Professional Maintenance Overlay */
-  #maintenanceOverlay {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #071b38, #0b2854);
-    z-index: 999999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    font-family: system-ui, -apple-system, sans-serif;
-  }
-  .maint-card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    padding: 40px 30px;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-  }
-  .maint-card h1 { color: #f4b400; font-size: 26px; margin-bottom: 15px; }
-  .maint-card p { color: #e2e8f0; font-size: 16px; line-height: 1.6; margin: 0; }
+  .sub-nav { display: flex; gap: 10px; background: #ffffff; padding: 10px 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); align-items: center; flex-wrap: wrap; }
+  .sub-nav-btn { background: #0b2854; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+  .sub-nav-btn.active { background: #f4b400; color: #071b38; }
+  
+  .content-container { max-width: 1200px; margin: 20px auto; padding: 0 15px 140px 15px; }
+  
+  .card { background: #fff; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+  .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+  .stat-card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1d4ed8; text-align: center; }
+  .stat-card .num { font-size: 28px; font-weight: bold; color: #1d4ed8; margin-top: 5px; }
+  
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: center; white-space: nowrap; }
+  th { background: #071b38; color: #fff; }
+  .tablewrap { width: 100%; overflow-x: auto; overflow-y: visible; max-height: none; margin-bottom: 20px; }
+  
+  #loadingOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; color:#fff; font-size:18px; font-weight:bold; }
+  .spinner { border: 6px solid #f3f3f3; border-top: 6px solid #f4b400; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
   @media print {
-    header, nav, .filter-bar, button, label, .modal-overlay, #editToggleBtn, [onclick], input, select {
-      display: none !important;
-    }
-    body, html, main, section {
-      background: #ffffff !important;
-      color: #000000 !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: visible !important;
-    }
-    section { display: block !important; }
-    section:not(.active) { display: none !important; }
-    .tablewrap { max-height: none !important; overflow: visible !important; box-shadow: none !important; }
+    .module-header, .sub-nav, button, select, input { display: none !important; }
+    body, html, main, .content-container, .card { background: #fff !important; color: #000 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
     table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
     th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; }
     @page { size: landscape; margin: 8mm; }
   }
 </style>
-</head>  
-<body>  
-<div id="maintenanceOverlay">  
-  <div class="maint-card">  
-    <h1>🚧 Portal Under Maintenance</h1>  
-    <p>The portal is currently undergoing maintenance. Please try logging in later. Thank you for your patience.</p>  
-  </div>  
-</div>  
+</head>
+<body>
 
-<header>  
-  <h1>BRC Shahpur - Enrollment Module (R2)</h1>  
-  <div style="display:flex;align-items:center;gap:12px; flex-wrap:wrap;">  
-    <div id="sessionContainer" style="display:flex;align-items:center;gap:6px;">  
-      <label style="font-size:12px;font-weight:bold;color:#fff;">Session:</label>  
-      <select id="sessionSelect" onchange="SessionManager.changeSession()" style="font-weight:bold;color:#1d4ed8; padding:3px; border-radius:4px; font-size:12px;"></select>  
-      <span id="sessionBadge" style="display:none; background:#f59e0b; color:#fff; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:12px;"></span>  
-    </div>  
-    <button onclick="openPermissionModal()" id="adminControlBtn" style="display:none; background:#0284c7; color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">⚙️ Feature Control</button>
-  </div>  
-</header>  
+<div id="loadingOverlay">
+  <div style="text-align:center;">
+    <div class="spinner"></div>
+    <div>Processing Enrollment Data, please wait...</div>
+  </div>
+</div>
 
-<nav>  
-  <div class="nav-title">📂 Module Options</div>    
-  <div class="nav-action-group">  
-    <button class="action-btn-sm excel-btn" onclick="handleSmartDownload()" title="Download Excel">📥 Excel</button>  
-    <button class="action-btn-sm print-btn" onclick="PrintHandler.printPage()" title="Print / PDF">🖨️ Print</button>  
-    <button class="action-btn-sm internal-menu-btn" onclick="toggleInternalMenu()">☰ Menu</button>
-  </div>    
-  <div id="internalDropdownMenu" class="internal-dropdown">  
-    <button class="hide-for-jsk" onclick="showTab('dash'); toggleInternalMenu();">📊 Summary Dashboard</button>  
-    <button id="navRecordsBtn" onclick="showTab('records'); toggleInternalMenu();">📋 School List & Filters</button>  
-    <button class="hide-for-school" id="navEntryBtn" onclick="showTab('entry'); toggleInternalMenu();">✍️ Data Entry Form</button>  
-    <button class="hide-for-school" onclick="showTab('compilation'); toggleInternalMenu();">📑 JSK Compilation Report</button>  
-    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.2); margin:4px 0;">  
-    <button class="success hide-for-school hide-for-jsk" id="templateBtn" onclick="ExcelHandler.downloadTemplate(); toggleInternalMenu();" style="background:#16a34a; color:#fff;">📥 Template_EFG</button>  
-    <label class="button hide-for-school hide-for-jsk" id="uploadLabelBtn" style="background:#d97706; color:#fff;">  
-      📤 Upload Excel File<input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="ExcelHandler.uploadExcel(event); toggleInternalMenu();">  
-    </label>  
-  </div>  
-</nav>  
-
-<main>  
-  <section id="dash" class="active">  
-    <h3 id="dashTitle">📊 Summary Dashboard</h3>  
-    <div class="grid" id="dashboardStats">  
-      <div class="card"><div class="num" id="statSchools">203</div><div>Total Schools</div></div>  
-      <div class="card"><div class="num" id="statTotal">0</div><div>Overall Total Enrollment</div><div class="subtext" id="statBoysGirls">Boys: 0 | Girls: 0</div></div>  
-      <div class="card"><div class="num" id="statFilled" style="color:#15803d">0</div><div>Entry Completed</div></div>  
-      <div class="card"><div class="num" id="statPending" style="color:#dc2626">0</div><div>Pending Schools</div></div>  
-    </div>  
-  </section>    
-
-  <section id="records">  
-    <h3>📋 School-wise Data & Filters</h3>  
-    <div class="filter-bar">  
-      <label><b>JSK:</b></label>  
-      <select id="jskFilter" onchange="SchoolRecords.render()">  
-        <option value="ALL">-- All Sankul --</option>  
-        <option value="Bhoura">Bhoura</option>  
-        <option value="Bijadehi">Bijadehi</option>  
-        <option value="Dhodhramau">Dhodhramau</option>  
-        <option value="Kesiya">Kesiya</option>  
-        <option value="Kundi">Kundi</option>  
-        <option value="Shahpur">Shahpur</option>  
-        <option value="Tara">Tara</option>  
-      </select>  
-      <input type="text" id="searchBox" placeholder="Search school name or UDISE..." onkeyup="SchoolRecords.render()" style="flex:1;min-width:180px;">  
-    </div>  
-    <div class="tablewrap"><table><thead><tr><th>S.No.</th><th>School Name</th><th>UDISE Code</th><th>Category</th><th>JSK</th><th>Total Enrollment</th><th>Status</th></tr></thead><tbody id="schoolTableBody"></tbody></table></div>  
-  </section>    
-
-  <section id="entry">  
-    <h3>✍️ School Data Entry Module</h3>  
-    <div class="filter-bar" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">  
-      <input type="text" id="entrySearchBox" placeholder="🔍 Search school name or UDISE..." onkeyup="filterSchoolDropdown()" style="flex:1; min-width:200px; padding:8px; border:1px solid #ccc; border-radius:6px; font-size:13px;">  
-      <select id="schoolSelect" onchange="EntryModule.loadForm()" style="flex:2; min-width:250px; font-weight:bold; padding:8px; border-radius:6px;"></select>  
-    </div>  
-    <div class="tablewrap">  
-      <table>  
-        <thead>  
-          <tr>  
-            <th rowspan="2" style="vertical-align:middle;width:120px;">Class</th>  
-            <th colspan="2">SC</th><th colspan="2">ST</th><th colspan="2">OBC</th><th colspan="2">GEN</th><th colspan="2">Total</th>  
-            <th rowspan="2" style="vertical-align:middle;width:60px;">T</th>  
-          </tr>  
-          <tr><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th><th>B</th><th>G</th></tr>  
-        </thead>  
-        <tbody id="entryTableBody"></tbody>  
-      </table>  
-    </div>  
-    <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px; border-radius:10px; box-shadow:0 1px 6px #ddd;">  
-      <button type="button" id="editToggleBtn" onclick="EntryModule.toggleEdit()" style="background:#1d4ed8; color:#fff; padding:10px 18px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">🔓 Unlock to Edit</button>  
-      <button type="button" onclick="EntryModule.saveData()" style="background:#15803d; color:#fff; padding:10px 20px; border:0; border-radius:8px; font-weight:bold; cursor:pointer;">💾 Save & Freeze Data</button>  
-    </div>  
-  </section>    
-
-  <section id="compilation">  
-    <h3>📑 JSK-wise Compilation Report</h3>  
-    <div class="filter-bar" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">  
-      <label><b>JSK Filter:</b></label>  
-      <select id="compJskFilter" onchange="CompilationModule.render()" style="font-weight:bold;">  
-        <option value="ALL">-- All JSK (Sankul) --</option>  
-        <option value="Bhoura">Bhoura</option>  
-        <option value="Bijadehi">Bijadehi</option>  
-        <option value="Dhodhramau">Dhodhramau</option>  
-        <option value="Kesiya">Kesiya</option>  
-        <option value="Kundi">Kundi</option>  
-        <option value="Shahpur">Shahpur</option>  
-        <option value="Tara">Tara</option>  
-      </select>  
-      <label style="margin-left:10px;"><b>Report Format:</b></label>  
-      <select id="compViewMode" onchange="CompilationModule.render()" style="font-weight:bold;color:#1d4ed8;">  
-        <option value="format1">📊 F_1: JSK & Category-wise Schools</option>  
-        <option value="format2">📈 F_2: Class-wise Caste Enrollment</option>  
-        <option value="format3">📑 F_3: Class 1-8 Summary</option>  
-        <option value="format4">📋 F_4: School-wise List (1-8)</option>  
-        <option value="format5">⭐ F_5: Detailed Report</option>  
-      </select>  
-    </div>  
-    <div class="tablewrap"><table id="compileTable"></table></div>
-  </section>  
-</main>  
-
-<div id="permissionModal" class="modal-overlay">  
-  <div class="modal-box" style="max-width:450px;">  
-    <h3>⚙️ Master Feature Control Center</h3>  
-    <p style="font-size:13px; color:#64748b;">Manage separate permissions for JSK and Schools.</p>  
-    <div id="permissionListContainer" style="margin:15px 0; max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; text-align:left; padding-right:5px;"></div>  
-    <button onclick="savePermissions()" style="background:#16a34a; margin-top:10px;">Save Settings</button>  
-    <button class="secondary" onclick="closePermissionModal()">Cancel</button>  
-  </div>  
-</div>  
-
-<!-- Main Modular Script -->
-<script type="module" src="app.js"></script>  
-<script>  
-  const featureLabels = {  
-    jsk_dash_view: "📊 [JSK] Summary Dashboard",  
-    jsk_records_view: "📋 [JSK] School List & Filters",  
-    jsk_compilation_view: "📑 [JSK] Compilation Report",  
-    jsk_entry_view: "✍️ [JSK] Data Entry Form Access",  
-    jsk_upload_excel: "📊 [JSK] Excel Upload Permission",  
-    jsk_template_download: "📊 [JSK] Template Download Permission",  
+<div class="module-header">
+  <div class="module-title" style="width: 100%; margin-bottom: 5px;">📊 Enrollment Module (R2 - Cloud Synced)</div>
+  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 5px; flex-wrap: nowrap;">
     
-    school_dash_view: "📊 [School] Summary Dashboard",  
-    school_records_view: "📋 [School] School List & Filters",  
-    school_entry_view: "✍️ [School] Data Entry Form",  
-    school_can_edit_locked_session: "🏫 [School] Unlock Locked Session Entry",  
-    
-    cwsn_module_access: "♿ [Module] CWSN Module (R3) Access",
-    sna_account_check_access: "🔍 [Module] SNA Account Check Access"
-  };  
-  
-  let allSchoolOptions = [];
+    <div style="display: flex; align-items: center; gap: 3px; background: #0b2854; padding: 4px 6px; border-radius: 6px; border: 1px solid #ffd21c;">
+      <span style="font-size: 11px; color: #ffd21c; font-weight: bold;">Session:</span>
+      <select id="globalSessionSelect" onchange="EnrollmentApp.changeGlobalSession(this.value)" style="background: #fff; color: #071b38; border: none; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer;">
+        <option value="2026-27">2026-27</option>
+        <option value="2027-28">2027-28</option>
+        <option value="2028-29">2028-29</option>
+        <option value="2029-30">2029-30</option>
+      </select>
+    </div>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-      let select = document.getElementById("schoolSelect");
-      if (select) {
-        allSchoolOptions = Array.from(select.options).map(opt => ({
-          value: opt.value,
-          text: opt.text
-        }));
-      }
-    }, 1200);
-  });
+    <button onclick="EnrollmentApp.downloadTemplate()" class="sub-nav-btn" style="background: #0284c7; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Template</button>
+    <label class="sub-nav-btn" style="background: #16a34a; padding: 6px 10px; font-size: 12px; white-space: nowrap; cursor: pointer; margin:0;">
+      📤 Upload Excel <input type="file" id="uploadExcelInput" accept=".xlsx" style="display:none;" onchange="EnrollmentApp.handleExcelUpload(event)">
+    </label>
+    <button onclick="EnrollmentApp.exportExcel()" class="sub-nav-btn" style="background: #d97706; padding: 6px 10px; font-size: 12px; white-space: nowrap;">📥 Report</button>
+    <button onclick="window.print()" class="sub-nav-btn" style="background: #475569; padding: 6px 10px; font-size: 12px; white-space: nowrap;">🖨️ Print</button>
 
-  // Strict Class Range Rule Function based on user request
-  window.getClassesForSchoolCategory = function(category) {
-    let cat = (category || "").toLowerCase();
-    if (cat.includes("6 to 12") || cat.includes("6 to 8")) {
-      return [6, 7, 8];
-    }
-    if (cat.includes("1 to 12") || cat.includes("1 to 10") || cat.includes("1 to 8")) {
-      return [1, 2, 3, 4, 5, 6, 7, 8];
-    }
-    return [1, 2, 3, 4, 5];
-  };
+  </div>
+</div>
 
-  function filterSchoolDropdown() {
-    let keyword = document.getElementById("entrySearchBox").value.toLowerCase();
-    let select = document.getElementById("schoolSelect");
-    if (!select) return;
+<div class="sub-nav">
+  <button class="sub-nav-btn active" id="navDashBtn" onclick="EnrollmentApp.switchTab('dashboard')">📊 Dashboard</button>
+  <button class="sub-nav-btn" id="navEntryBtn" onclick="EnrollmentApp.switchTab('entry')">✍️ Data Entry</button>
+  <button class="sub-nav-btn" id="navReportsBtn" onclick="EnrollmentApp.switchTab('reports')">📑 Sankul Reports</button>
+</div>
 
-    if (allSchoolOptions.length === 0) {
-      allSchoolOptions = Array.from(select.options).map(opt => ({
-        value: opt.value,
-        text: opt.text
-      }));
-    }
+<main class="content-container">
+  <section id="enrollDash" class="enroll-section">
+    <div class="grid-stats">
+      <div class="stat-card">
+        <div>Total Schools</div>
+        <div class="num" id="statTotalSchools">203</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #16a34a;">
+        <div>Overall Enrollment</div>
+        <div class="num" id="statTotalEnrollment" style="color:#16a34a;">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #b45309;">
+        <div>Entry Completed</div>
+        <div class="num" id="statCompleted" style="color:#b45309;">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #dc2626;">
+        <div>Pending Schools</div>
+        <div class="num" id="statPending" style="color:#dc2626;">203</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📊 Sankul-wise Enrollment Summary</h3>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No.</th>
+              <th>Sankul (JSK)</th>
+              <th>Total Schools</th>
+              <th>Entry Done</th>
+              <th>Total Boys</th>
+              <th>Total Girls</th>
+              <th>Grand Total</th>
+            </tr>
+          </thead>
+          <tbody id="dashSummaryTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-    select.innerHTML = "";
-    let filtered = allSchoolOptions.filter(item => item.text.toLowerCase().includes(keyword));
+  <section id="enrollEntry" class="enroll-section" style="display:none;">
+    <div class="card">
+      <h3>✍️ School Enrollment Data Entry (Class 1 to 8)</h3>
+      <div class="filter-bar" style="display:flex; gap:10px; align-items:center; margin-bottom:15px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+        <label><b>Select School:</b></label>
+        <select id="schoolSelect" onchange="EnrollmentApp.loadSchoolForm()" style="flex:1; padding:8px; font-weight:bold; border-radius:6px; border:1px solid #cbd5e1;"></select>
+      </div>
 
-    if (filtered.length === 0) {
-      let opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "-- No School Found --";
-      select.appendChild(opt);
-    } else {
-      filtered.forEach(item => {
-        let opt = document.createElement("option");
-        opt.value = item.value;
-        opt.textContent = item.text;
-        select.appendChild(opt);
-      });
-    }
+      <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:15px;">
+        <div style="display:flex; gap:20px; font-size:13px; flex-wrap:wrap;">
+          <span><b>School Name:</b> <span id="lblSchoolName">-</span></span>
+          <span><b>UDISE:</b> <span id="lblUdise">-</span></span>
+          <span><b>JSK:</b> <span id="lblJsk">-</span></span>
+          <span><b>Category:</b> <span id="lblCategory">-</span></span>
+        </div>
+      </div>
 
-    if (filtered.length > 0) {
-      select.value = filtered[0].value;
-      if (typeof EntryModule !== 'undefined' && EntryModule.loadForm) {
-        EntryModule.loadForm();
-      }
-    }
-  }
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>SC Boys</th>
+              <th>SC Girls</th>
+              <th>ST Boys</th>
+              <th>ST Girls</th>
+              <th>OBC Boys</th>
+              <th>OBC Girls</th>
+              <th>GEN Boys</th>
+              <th>GEN Girls</th>
+              <th>Class Total</th>
+            </tr>
+          </thead>
+          <tbody id="classEntryTableBody"></tbody>
+        </table>
+      </div>
 
-  function toggleInternalMenu() {  
-    let menu = document.getElementById("internalDropdownMenu");  
-    if(menu) menu.classList.toggle("open");  
-  }  
-  
-  function openPermissionModal() {  
-    let settings = FeaturePermissions.getSettings();  
-    let sessions = AdminLocks.getSessions();  
-    let container = document.getElementById("permissionListContainer");  
-    container.innerHTML = "";  
-  
-    container.innerHTML += `<div style="font-weight:bold; color:#0284c7; margin-top:5px; border-bottom:2px solid #0284c7; padding-bottom:3px;">📊 JSK Specific Controls</div>`;  
-    ['jsk_dash_view', 'jsk_records_view', 'jsk_compilation_view', 'jsk_entry_view', 'jsk_upload_excel', 'jsk_template_download'].forEach(key => {
-      if(settings[key] !== undefined) {
-        let isChecked = settings[key] ? "checked" : "";  
-        container.innerHTML += `  
-          <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">  
-            <span>${featureLabels[key] || key}</span>  
-            <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>  
-          </label>`;  
-      }
-    });
+      <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+        <button type="button" onclick="EnrollmentApp.saveSchoolData()" style="background:#16a34a; color:#fff; padding:12px 28px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">💾 Save Enrollment Data</button>
+      </div>
+    </div>
+  </section>
 
-    container.innerHTML += `<div style="font-weight:bold; color:#15803d; margin-top:10px; border-bottom:2px solid #15803d; padding-bottom:3px;">🏫 School Specific Controls</div>`;  
-    ['school_dash_view', 'school_records_view', 'school_entry_view', 'school_can_edit_locked_session'].forEach(key => {
-      if(settings[key] !== undefined) {
-        let isChecked = settings[key] ? "checked" : "";  
-        container.innerHTML += `  
-          <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">  
-            <span>${featureLabels[key] || key}</span>  
-            <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>  
-          </label>`;  
-      }
-    });
+  <section id="enrollReports" class="enroll-section" style="display:none;">
+    <div class="card">
+      <h3>📑 Detailed Enrollment Reports</h3>
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+        <label><b>JSK Filter:</b></label>
+        <select id="reportJskFilter" onchange="EnrollmentApp.renderReports()" style="font-weight:bold; padding:6px; border-radius:4px;">
+          <option value="ALL">-- All Sankul --</option>
+          <option value="Bhoura">Bhoura</option>
+          <option value="Bijadehi">Bijadehi</option>
+          <option value="Dhodhramau">Dhodhramau</option>
+          <option value="Kesiya">Kesiya</option>
+          <option value="Kundi">Kundi</option>
+          <option value="Shahpur">Shahpur</option>
+          <option value="Tara">Tara</option>
+        </select>
+      </div>
+      <div class="tablewrap">
+        <table id="enrollReportTable"></table>
+      </div>
+    </div>
+  </section>
+</main>
 
-    container.innerHTML += `<div style="font-weight:bold; color:#1d4ed8; margin-top:10px; border-bottom:2px solid #1d4ed8; padding-bottom:3px;">🌐 General Portal Modules</div>`;  
-    ['cwsn_module_access', 'sna_account_check_access'].forEach(key => {
-      if(settings[key] !== undefined) {
-        let isChecked = settings[key] ? "checked" : "";  
-        container.innerHTML += `  
-          <label style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; cursor:pointer; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">  
-            <span>${featureLabels[key] || key}</span>  
-            <input type="checkbox" class="perm-checkbox" data-key="${key}" style="width:18px; height:18px;" ${isChecked}>  
-          </label>`;  
-      }
-    });
-  
-    container.innerHTML += `<div style="font-weight:bold; color:#b45309; margin-top:10px; border-bottom:2px solid #b45309; padding-bottom:3px;">🔒 Academic Session Lock / Unlock</div>`;  
-    sessions.forEach(s => {  
-      let lockStatusText = s.locked ? "🔒 Locked" : "🔓 Active";  
-      let btnBg = s.locked ? "#dc2626" : "#16a34a";  
-      container.innerHTML += `  
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; background:#fffbeb; padding:8px 12px; border-radius:6px; border:1px solid #fde68a;">  
-          <span>📅 Session: ${s.name}</span>  
-          <button type="button" onclick="toggleSession('${s.id}')" style="background:${btnBg}; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; width:auto;">${lockStatusText}</button>  
-        </div>`;  
-    });  
-  
-    document.getElementById("permissionModal").style.display = "flex";  
-  }  
-  
-  function closePermissionModal() {  
-    let modal = document.getElementById("permissionModal");  
-    if(modal) modal.style.display = "none";  
-  }  
-  
-  function toggleSession(sessionId) {  
-    AdminLocks.toggleSessionLock(sessionId);  
-    openPermissionModal();   
-    if(typeof SessionManager !== 'undefined' && SessionManager.renderDropdown) {  
-      SessionManager.renderDropdown();  
-    }  
-  }  
-  
-  function savePermissions() {  
-    let settings = FeaturePermissions.getSettings();  
-    document.querySelectorAll("#permissionListContainer input.perm-checkbox").forEach(cb => {  
-      settings[cb.getAttribute("data-key")] = cb.checked;  
-    });  
-    FeaturePermissions.saveSettings(settings);  
-    alert("All permissions updated successfully!");  
-    document.getElementById("permissionModal").style.display = "none";  
-    location.reload();  
-  }  
-  
-  function ExportAnyTable(filename = "BRC_Report.xlsx") {  
-    try {  
-      let activeSection = document.querySelector("main section.active");  
-      let table = activeSection ? activeSection.querySelector("table") : null;  
-      if (!table) { alert("No table data found to export."); return; }  
-      
-      let wb = XLSX.utils.table_to_book(table, { raw: true });
-      
+<div id="customAlertModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; display:none; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:12px; max-width:400px; width:100%; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-align:center;">
+    <h3 id="customAlertTitle" style="margin-top:0; color:#071b38;">Alert</h3>
+    <p id="customAlertMessage" style="color:#475569; font-size:14px; margin-bottom:20px; line-height:1.5;"></p>
+    <button onclick="document.getElementById('customAlertModal').style.display='none'" style="background:#1d4ed8; color:#fff; border:none; padding:8px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">OK</button>
+  </div>
+</div>
+
+<script type="module">
+  import { MASTER_SCHOOLS } from './schools-data.js';
+  import { SessionManager } from './session-manager.js';
+
+  window.EnrollmentApp = {
+    cloudApiUrl: "https://script.google.com/macros/s/AKfycbwjZYYhrYb_f9C6I4eK5j4DHzBJ4ZoglrRnEum0CJkQ_RkImrnzCW7wMsJakbaenT-gfQ/exec",
+    classesList: ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
+    allSchools: MASTER_SCHOOLS,
+
+    showAlert(msg, title = "Alert") {
+      document.getElementById("customAlertTitle").textContent = title;
+      document.getElementById("customAlertMessage").textContent = msg;
+      document.getElementById("customAlertModal").style.display = "flex";
+    },
+
+    showLoader(show) {
+      document.getElementById("loadingOverlay").style.display = show ? 'flex' : 'none';
+    },
+
+    getUserRoleInfo() {
+      let user = JSON.parse(localStorage.getItem("brc_current_user") || localStorage.getItem("brc_logged_user") || "{}");
+      let role = String(user.role || "").toLowerCase();
+      let userId = String(user.udise || user.userId || user.username || user.code || user.id || "").trim();
+      let isSchool = (role === 'school' || userId.length >= 10 || Boolean(user.udise));
+      let isAdmin = (role === 'admin' || userId === 'admin' || (!role && userId.length < 10 && !user.udise));
+      let isJsk = (role === 'jsk' || role === 'sankul');
+      return { user, role, isAdmin, isJsk, isSchool, userId };
+    },
+
+    async init() {
+      this.showLoader(true);
+      let activeSess = "2026-27";
       try {
-        XLSX.writeFile(wb, filename);
-      } catch (err) {
-        let wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        let blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-        }, 100);
+        let sessRes = await fetch(this.cloudApiUrl + "?action=getSession&t=" + new Date().getTime());
+        if (sessRes.ok) {
+          let sessData = await sessRes.json();
+          if (sessData && sessData.activeSession) {
+            activeSess = sessData.activeSession;
+            localStorage.setItem("brc_active_session", activeSess);
+          }
+        }
+      } catch (e) {
+        activeSess = localStorage.getItem("brc_active_session") || "2026-27";
       }
-    } catch (e) {  
-      alert("Error exporting Excel file: " + e.message);  
-    }  
-  };  
 
-  window.PrintHandler = {
-    printPage() {
-      let activeSection = document.querySelector("main section.active");
-      if (!activeSection) {
-        alert("No active section found for printing.");
+      let dropdown = document.getElementById("globalSessionSelect");
+      if (dropdown) dropdown.value = activeSess;
+
+      try {
+        let res = await fetch(this.cloudApiUrl + "?action=getAllEnrollmentData&session=" + activeSess + "&t=" + new Date().getTime());
+        if (res.ok) {
+          let cloudEnrollment = await res.json();
+          if (Array.isArray(cloudEnrollment)) {
+            cloudEnrollment.forEach(item => {
+              if (item.udise && item.payload) {
+                localStorage.setItem("brc_enroll_" + String(item.udise).trim(), JSON.stringify(item.payload));
+              }
+            });
+          }
+        }
+      } catch(e) {}
+
+      this.switchTab('dashboard');
+      this.showLoader(false);
+    },
+
+    async changeGlobalSession(newSession) {
+      let info = this.getUserRoleInfo();
+      if (!info.isAdmin) {
+        this.showAlert("Access Denied: Only Administrator can change the global session!");
+        document.getElementById("globalSessionSelect").value = localStorage.getItem("brc_active_session") || "2026-27";
         return;
       }
-      
+      this.showLoader(true);
+      localStorage.setItem("brc_active_session", newSession);
       try {
-        window.print();
-      } catch (e) {
-        let printWindow = window.open('', '_blank');
-        if (printWindow) {
-          printWindow.document.write('<html><head><title>Print Report</title>');
-          printWindow.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 11px; font-family: sans-serif; }</style>');
-          printWindow.document.write('</head><body>');
-          printWindow.document.write(activeSection.innerHTML);
-          printWindow.document.write('</body></html>');
-          printWindow.document.close();
-          printWindow.focus();
-          setTimeout(() => {
-            printWindow.print();
-          }, 500);
-        } else {
-          alert("Printing is not supported or pop-up was blocked in this view.");
-        }
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "setSession", session: newSession })
+        });
+      } catch (err) {}
+      this.init();
+    },
+
+    switchTab(tab) {
+      document.querySelectorAll('.enroll-section').forEach(sec => sec.style.display = 'none');
+      document.querySelectorAll('.sub-nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      if (tab === 'dashboard') {
+        document.getElementById('enrollDash').style.display = 'block';
+        document.getElementById('navDashBtn').classList.add('active');
+        this.renderDashboard();
+      } else if (tab === 'entry') {
+        document.getElementById('enrollEntry').style.display = 'block';
+        document.getElementById('navEntryBtn').classList.add('active');
+        this.populateSchoolDropdown();
+      } else if (tab === 'reports') {
+        document.getElementById('enrollReports').style.display = 'block';
+        document.getElementById('navReportsBtn').classList.add('active');
+        this.renderReports();
       }
+    },
+
+    downloadTemplate() {
+      let templateData = [];
+      this.allSchools.forEach((s, idx) => {
+        let row = { "S.No.": idx + 1, "School Name": s.name, "UDISE Code": String(s.udise).trim(), "JSK": s.jsk };
+        this.classesList.forEach(c => {
+          row[`${c} SC Boys`] = 0; row[`${c} SC Girls`] = 0;
+          row[`${c} ST Boys`] = 0; row[`${c} ST Girls`] = 0;
+          row[`${c} OBC Boys`] = 0; row[`${c} OBC Girls`] = 0;
+          row[`${c} Gen Boys`] = 0; row[`${c} Gen Girls`] = 0;
+        });
+        templateData.push(row);
+      });
+      let ws = XLSX.utils.json_to_sheet(templateData);
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Enrollment_Template");
+      XLSX.writeFile(wb, "BRC_Shahpur_Enrollment_Template.xlsx");
+    },
+
+    handleExcelUpload(event) {
+      let file = event.target.files[0];
+      if (!file) return;
+      this.showLoader(true);
+      let reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          let data = new Uint8Array(e.target.result);
+          let workbook = XLSX.read(data, { type: 'array' });
+          let rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: 0 });
+          let activeSess = document.getElementById("globalSessionSelect").value;
+
+          for (let r of rows) {
+            let udise = "";
+            for (let key in r) {
+              if (key.toLowerCase().includes("udise") || key.toLowerCase().includes("school code")) {
+                udise = String(r[key]).trim();
+                break;
+              }
+            }
+            if (!udise && r["UDISE Code"]) udise = String(r["UDISE Code"]).trim();
+
+            if (udise) {
+              let school = this.allSchools.find(s => String(s.udise).trim() === udise);
+              if (school) {
+                let classesData = {};
+                this.classesList.forEach(c => {
+                  classesData[c] = {
+                    scB: parseInt(r[`${c} SC Boys`] || 0), scG: parseInt(r[`${c} SC Girls`] || 0),
+                    stB: parseInt(r[`${c} ST Boys`] || 0), stG: parseInt(r[`${c} ST Girls`] || 0),
+                    obcB: parseInt(r[`${c} OBC Boys`] || 0), obcG: parseInt(r[`${c} OBC Girls`] || 0),
+                    genB: parseInt(r[`${c} Gen Boys`] || 0), genG: parseInt(r[`${c} Gen Girls`] || 0)
+                  };
+                });
+
+                let payload = { udise: udise, schoolName: school.name, jsk: school.jsk, classes: classesData, completed: true };
+                localStorage.setItem("brc_enroll_" + udise, JSON.stringify(payload));
+
+                await fetch(this.cloudApiUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: new URLSearchParams({
+                    action: "saveEnrollmentData",
+                    session: activeSess,
+                    udise: udise,
+                    payload: JSON.stringify(payload)
+                  })
+                });
+              }
+            }
+          }
+          this.showLoader(false);
+          this.showAlert("Excel Data Uploaded and Synced to Cloud Successfully!");
+          this.switchTab('dashboard');
+        } catch (err) {
+          this.showLoader(false);
+          this.showAlert("Error reading Excel: " + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    },
+
+    populateSchoolDropdown() {
+      let select = document.getElementById('schoolSelect');
+      select.innerHTML = '<option value="">-- Select School --</option>';
+      let info = this.getUserRoleInfo();
+
+      let eligible = this.allSchools;
+      if (info.isSchool) {
+        eligible = this.allSchools.filter(s => String(s.udise).trim() === info.userId || String(s.udise).trim().includes(info.userId));
+      }
+
+      eligible.forEach(s => {
+        let el = document.createElement('option');
+        el.value = s.udise;
+        el.textContent = `${s.name} (${s.udise}) - JSK: ${s.jsk}`;
+        select.appendChild(el);
+      });
+
+      if (info.isSchool && eligible.length === 1) {
+        select.value = eligible[0].udise;
+        select.disabled = true;
+        this.loadSchoolForm();
+      }
+    },
+
+    loadSchoolForm() {
+      let udise = document.getElementById('schoolSelect').value;
+      let tbody = document.getElementById('classEntryTableBody');
+      tbody.innerHTML = '';
+
+      if (!udise) {
+        document.getElementById('lblSchoolName').textContent = "-";
+        document.getElementById('lblUdise').textContent = "-";
+        document.getElementById('lblJsk').textContent = "-";
+        document.getElementById('lblCategory').textContent = "-";
+        tbody.innerHTML = `<tr><td colspan="10" style="padding:20px; color:#64748b;">Please select a school to begin data entry.</td></tr>`;
+        return;
+      }
+
+      let school = this.allSchools.find(s => String(s.udise) === String(udise));
+      if (!school) return;
+
+      document.getElementById('lblSchoolName').textContent = school.name;
+      document.getElementById('lblUdise').textContent = udise;
+      document.getElementById('lblJsk').textContent = school.jsk;
+      document.getElementById('lblCategory').textContent = school.category;
+
+      let savedData = JSON.parse(localStorage.getItem("brc_enroll_" + udise) || "null");
+      let classesObj = savedData ? savedData.classes : {};
+
+      this.classesList.forEach(c => {
+        let cl = classesObj[c] || { scB: 0, scG: 0, stB: 0, stG: 0, obcB: 0, obcG: 0, genB: 0, genG: 0 };
+        tbody.innerHTML += `
+          <tr data-class="${c}">
+            <td style="font-weight:bold;">${c}</td>
+            <td><input type="number" min="0" class="cl-scB" value="${cl.scB || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-scG" value="${cl.scG || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-stB" value="${cl.stB || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-stG" value="${cl.stG || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-obcB" value="${cl.obcB || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-obcG" value="${cl.obcG || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-genB" value="${cl.genB || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td><input type="number" min="0" class="cl-genG" value="${cl.genG || 0}" style="width:60px; text-align:center;" oninput="EnrollmentApp.calcRow(this)"></td>
+            <td class="row-total" style="font-weight:bold; color:#1d4ed8;">0</td>
+          </tr>
+        `;
+      });
+      document.querySelectorAll('#classEntryTableBody tr').forEach(tr => this.calcRow(tr.querySelector('input')));
+    },
+
+    calcRow(input) {
+      let tr = input.closest('tr');
+      let sum = 0;
+      tr.querySelectorAll('input').forEach(inp => sum += (parseInt(inp.value) || 0));
+      tr.querySelector('.row-total').textContent = sum;
+    },
+
+    async saveSchoolData() {
+      let udise = document.getElementById('schoolSelect').value;
+      if (!udise) { this.showAlert("Please select a school first!"); return; }
+
+      let school = this.allSchools.find(s => String(s.udise) === String(udise));
+      let classesData = {};
+
+      document.querySelectorAll('#classEntryTableBody tr').forEach(tr => {
+        let cName = tr.getAttribute('data-class');
+        classesData[cName] = {
+          scB: parseInt(tr.querySelector('.cl-scB').value) || 0,
+          scG: parseInt(tr.querySelector('.cl-scG').value) || 0,
+          stB: parseInt(tr.querySelector('.cl-stB').value) || 0,
+          stG: parseInt(tr.querySelector('.cl-stG').value) || 0,
+          obcB: parseInt(tr.querySelector('.cl-obcB').value) || 0,
+          obcG: parseInt(tr.querySelector('.cl-obcG').value) || 0,
+          genB: parseInt(tr.querySelector('.cl-genB').value) || 0,
+          genG: parseInt(tr.querySelector('.cl-genG').value) || 0
+        };
+      });
+
+      let payload = { udise: udise, schoolName: school.name, jsk: school.jsk, classes: classesData, completed: true };
+      localStorage.setItem("brc_enroll_" + udise, JSON.stringify(payload));
+
+      this.showLoader(true);
+      try {
+        let activeSess = document.getElementById("globalSessionSelect").value;
+        await fetch(this.cloudApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "saveEnrollmentData",
+            session: activeSess,
+            udise: udise,
+            payload: JSON.stringify(payload)
+          })
+        });
+        this.showLoader(false);
+        this.showAlert("Enrollment Data Saved and Synced to Cloud Successfully!");
+        this.switchTab('dashboard');
+      } catch (err) {
+        this.showLoader(false);
+        this.showAlert("Saved locally, cloud sync error: " + err.message);
+      }
+    },
+
+    renderDashboard() {
+      let completedCount = 0, totalEnroll = 0;
+      let jskMap = {};
+      ["Bhoura", "Bijadehi", "Dhodhramau", "Kesiya", "Kundi", "Shahpur", "Tara"].forEach(jsk => {
+        jskMap[jsk] = { schools: 0, completed: 0, boys: 0, girls: 0 };
+      });
+
+      this.allSchools.forEach(s => {
+        let jsk = s.jsk || "Bhoura";
+        jskMap[jsk].schools++;
+
+        let saved = JSON.parse(localStorage.getItem("brc_enroll_" + s.udise) || "null");
+        if (saved && saved.completed) {
+          completedCount++;
+          jskMap[jsk].completed++;
+          Object.values(saved.classes).forEach(cl => {
+            let b = (cl.scB||0)+(cl.stB||0)+(cl.obcB||0)+(cl.genB||0);
+            let g = (cl.scG||0)+(cl.stG||0)+(cl.obcG||0)+(cl.genG||0);
+            jskMap[jsk].boys += b;
+            jskMap[jsk].girls += g;
+            totalEnroll += (b + g);
+          });
+        }
+      });
+
+      document.getElementById('statTotalSchools').textContent = this.allSchools.length;
+      document.getElementById('statTotalEnrollment').textContent = totalEnroll;
+      document.getElementById('statCompleted').textContent = completedCount;
+      document.getElementById('statPending').textContent = this.allSchools.length - completedCount;
+
+      let tbody = document.getElementById('dashSummaryTable');
+      tbody.innerHTML = '';
+      let i = 1, tSch = 0, tComp = 0, tB = 0, tG = 0, tTot = 0;
+
+      for (let jsk in jskMap) {
+        let d = jskMap[jsk], tot = d.boys + d.girls;
+        tSch += d.schools; tComp += d.completed; tB += d.boys; tG += d.girls; tTot += tot;
+        tbody.innerHTML += `
+          <tr>
+            <td>${i++}</td>
+            <td style="text-align:left; font-weight:bold;">${jsk}</td>
+            <td>${d.schools}</td>
+            <td style="color:#16a34a; font-weight:bold;">${d.completed}</td>
+            <td>${d.boys}</td>
+            <td>${d.girls}</td>
+            <td style="font-weight:bold; color:#1d4ed8;">${tot}</td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML += `
+        <tr style="background:#f1f5f9; font-weight:bold;">
+          <td colspan="2">Grand Total</td>
+          <td>${tSch}</td><td>${tComp}</td><td>${tB}</td><td>${tG}</td>
+          <td style="color:#1d4ed8;">${tTot}</td>
+        </tr>
+      `;
+    },
+
+    renderReports() {
+      let jskFilter = document.getElementById('reportJskFilter').value;
+      let table = document.getElementById('enrollReportTable');
+      let html = `
+        <thead>
+          <tr>
+            <th>Sr. No.</th>
+            <th>School Name</th>
+            <th>UDISE Code</th>
+            <th>JSK</th>
+            <th>Status</th>
+            <th>Total Boys</th>
+            <th>Total Girls</th>
+            <th>Grand Total</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      let idx = 1, gBoys = 0, gGirls = 0;
+      this.allSchools.forEach(s => {
+        let jsk = s.jsk || "Bhoura";
+        if (jskFilter !== "ALL" && jsk.toLowerCase() !== jskFilter.toLowerCase()) return;
+
+        let saved = JSON.parse(localStorage.getItem("brc_enroll_" + s.udise) || "null");
+        let sBoys = 0, sGirls = 0, isDone = false;
+        if (saved && saved.completed) {
+          isDone = true;
+          Object.values(saved.classes).forEach(cl => {
+            sBoys += (cl.scB||0)+(cl.stB||0)+(cl.obcB||0)+(cl.genB||0);
+            sGirls += (cl.scG||0)+(cl.stG||0)+(cl.obcG||0)+(cl.genG||0);
+          });
+        }
+        gBoys += sBoys; gGirls += sGirls;
+        let tot = sBoys + sGirls;
+
+        html += `
+          <tr style="background:${isDone ? '#f0fdf4' : '#fee2e2'};">
+            <td>${idx++}</td>
+            <td style="text-align:left; font-weight:bold;">${s.name}</td>
+            <td>${s.udise}</td>
+            <td>${jsk}</td>
+            <td style="color:${isDone ? '#16a34a' : '#dc2626'}; font-weight:bold;">${isDone ? 'Completed' : 'Pending'}</td>
+            <td>${sBoys}</td>
+            <td>${sGirls}</td>
+            <td style="font-weight:bold; color:#1d4ed8;">${tot}</td>
+          </tr>
+        `;
+      });
+      html += `</tbody>`;
+      table.innerHTML = html;
+    },
+
+    exportExcel() {
+      let table = document.getElementById('enrollReportTable');
+      XLSX.writeFile(XLSX.utils.table_to_book(table, { raw: true }), "BRC_Enrollment_Report.xlsx");
     }
   };
-  
-  function handleSmartDownload() {  
-    let activeSection = document.querySelector("main section.active");  
-    if (!activeSection) return;  
-    let sectionId = activeSection.id;  
-    if (sectionId === 'compilation') {  
-      let formatSelect = document.getElementById("compViewMode");  
-      let formatName = formatSelect ? formatSelect.options[formatSelect.selectedIndex].text : "Compilation_Report";  
-      ExportAnyTable(`BRC_${formatName.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);  
-    } else if (sectionId === 'records') {  
-      ExportAnyTable("BRC_School_List.xlsx");  
-    } else {  
-      if (window.ExcelHandler && typeof ExcelHandler.exportExcel === 'function') {  
-        ExcelHandler.exportExcel();  
-      } else {  
-        ExportAnyTable("BRC_Portal_Data.xlsx");  
-      }  
-    }  
-  };  
-</script>  
-</body>  
+
+  document.addEventListener("DOMContentLoaded", () => {
+    EnrollmentApp.init();
+  });
+</script>
+
+</body>
 </html>
