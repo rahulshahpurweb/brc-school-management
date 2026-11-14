@@ -134,25 +134,15 @@ export const SessionManager = {
     this.triggerAllRenders();
     alert("Data saved successfully!");  
 
-    // हिडन फॉर्म के जरिए सीधे गूगल शीट तक डेटा भेजने का अचूक तरीका (CORS मुक्त)
+    let payload = { session: activeSession, data: cloudMemoryData };  
     try {
-      let payload = { session: activeSession, data: cloudMemoryData };
-      let form = document.createElement("form");
-      form.method = "POST";
-      form.action = WEB_APP_URL;
-      form.target = "_blank"; // पीछे बैकग्राउंड में भेजने के लिए
-
-      let input = document.createElement("input");
-      input.type = "hidden";
-      input.name = "payload";
-      input.value = JSON.stringify(payload);
-      
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-
-      console.log("Cloud synced successfully via Form submit");
+      await fetch(WEB_APP_URL, {  
+        method: "POST",  
+        mode: "no-cors",  
+        headers: { "Content-Type": "text/plain;charset=utf-8" },  
+        body: JSON.stringify(payload)  
+      });
+      console.log("Cloud synced successfully via fetch");
     } catch(err) {  
       console.error("Cloud Sync Error:", err);  
     }
