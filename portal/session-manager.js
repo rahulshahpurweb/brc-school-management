@@ -140,7 +140,7 @@ export const SessionManager = {
     this.triggerAllRenders();
     alert("Data saved successfully!");  
 
-    let payload = { session: activeSession, data: cloudMemoryData };  
+    let payload = { action: "saveData", data: cloudMemoryData };  
     try {
       await fetch(WEB_APP_URL, {  
         method: "POST",  
