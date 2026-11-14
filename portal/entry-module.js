@@ -24,7 +24,8 @@ export const EntryModule = {
     
     this.loadForm();
   },
-  // Final Correct Priority Class Range Logic (1-8 checked before 6-8)
+
+  // Final Correct Priority Class Range Logic
   getClassesForSchool(schoolInput) {
     let cat = "";
     let name = "";
@@ -38,37 +39,30 @@ export const EntryModule = {
     
     let combined = cat + " " + name;
     
-    // 1. Pure Primary School (Class 1 to 5) -> Sirf Class 1 se 5
     if (cat === "PRIMARY SCHOOL (CLASS 1 TO 5)" || (cat.includes("PRIMARY") && !combined.includes("TO") && !combined.includes("MIDDLE") && !combined.includes("HIGH") && !combined.includes("1 TO"))) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
     }
     
-    // 2. Primary with Middle (1 to 8) -> Class 1 se 8 (Ise pehle rakhna zaroori hai)
     if (combined.includes("PRIMARY WITH MIDDLE") || (combined.includes("1 TO") && combined.includes("8"))) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
     
-    // 3. Primary to High / Higher Secondary (1 to 10/12) -> Class 1 se 8 (Ise bhi pehle rakhna zaroori hai)
     if (combined.includes("PRIMARY TO HIGH") || combined.includes("PRIMARY TO HIGHER SECONDARY") || 
         (combined.includes("1 TO") && (combined.includes("10") || combined.includes("12")))) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
     
-    // 4. Middle School-only (6 to 8) ya 6 se shuru hone wale -> Class 6 se 8
     if (combined.includes("MIDDLE SCHOOL") || combined.includes("MIDDLE TO HIGH") || 
         combined.includes("MIDDLE TO HIGHER SECONDARY") || combined.includes("6 TO") || combined.includes("6-")) {
       return ["Class 6", "Class 7", "Class 8"];
     }
     
-    // 5. High School (1-10) / Higher Secondary (1-12) (Agar upar nahi pakde gaye toh)
     if (combined.includes("HIGH SCHOOL") || combined.includes("HIGHER SECONDARY")) {
       return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"];
     }
     
-    // 6. Default fallback
     return ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5"];
   },
-  
   
   loadForm() {
     let sel = document.getElementById("schoolSelect");
@@ -95,7 +89,7 @@ export const EntryModule = {
       
       let cl = s.classes[c];
 
-      tbody.innerHTML += `<tr>
+      tbody.innerHTML += `<tr data-class="${c}">
         <td style="font-weight:bold;background:#f8fafc;vertical-align:middle;">${c}</td>
         <td><input type="number" min="0" class="entry-input" value="${cl.scB || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
         <td><input type="number" min="0" class="entry-input" value="${cl.scG || 0}" style="width:100%;border:1px solid #cbd5e1;padding:4px;text-align:center;"></td>
@@ -258,11 +252,10 @@ export const EntryModule = {
     if(!s.classes) s.classes = {};
 
     let rows = document.querySelectorAll("#entryTableBody tr");
-    const applicableClasses = this.getClassesForSchool(s);
     
-    rows.forEach((row, idx) => {
-      if(idx < applicableClasses.length) {
-        let cName = applicableClasses[idx];
+    rows.forEach(row => {
+      let cName = row.getAttribute("data-class");
+      if (cName) {
         let inputs = row.querySelectorAll("input");
         if(inputs.length >= 8) {
           s.classes[cName] = {
@@ -292,3 +285,4 @@ export const EntryModule = {
 };
 
 window.EntryModule = EntryModule;
+window.loadSchoolData = () => EntryModule.loadForm();
