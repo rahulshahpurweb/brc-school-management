@@ -136,20 +136,22 @@ export const SessionManager = {
 
     let payload = { session: activeSession, data: cloudMemoryData };  
     try {
-      await fetch(WEB_APP_URL, {  
-        method: "POST",  
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },  
-        body: new URLSearchParams({
-          session: activeSession,
-          data: JSON.stringify(cloudMemoryData)
-        })
-      });
+      let blob = new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=utf-8' });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(WEB_APP_URL, blob);
+      } else {
+        await fetch(WEB_APP_URL, {  
+          method: "POST",  
+          mode: "no-cors",  
+          headers: { "Content-Type": "text/plain;charset=utf-8" },  
+          body: JSON.stringify(payload)  
+        });
+      }
       console.log("Cloud synced successfully");
     } catch(err) {  
       console.error("Cloud Sync Error:", err);  
     }
   },
-
   updateStats() {
     let schools = this.getData();
     let totalSchools = schools.length;
