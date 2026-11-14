@@ -41,7 +41,7 @@ export const SessionManager = {
     await this.getActiveSession();
     this.renderDropdown();
     
-    // Fetch live data directly from the cloud with correct action parameter
+    // Fetch live data directly from the cloud
     await this.fetchCloudDataDirectly();
     this.updateStats();
     this.applyRoleAccess();
@@ -50,7 +50,7 @@ export const SessionManager = {
   async fetchCloudDataDirectly() {
     let activeSession = currentCloudSession;
     try {  
-      let response = await fetch(`${WEB_APP_URL}?action=getAllData&session=${activeSession}`);  
+      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
       let cloudData = await response.json();  
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
         cloudMemoryData = cloudData;  
@@ -72,6 +72,7 @@ export const SessionManager = {
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
     if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
     
+    // Refresh the data entry form or school dropdown if present on the page
     if(typeof window.loadSchoolData === 'function') {
       window.loadSchoolData();
     }
@@ -139,8 +140,7 @@ export const SessionManager = {
     this.triggerAllRenders();
     alert("Data saved successfully!");  
 
-    // Optimized Payload for Row-by-Row Cloud Sync
-    let payload = { action: "saveData", session: activeSession, data: cloudMemoryData };  
+    let payload = { session: activeSession, data: cloudMemoryData };  
     try {
       await fetch(WEB_APP_URL, {  
         method: "POST",  
@@ -166,6 +166,7 @@ export const SessionManager = {
       Object.keys(classesObj).forEach(cName => {  
         let c = classesObj[cName] || {};  
         
+        // Calculate category-wise individual sums for boys and girls
         let bSum = (parseInt(c.scB) || 0) + (parseInt(c.stB) || 0) + (parseInt(c.obcB) || 0) + (parseInt(c.genB) || 0);
         let gSum = (parseInt(c.scG) || 0) + (parseInt(c.stG) || 0) + (parseInt(c.obcG) || 0) + (parseInt(c.genG) || 0);
         let sum = bSum + gSum;
@@ -191,6 +192,7 @@ export const SessionManager = {
     if(statFilled) statFilled.innerText = filled;  
     if(statPending) statPending.innerText = totalSchools - filled;
     
+    // Update dashboard statistics breakdown for boys and girls
     if(statBoysGirls) {
       statBoysGirls.innerText = `Boys: ${totalBoys} | Girls: ${totalGirls}`;
     }
