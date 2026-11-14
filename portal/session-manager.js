@@ -9,7 +9,7 @@ let currentCloudSession = "2026-27";
 export const SessionManager = {
   async getActiveSession() {
     try {  
-      let response = await fetch(WEB_APP_URL + "?action=getSession");
+      let response = await fetch(WEB_APP_URL + "?action=getSession&t=" + new Date().getTime());
       let res = await response.json();
       if (res && res.activeSession) {  
         currentCloudSession = res.activeSession;
@@ -28,9 +28,8 @@ export const SessionManager = {
     try {
       await fetch(WEB_APP_URL, {  
         method: "POST",  
-        mode: "no-cors",  
-        headers: { "Content-Type": "text/plain;charset=utf-8" },  
-        body: JSON.stringify(payload)  
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },  
+        body: new URLSearchParams({ action: "setSession", session: sessionName })
       });
     } catch(e) {}
 
@@ -40,8 +39,6 @@ export const SessionManager = {
   async init() {
     await this.getActiveSession();
     this.renderDropdown();
-    
-    // Fetch live data directly from the cloud
     await this.fetchCloudDataDirectly();
     this.updateStats();
     this.applyRoleAccess();
@@ -50,7 +47,7 @@ export const SessionManager = {
   async fetchCloudDataDirectly() {
     let activeSession = currentCloudSession;
     try {  
-      let response = await fetch(`${WEB_APP_URL}?session=${activeSession}`);  
+      let response = await fetch(`${WEB_APP_URL}?action=getAllData&session=${activeSession}&t=` + new Date().getTime());  
       let cloudData = await response.json();  
       if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {  
         cloudMemoryData = cloudData;  
@@ -64,15 +61,12 @@ export const SessionManager = {
       cloudMemoryData = JSON.parse(JSON.stringify(baseSchools));
     }
 
-    // Instantly update and refresh all UI renders and forms
     this.triggerAllRenders();
   },
 
   triggerAllRenders() {
     if(typeof SchoolRecords !== 'undefined' && SchoolRecords.render) SchoolRecords.render();  
     if(typeof CompilationModule !== 'undefined' && CompilationModule.render) CompilationModule.render();
-    
-    // Refresh the data entry form or school dropdown if present on the page
     if(typeof window.loadSchoolData === 'function') {
       window.loadSchoolData();
     }
@@ -140,13 +134,15 @@ export const SessionManager = {
     this.triggerAllRenders();
     alert("Data saved successfully!");  
 
-    let payload = { action: "saveData", data: cloudMemoryData };  
+    let payload = { session: activeSession, data: cloudMemoryData };  
     try {
       await fetch(WEB_APP_URL, {  
         method: "POST",  
-        mode: "no-cors",  
-        headers: { "Content-Type": "text/plain;charset=utf-8" },  
-        body: JSON.stringify(payload)  
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },  
+        body: new URLSearchParams({
+          session: activeSession,
+          data: JSON.stringify(cloudMemoryData)
+        })
       });
       console.log("Cloud synced successfully");
     } catch(err) {  
@@ -165,8 +161,6 @@ export const SessionManager = {
       let classesObj = s.classes || {};  
       Object.keys(classesObj).forEach(cName => {  
         let c = classesObj[cName] || {};  
-        
-        // Calculate category-wise individual sums for boys and girls
         let bSum = (parseInt(c.scB) || 0) + (parseInt(c.stB) || 0) + (parseInt(c.obcB) || 0) + (parseInt(c.genB) || 0);
         let gSum = (parseInt(c.scG) || 0) + (parseInt(c.stG) || 0) + (parseInt(c.obcG) || 0) + (parseInt(c.genG) || 0);
         let sum = bSum + gSum;
@@ -192,7 +186,6 @@ export const SessionManager = {
     if(statFilled) statFilled.innerText = filled;  
     if(statPending) statPending.innerText = totalSchools - filled;
     
-    // Update dashboard statistics breakdown for boys and girls
     if(statBoysGirls) {
       statBoysGirls.innerText = `Boys: ${totalBoys} | Girls: ${totalGirls}`;
     }
