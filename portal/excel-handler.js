@@ -135,19 +135,12 @@ export const ExcelHandler = {
 
         alert(`${updatedCount} स्कूलों का डेटा प्रोसेस हो रहा है, कृपया गूगल शीट पर सिंक होने तक प्रतीक्षा करें...`);
         
-        // लोकल मेमोरी में अपडेट करें
-        if (typeof cloudMemoryData !== 'undefined') {
-          cloudMemoryData = schools;
-        }
-
-        // --- सीधे गूगल शीट बैकNएंड को POST रिक्वेस्ट भेजें (बिना no-cors के) ---
         let activeSession = (typeof currentCloudSession !== 'undefined') ? currentCloudSession : "2026-27";
         let payload = { action: "saveData", session: activeSession, data: schools };
 
         try {
           await fetch(WEB_APP_URL, {
             method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload)
           });
           console.log("Excel bulk data synced successfully to Google Sheet!");
